@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -29,9 +29,10 @@ import {
   Sparkles, Star, Bell, Search, TrendingUp,
   Heart, ShoppingCart, ArrowRight, Flame, RefreshCw,
 } from 'lucide-react-native';
-import { NotificationService } from '@/lib/notifications';
-import { getRecommendations, getTrending, ScoredProduct } from '@/lib/recommendations';
-import { useMoodDetection } from '@/lib/mood-detection';
+import { NotificationService } from '@/services/notifications';
+import { getRecommendations, getTrending } from '@/services/recommendations';
+import { ScoredProduct } from '@/types/recommendations';
+import { useMoodDetection } from '@/hooks/useMoodDetection';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH          = (width - 48) / 2;

@@ -31,7 +31,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 
 /* ─────────────────────────────────────────────────────────────────────────
    SHARED TYPES + HELPERS

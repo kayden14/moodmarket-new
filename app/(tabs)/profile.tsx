@@ -9,7 +9,7 @@ import {
   ScrollView, ActivityIndicator, Platform, StatusBar,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Order } from '@/types/database';

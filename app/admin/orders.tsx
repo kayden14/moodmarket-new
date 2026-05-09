@@ -12,7 +12,7 @@ import {
   ScrollView, Alert, useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import {
   ArrowLeft, Package, CheckCircle, Truck,
   Clock, XCircle, X, MapPin, Phone, Sun, Moon, RefreshCw,

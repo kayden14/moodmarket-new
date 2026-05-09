@@ -9,7 +9,7 @@ import {
   ScrollView, ActivityIndicator, Platform, StatusBar,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   ArrowLeft, Package, CheckCircle, Truck, Home,

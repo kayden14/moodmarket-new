@@ -22,14 +22,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme, MoodKey, MOOD_PALETTES } from '@/contexts/ThemeContext';
-import { getRecommendations, getTrending, ScoredProduct } from '@/lib/recommendations';
-import { NotificationService } from '@/lib/notifications';
-import { useMoodDetection } from '@/lib/mood-detection';
+import { getRecommendations, getTrending } from '@/services/recommendations';
+import { ScoredProduct } from '@/types/recommendations';
+import { NotificationService } from '@/services/notifications';
+import { useMoodDetection } from '@/hooks/useMoodDetection';
 
 /* ─────────────────────────────── constants ─────────────────────────────── */
 

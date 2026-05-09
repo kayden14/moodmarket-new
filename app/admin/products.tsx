@@ -12,7 +12,7 @@ import {
   Alert, Modal, ScrollView, KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Image } from 'expo-image';
 import { ArrowLeft, Plus, Search, Edit3, Trash2, X, Save, Camera, ImageIcon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';

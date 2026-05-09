@@ -20,7 +20,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { House, ShoppingBag, UserCircle } from 'lucide-react-native';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { NotificationService } from '@/lib/notifications';
+import { NotificationService } from '@/services/notifications';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────

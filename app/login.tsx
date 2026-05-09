@@ -26,7 +26,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import * as Linking from 'expo-linking';
 import Svg, { Path } from 'react-native-svg';

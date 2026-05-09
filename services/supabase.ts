@@ -1,4 +1,4 @@
-// lib/supabase.ts
+// services/supabase.ts
 // Robust Supabase client with refresh-token recovery handling
 
 import { createClient } from '@supabase/supabase-js';

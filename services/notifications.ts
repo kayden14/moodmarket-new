@@ -1,4 +1,4 @@
-// lib/notifications.ts
+// services/notifications.ts
 //
 // Universal notification service:
 // - Expo Go → safely disabled (no crashes)

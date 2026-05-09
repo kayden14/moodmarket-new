@@ -1,10 +1,10 @@
-// lib/notifyUser.ts
+// services/notifyUser.ts
 //
 // Inserts a real notification into the Supabase notifications table.
 // This triggers the realtime listener in notifications.tsx instantly.
 //
 // Usage:
-//   import { notifyUser } from '@/lib/notifyUser';
+//   import { notifyUser } from '@/services/notifyUser';
 //   await notifyUser.addedToCart(userId, productName);
 //   await notifyUser.likedProduct(userId, productName);
 //   await notifyUser.orderPlaced(userId, total, itemCount);

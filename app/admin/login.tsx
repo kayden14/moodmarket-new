@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';

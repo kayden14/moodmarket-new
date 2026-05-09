@@ -12,7 +12,7 @@ import {
   Alert, Modal, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import {
   ArrowLeft, Search, User, Shield, ShoppingBag,
   X, Calendar, Mail, Phone, Ban, CheckCircle,

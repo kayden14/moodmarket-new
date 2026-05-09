@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 
 export function getProductImage(product: Product): string {
@@ -13,9 +13,9 @@ export function getProductImage(product: Product): string {
   if (product.image.startsWith('http')) return product.image;
 
   // Supabase storage
-  const { publicUrl } = supabase.storage
+  const { data } = supabase.storage
     .from('products') // bucket name
     .getPublicUrl(product.image);
 
-  return publicUrl || '';
+  return data.publicUrl || '';
 }

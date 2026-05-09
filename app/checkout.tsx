@@ -43,8 +43,8 @@ import { useRouter } from 'expo-router';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/lib/supabase';
-import { NotificationService } from '@/lib/notifications';
+import { supabase } from '@/services/supabase';
+import { NotificationService } from '@/services/notifications';
 import {
   ChevronLeft, MapPin, Phone, User, CreditCard,
   CheckCircle, Package, Truck, ShieldCheck,

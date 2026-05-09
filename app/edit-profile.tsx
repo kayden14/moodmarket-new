@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   ArrowLeft, User, Mail, Phone, ChevronRight,

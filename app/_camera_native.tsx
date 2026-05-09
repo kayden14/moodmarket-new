@@ -13,13 +13,10 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTheme, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { NotificationService } from '@/lib/notifications';
-import {
-  detectMoodFromImage,
-  MoodDetectionResult,
-  pickImageFromGallery,
-} from '@/lib/mood-detection';
+import { supabase } from '@/services/supabase';
+import { NotificationService } from '@/services/notifications';
+import { detectMoodFromImage, pickImageFromGallery } from '@/services/moodDetection';
+import { MoodDetectionResult } from '@/types/mood';
 import {
   ArrowLeft, Upload, CheckCircle,
   RefreshCw, RotateCcw, Zap, Camera,

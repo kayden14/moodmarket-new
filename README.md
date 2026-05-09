@@ -129,20 +129,29 @@ EXPO_PUBLIC_APP_SCHEME=moodmarket
 moodmarket/
 ├── app/                    # Expo Router screens (file-based routing)
 │   ├── (tabs)/             # Bottom tab navigator screens
+│   ├── admin/              # Admin dashboard screens
+│   ├── product/            # Product detail screens
+│   ├── order/              # Order detail screens
 │   ├── _layout.tsx         # Root layout with providers
 │   └── index.tsx           # Entry screen
 ├── components/             # Shared UI components
-├── constants/              # Colours, fonts, config
+├── constants/              # Static constants (colours, config)
+├── contexts/               # React Context providers (auth, cart, theme)
 ├── hooks/                  # Custom React hooks
-├── lib/
-│   └── supabase.ts         # Supabase client initialisation
+├── services/               # Business logic & API integrations
+├── types/                  # TypeScript type definitions
+├── utils/                  # Pure utility functions
+├── docs/                   # Project documentation
 ├── assets/                 # Images, fonts, icons
+├── supabase/               # Supabase config & edge functions
 ├── .env                    # Local environment variables (git-ignored)
 ├── .env.example            # Template for environment variables
 ├── app.json                # Expo app configuration
 ├── eas.json                # EAS Build profiles
 └── tsconfig.json           # TypeScript configuration
 ```
+
+> 📚 See `docs/PROJECT_STRUCTURE.md` for a detailed breakdown of each folder and where new files should go.
 
 ---
 

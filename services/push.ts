@@ -1,10 +1,10 @@
-// lib/push.ts
+// services/push.ts
 //
 // Call these from anywhere in your app to send real-time push
 // notifications to any user via the Supabase Edge Function.
 //
 // Usage:
-//   import { Push } from '@/lib/push';
+//   import { Push } from '@/services/push';
 //   await Push.orderShipped(userId, orderId);
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;

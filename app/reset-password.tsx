@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import * as Linking from 'expo-linking';
 
 export default function ResetPassword() {

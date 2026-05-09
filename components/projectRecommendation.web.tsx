@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductImage } from '@/utils/images';
 import type { Product } from '@/types/database';

@@ -12,7 +12,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import {
   Package, ShoppingBag, Users, DollarSign,
   LogOut, ChevronRight, CheckCircle, Clock, Truck, Sun, Moon,

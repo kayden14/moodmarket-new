@@ -1,4 +1,4 @@
-// lib/recommendations.ts
+// services/recommendations.ts
 //
 // AI Smart Product Recommendation Engine
 // score = moodMatch(40) + popularity(30) + rating(20) + recency(10)
@@ -6,6 +6,7 @@
 // SAFE VERSION: Never throws, never hangs — all Supabase calls are optional.
 
 import { Product } from '@/types/database';
+import { ScoredProduct } from '@/types/recommendations';
 
 const MOOD_TAG_MAP: Record<string, string[]> = {
   happy:   ['cheerful', 'fun', 'vibrant', 'social', 'celebration', 'happy'],
@@ -17,11 +18,6 @@ const MOOD_TAG_MAP: Record<string, string[]> = {
   anxious: ['calming', 'grounding', 'wellness', 'mindfulness', 'self-care'],
   neutral: ['popular', 'trending', 'bestseller', 'versatile'],
 };
-
-export interface ScoredProduct extends Product {
-  score: number;
-  reason: string;
-}
 
 export async function getRecommendations(
   userId: string | undefined,

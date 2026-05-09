@@ -9,7 +9,7 @@ import {
   Animated, Platform, TextInput, Alert, KeyboardAvoidingView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -20,7 +20,7 @@ import {
   Send, Pencil, Trash2, User,
 } from 'lucide-react-native';
 import { getProductImage } from '@/utils/images';
-import { notifyUser } from '@/lib/notifyUser';
+import { notifyUser } from '@/services/notifyUser';
 
 const SUCCESS_GREEN = '#22C55E';
 

@@ -16,22 +16,16 @@ import React, {
   useCallback,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MoodKey, MoodPalette } from '@/types/mood';
+import { BaseTheme, AppTheme } from '@/types/theme';
+
+// Re-export types for backward compatibility
+export type { MoodKey, MoodPalette } from '@/types/mood';
+export type { BaseTheme, AppTheme } from '@/types/theme';
 
 // ─── Mood palettes ────────────────────────────────────────────────────────────
 // Each mood has a primary accent, a soft background tint, and a card tint.
 // These blend with the base light/dark colours.
-
-export type MoodKey =
-  | 'happy' | 'calm' | 'excited' | 'sad'
-  | 'angry' | 'tired' | 'anxious' | 'neutral';
-
-export interface MoodPalette {
-  primary:    string;  // buttons, highlights
-  secondary:  string;  // borders, chips
-  tint:       string;  // card backgrounds
-  label:      string;  // display name
-  emoji:      string;
-}
 
 export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
   happy: {
@@ -94,15 +88,6 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
 
 // ─── Base theme (light / dark) ────────────────────────────────────────────────
 
-export interface BaseTheme {
-  background:    string;
-  card:          string;
-  border:        string;
-  textPrimary:   string;
-  textSecondary: string;
-  inactive:      string;
-}
-
 const LIGHT: BaseTheme = {
   background:    '#F7F7F7',
   card:          '#FFFFFF',
@@ -120,15 +105,6 @@ const DARK: BaseTheme = {
   textSecondary: '#AAAAAA',
   inactive:      '#555555',
 };
-
-// ─── Combined theme object ────────────────────────────────────────────────────
-
-export interface AppTheme extends BaseTheme {
-  primary:   string;
-  secondary: string;
-  tint:      string;
-  isDark:    boolean;
-}
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 

@@ -27,8 +27,8 @@ import { Camera, CameraView } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTheme, MOOD_PALETTES, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { NotificationService } from '@/lib/notifications';
-import { detectMoodFromImage } from '@/lib/mood-detection';
+import { NotificationService } from '@/services/notifications';
+import { detectMoodFromImage } from '@/services/moodDetection';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 /* ─────────────────────────────────────────────────────────────────────────

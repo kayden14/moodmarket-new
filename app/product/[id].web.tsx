@@ -12,13 +12,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductImage } from '@/utils/images';
-import { notifyUser } from '@/lib/notifyUser';
+import { notifyUser } from '@/services/notifyUser';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
