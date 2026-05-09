@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { House, ShoppingBag, UserCircle } from 'lucide-react-native';
 import { useCart } from '@/contexts/CartContext';
@@ -25,8 +26,7 @@ import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
-const BOTTOM_INSET = Platform.OS === 'ios' ? 28 : 10;
-const BAR_HEIGHT   = 60;
+const BAR_HEIGHT = 60;
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -114,6 +114,7 @@ const t = StyleSheet.create({
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { cartCount } = useCart();
   const { theme } = useTheme();
+  const { bottom } = useSafeAreaInsets();
 
   return (
     <View style={[b.root, { backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]}>
@@ -136,7 +137,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-      <View style={[b.safeAreaFill, { height: BOTTOM_INSET, backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]} />
+      <View style={[b.safeAreaFill, { height: Math.max(bottom, Platform.OS === 'ios' ? 28 : 10), backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]} />
     </View>
   );
 }
