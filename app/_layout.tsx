@@ -13,8 +13,7 @@ function InnerLayout() {
     <View style={[styles.root, { backgroundColor: theme.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.background } }}>
-        <Stack.Screen name="login"         options={{ headerShown: false }} />
-        <Stack.Screen name="signup"        options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)"        options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
         <Stack.Screen name="camera"        options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="checkout"      options={{ headerShown: false }} />

@@ -62,7 +62,7 @@ const FacebookIcon = ({ size = 20 }: { size?: number }) => (
 
 function LoginScreenWeb() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, signInWithOAuth } = useAuth();
 
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
@@ -381,11 +381,16 @@ function LoginScreenWeb() {
 
             <div className="auth-socials">
               {[
-                { icon: <GoogleIcon size={20} />, label: 'Google' },
-                { icon: <AppleIcon size={20} color="#000" />, label: 'Apple' },
-                { icon: <FacebookIcon size={20} />, label: 'Facebook' },
+                { icon: <GoogleIcon size={20} />, label: 'Google', provider: 'google' as const },
+                { icon: <AppleIcon size={20} color="#000" />, label: 'Apple', provider: 'apple' as const },
+                { icon: <FacebookIcon size={20} />, label: 'Facebook', provider: 'facebook' as const },
               ].map(s => (
-                <button key={s.label} className="auth-social-btn" title={`Continue with ${s.label}`}>
+                <button
+                  key={s.label}
+                  className="auth-social-btn"
+                  title={`Continue with ${s.label}`}
+                  onClick={() => signInWithOAuth(s.provider)}
+                >
                   {s.icon}
                 </button>
               ))}
@@ -444,7 +449,7 @@ function LoginScreenWeb() {
 
 function LoginScreenMobile() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, signInWithOAuth } = useAuth();
 
   const [email, setEmail]                     = useState('');
   const [password, setPassword]               = useState('');
@@ -578,13 +583,13 @@ function LoginScreenMobile() {
 
           {/* Social buttons */}
           <View style={ms.socials}>
-            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7}>
+            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7} onPress={() => signInWithOAuth('google')}>
               <GoogleIcon size={20} />
             </TouchableOpacity>
-            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7}>
+            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7} onPress={() => signInWithOAuth('apple')}>
               <AppleIcon size={20} color="#000" />
             </TouchableOpacity>
-            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7}>
+            <TouchableOpacity style={ms.socialBtn} activeOpacity={0.7} onPress={() => signInWithOAuth('facebook')}>
               <FacebookIcon size={20} />
             </TouchableOpacity>
           </View>

@@ -1,6 +1,8 @@
 // contexts/AuthContext.tsx
 
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { Platform } from 'react-native';
+import * as Linking from 'expo-linking';
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
 import type { User, Session } from '@supabase/supabase-js';
@@ -21,6 +23,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
+  signInWithOAuth: (provider: 'google' | 'apple' | 'facebook') => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -220,6 +223,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data;
   };
 
+  const signInWithOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
+    const redirectTo = Platform.OS === 'web'
+      ? `${window.location.origin}/(tabs)`
+      : 'moodmarket://(tabs)';
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo,
+        skipBrowserRedirect: Platform.OS !== 'web',
+      },
+    });
+
+    if (error) throw error;
+
+    if (data?.url && Platform.OS !== 'web') {
+      await Linking.openURL(data.url);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -231,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, profile, loading,
-      signOut, signUp, signIn, refreshProfile,
+      signOut, signUp, signIn, signInWithOAuth, refreshProfile,
     }}>
       {children}
     </AuthContext.Provider>
