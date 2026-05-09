@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "MoodMarket",
+    "slug": "MoodMarket",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "moodmarket",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.moodmarket.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow MoodMarket to use your camera to detect your mood.",
+        "NSPhotoLibraryUsageDescription": "Allow MoodMarket to access your photos to detect your mood.",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification",
+          "fetch",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.moodmarket.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow MoodMarket to use your camera to detect your mood.",
+          "photosPermission": "Allow MoodMarket to access your photos to detect your mood."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#FF7A8A",
+          "defaultChannel": "default",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MoodMarket to use your camera to detect your mood."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3c215893-7a4a-4007-b6ae-f6bce00349a0"
+      }
+    }
+  }
+}

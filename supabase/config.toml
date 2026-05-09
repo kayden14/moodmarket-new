@@ -1,0 +1,4 @@
+# Supabase configuration file
+
+[functions.detect-mood]
+verify_jwt = false
