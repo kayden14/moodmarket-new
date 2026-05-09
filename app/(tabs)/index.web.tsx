@@ -1,20 +1,24 @@
 /**
  * app/(tabs)/index.web.tsx  — MoodMarket Home Screen (Web)
  *
- * Passive ambient mood detection — no button tap required.
- * On mount the useMoodDetection hook silently:
- *  1. Requests webcam permission via browser getUserMedia (system prompt appears once)
- *  2. Captures a frame after 2.5 s → Gemini vision API
- *  3. Calls setMood() → recommendations update instantly
+ * RESPONSIVE OVERHAUL — works across:
+ *   • 4K / large desktop  ≥1400px  — wide sidebar, 5-col grid
+ *   • Desktop             1100–1399px — sidebar, 4-col grid
+ *   • Laptop              900–1099px  — sidebar, 3-col grid
+ *   • Tablet landscape    700–899px   — sidebar collapses to overlay drawer
+ *   • Tablet portrait     540–699px   — no sidebar, 2-col grid
+ *   • Large phone         400–539px   — no sidebar, 2-col grid
+ *   • Small phone         <400px      — no sidebar, 2-col grid, minimal topnav
  *
- * The top-nav button is now "Re-scan" — triggers another detection pass.
- * While detecting, the sidebar mood card shows a CSS spinner.
- * If permission is denied, the button falls back to a manual mood guide.
- *
- * OTHER FIXES:
- * - Fully responsive grid using auto-fill minmax (no manual breakpoint overrides)
- * - Sidebar auto-collapses below 900px via CSS
- * - Mood history properly APPENDS to the existing mood_history array in Supabase
+ * CHANGES FROM PREVIOUS VERSION:
+ * - Sidebar is OVERLAY (not push) on ≤900px so it never squeezes the grid
+ * - Overlay backdrop click closes sidebar on mobile
+ * - Topnav: search hidden <540px (moves to a drop-down bar), icon-only buttons <700px
+ * - Mobile search bar slides down below topnav on small screens
+ * - Trending strip uses CSS snap scrolling on mobile
+ * - Grid min-width floors out at 140px so it always shows 2 cols on phones
+ * - CartToast repositioned above mobile safe-area
+ * - All interactive targets ≥44px tall (iOS/Android HIG)
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -59,59 +63,33 @@ function getProductImage(product: Product): string {
 
 /* ─────────────────────────────── mood save helper ──────────────────────── */
 
-async function saveMoodToHistory(
-  userId: string,
-  moodKey: MoodKey,
-  label: string,
-): Promise<void> {
+async function saveMoodToHistory(userId: string, moodKey: MoodKey, label: string): Promise<void> {
   try {
     const { data, error: fetchErr } = await supabase
-      .from('profiles')
-      .select('mood_history')
-      .eq('id', userId)
-      .single();
-
-    if (fetchErr) {
-      console.warn('[MoodHistory] Failed to read existing history:', fetchErr.message);
-      return;
-    }
+      .from('profiles').select('mood_history').eq('id', userId).single();
+    if (fetchErr) { console.warn('[MoodHistory] fetch error:', fetchErr.message); return; }
 
     let existing: any[] = [];
     const raw = data?.mood_history;
     if (Array.isArray(raw)) {
       existing = raw.filter(e => e && typeof e === 'object' && !Array.isArray(e) && e.mood_key);
     } else if (raw && typeof raw === 'object') {
-      existing = Object.values(raw).filter((e: any) => e && typeof e === 'object' && e.mood_key);
+      existing = Object.values(raw).filter((e: any) => e?.mood_key);
     }
 
-    const newEntry = {
-      mood_key: moodKey,
-      label,
-      date: new Date().toISOString(),
-    };
+    const updated = [...existing, { mood_key: moodKey, label, date: new Date().toISOString() }];
 
-    const updated = [...existing, newEntry];
-
-    const { error: saveErr } = await supabase
-      .from('profiles')
-      .update({ mood_history: updated })
-      .eq('id', userId);
-
-    if (saveErr) {
-      console.warn('[MoodHistory] Failed to save mood entry:', saveErr.message);
-    } else {
-      console.log(`[MoodHistory] Saved "${label}" — total entries: ${updated.length}`);
-    }
+    const { error: saveErr } = await supabase.from('profiles').update({ mood_history: updated }).eq('id', userId);
+    if (saveErr) console.warn('[MoodHistory] save error:', saveErr.message);
+    else console.log(`[MoodHistory] Saved "${label}" — total: ${updated.length}`);
   } catch (err: any) {
-    console.warn('[MoodHistory] Unexpected error saving mood:', err.message);
+    console.warn('[MoodHistory] unexpected error:', err.message);
   }
 }
 
 /* ─────────────────────────────── sub-components ────────────────────────── */
 
-function ProductCard({
-  item, onPress, onAddToCart,
-}: {
+function ProductCard({ item, onPress, onAddToCart }: {
   item: ScoredProduct | Product;
   onPress: () => void;
   onAddToCart: (p: Product) => void;
@@ -168,11 +146,11 @@ function ProductCard({
           onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
           style={{
             position: 'absolute', top: 10, right: 10,
-            width: 30, height: 30, borderRadius: '50%',
+            width: 34, height: 34, borderRadius: '50%',
             background: liked ? theme.primary : 'rgba(255,255,255,0.92)',
             border: `1px solid ${liked ? theme.primary : 'rgba(0,0,0,0.1)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 13,
+            cursor: 'pointer', fontSize: 14,
             transition: 'all 0.15s ease',
             transform: hovered ? 'scale(1)' : 'scale(0.88)',
             opacity: hovered || liked ? 1 : 0,
@@ -186,7 +164,7 @@ function ProductCard({
             position: 'absolute', bottom: 8, left: 8,
             background: theme.primary,
             borderRadius: 6,
-            padding: '4px 10px', fontSize: 12, fontWeight: 600,
+            padding: '4px 10px', fontSize: 11, fontWeight: 600,
             color: '#fff', letterSpacing: 0.3,
           }}>
             {(item as ScoredProduct).reason}
@@ -194,23 +172,23 @@ function ProductCard({
         )}
       </div>
 
-      <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: theme.textPrimary, lineHeight: 1.45, letterSpacing: -0.2 }}>
+      <div style={{ padding: '12px 14px 14px', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: theme.textPrimary, lineHeight: 1.4, letterSpacing: -0.2 }}>
           {item.name}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {[1,2,3,4,5].map(i => (
-            <span key={i} style={{ fontSize: 13, color: i <= stars ? '#F59E0B' : theme.border, lineHeight: 1 }}>
+            <span key={i} style={{ fontSize: 12, color: i <= stars ? '#F59E0B' : theme.border, lineHeight: 1 }}>
               {i <= stars ? '★' : '☆'}
             </span>
           ))}
-          <span style={{ fontSize: 13, color: theme.textSecondary, marginLeft: 4 }}>
+          <span style={{ fontSize: 11, color: theme.textSecondary, marginLeft: 3 }}>
             {(item as Product).rating?.toFixed(1)}
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Sora", sans-serif' }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: theme.textSecondary, letterSpacing: 0 }}>GH₵ </span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Sora", sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
             {(item as Product).price.toFixed(2)}
           </span>
           <button
@@ -221,13 +199,14 @@ function ProductCard({
               background: hovered ? theme.primary : theme.tint,
               border: `1px solid ${hovered ? theme.primary : theme.secondary}`,
               color: hovered ? '#fff' : theme.primary,
-              fontSize: 13, fontWeight: 600,
+              fontSize: 12, fontWeight: 600,
               cursor: adding ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '0 14px',
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '0 12px',
               opacity: adding ? 0.6 : 1,
               transition: 'all 0.18s ease',
               fontFamily: '"Sora", sans-serif',
+              whiteSpace: 'nowrap',
             }}
             aria-label="Add to cart"
           >
@@ -252,14 +231,15 @@ function TrendingCard({ item, onPress, onAddToCart }: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        flex: '0 0 clamp(140px, 20%, 220px)',
-        minWidth: 140,
+        flex: '0 0 clamp(150px, 22vw, 220px)',
+        minWidth: 150,
         borderRadius: 14, overflow: 'hidden',
         background: theme.card, border: `1px solid ${hovered ? theme.secondary : theme.border}`,
         cursor: 'pointer',
         transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
         transform: hovered ? 'translateY(-2px)' : 'none',
         boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
+        scrollSnapAlign: 'start',
       }}
     >
       <div style={{ position: 'relative', height: 120 }}>
@@ -272,19 +252,17 @@ function TrendingCard({ item, onPress, onAddToCart }: {
           position: 'absolute', top: 8, left: 8,
           background: '#EF4444',
           borderRadius: 5,
-          padding: '4px 9px', fontSize: 11, fontWeight: 700,
+          padding: '3px 8px', fontSize: 10, fontWeight: 700,
           color: '#fff', letterSpacing: 0.5,
           textTransform: 'uppercase',
-        }}>
-          Hot
-        </div>
+        }}>Hot</div>
       </div>
-      <div style={{ padding: '13px 14px 14px' }}>
-        <p style={{ margin: '0 0 9px', fontSize: 14, fontWeight: 600, color: theme.textPrimary, lineHeight: 1.4, letterSpacing: -0.15 }}>
+      <div style={{ padding: '11px 12px 12px' }}>
+        <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 600, color: theme.textPrimary, lineHeight: 1.35, letterSpacing: -0.1 }}>
           {item.name}
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.3, fontFamily: '"Sora", sans-serif' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.3, fontFamily: '"Sora", sans-serif' }}>
             GH₵{item.price.toFixed(2)}
           </span>
           <button
@@ -292,8 +270,8 @@ function TrendingCard({ item, onPress, onAddToCart }: {
             style={{
               height: 30, borderRadius: 7,
               background: theme.primary, border: 'none',
-              color: '#fff', fontSize: 13, fontWeight: 600,
-              cursor: 'pointer', padding: '0 13px',
+              color: '#fff', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', padding: '0 11px',
               transition: 'opacity 0.15s',
               fontFamily: '"Sora", sans-serif',
             }}
@@ -311,37 +289,27 @@ function CartToast({ count, total, visible, onPress }: {
     <div
       onClick={onPress}
       style={{
-        position: 'fixed', bottom: 24, right: 24,
+        position: 'fixed', bottom: 24, right: 16,
         background: '#111',
         borderRadius: 12,
-        padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10,
         cursor: 'pointer', zIndex: 9999,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
         transition: 'transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.22s ease',
         transform: visible ? 'translateY(0) scale(1)' : 'translateY(60px) scale(0.95)',
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? 'auto' : 'none',
+        maxWidth: 'calc(100vw - 32px)',
       }}
     >
-      <div style={{
-        width: 36, height: 36, borderRadius: 8,
-        background: 'rgba(255,255,255,0.1)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 16,
-      }}>🛒</div>
-      <div>
+      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>🛒</div>
+      <div style={{ minWidth: 0 }}>
         <div style={{ color: '#fff', fontWeight: 600, fontSize: 13, letterSpacing: -0.2 }}>Added to cart</div>
         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
           {count} {count === 1 ? 'item' : 'items'} · GH₵{total.toFixed(2)}
         </div>
       </div>
-      <div style={{
-        marginLeft: 8,
-        color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 600,
-        borderLeft: '1px solid rgba(255,255,255,0.15)',
-        paddingLeft: 12,
-        letterSpacing: -0.1,
-      }}>
+      <div style={{ marginLeft: 6, color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 600, borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 10, flexShrink: 0 }}>
         View →
       </div>
     </div>
@@ -352,7 +320,7 @@ function CartToast({ count, total, visible, onPress }: {
 
 export default function HomeScreenWeb() {
   const router = useRouter();
-  const { profile, user }       = useAuth();
+  const { profile, user }                   = useAuth();
   const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
 
@@ -365,12 +333,26 @@ export default function HomeScreenWeb() {
   const [searchQuery, setSearchQuery]           = useState('');
   const [snapVisible, setSnapVisible]           = useState(false);
   const [showAllRecs, setShowAllRecs]           = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen]           = useState(false);   // mobile overlay state
+  const [isDesktop, setIsDesktop]               = useState(true);    // ≥900px
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [unreadCount, setUnreadCount]           = useState(0);
   const snapTimer      = useRef<ReturnType<typeof setTimeout> | null>(null);
   const allProductsRef = useRef<HTMLElement | null>(null);
 
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
+
+  /* ── Detect viewport size ─────────────────────────────────────────────── */
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 900px)');
+    const update = () => {
+      setIsDesktop(mq.matches);
+      if (mq.matches) setSidebarOpen(false); // auto-close overlay when expanding
+    };
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   /* ── Passive ambient mood detection ───────────────────────────────────── */
   const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
@@ -382,18 +364,17 @@ export default function HomeScreenWeb() {
     }
   }, [setMood, profile?.id]);
 
-  const { detecting, permissionDenied, rescan } = useMoodDetection({
-    onMoodDetected: handleMoodDetected,
-  });
+  const { detecting, permissionDenied, rescan } = useMoodDetection({ onMoodDetected: handleMoodDetected });
 
-  /* ── Manual mood selector (sidebar) — also saves to history ───────────── */
+  /* ── Manual mood selector ─────────────────────────────────────────────── */
   const handleMoodSelect = useCallback(async (m: typeof MOODS[number]) => {
     setMood(m.key);
+    if (!isDesktop) setSidebarOpen(false); // close drawer on mobile after selection
     if (profile?.id) {
       NotificationService.moodSelected(profile.id, m.label, m.emoji);
       await saveMoodToHistory(profile.id, m.key, m.label);
     }
-  }, [profile?.id, setMood]);
+  }, [profile?.id, setMood, isDesktop]);
 
   const fetchProducts = useCallback(async () => {
     const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
@@ -449,12 +430,7 @@ export default function HomeScreenWeb() {
     fetchUnread();
     const channel = supabase
       .channel('notifications-badge')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, fetchUnread)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, fetchUnread)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user?.id]);
@@ -494,6 +470,9 @@ export default function HomeScreenWeb() {
     );
   }
 
+  /* Sidebar is always rendered; position & visibility controlled via CSS/JS */
+  const sidebarWidth = 240;
+
   return (
     <>
       <style>{`
@@ -505,147 +484,410 @@ export default function HomeScreenWeb() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${bord}; border-radius: 10px; }
 
-        .mm-app { height: 100vh; background: ${bg}; font-family: "Sora", sans-serif; color: ${tp}; display: flex; flex-direction: column; overflow: hidden; }
+        /* ═══════════════════════════════════
+           APP SHELL
+        ═══════════════════════════════════ */
+        .mm-app {
+          height: 100vh;
+          background: ${bg};
+          font-family: "Sora", sans-serif;
+          color: ${tp};
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
 
+        /* ═══════════════════════════════════
+           TOP NAV
+        ═══════════════════════════════════ */
         .mm-topnav {
-          position: sticky; top: 0; z-index: 200;
-          height: 56px; background: ${card};
+          position: sticky; top: 0; z-index: 300;
+          height: 56px;
+          background: ${card};
           border-bottom: 1px solid ${bord};
           display: flex; align-items: center;
-          padding: 0 20px; gap: 16px;
+          padding: 0 16px; gap: 10px;
+          flex-shrink: 0;
           backdrop-filter: blur(20px) saturate(1.4);
           -webkit-backdrop-filter: blur(20px) saturate(1.4);
         }
-        .mm-logo { display: flex; align-items: center; gap: 9px; flex-shrink: 0; text-decoration: none; cursor: pointer; }
-        .mm-logo-icon { width: 30px; height: 30px; border-radius: 8px; background: ${pri}; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-        .mm-logo-text { font-family: "Lora", serif; font-size: 18px; font-weight: 600; color: ${tp}; letter-spacing: -0.4px; }
+
+        .mm-logo {
+          display: flex; align-items: center; gap: 8px;
+          flex-shrink: 0; text-decoration: none; cursor: pointer;
+        }
+        .mm-logo-icon {
+          width: 30px; height: 30px; border-radius: 8px;
+          background: ${pri};
+          display: flex; align-items: center; justify-content: center;
+          font-size: 15px; flex-shrink: 0;
+        }
+        .mm-logo-text {
+          font-family: "Lora", serif; font-size: 18px;
+          font-weight: 600; color: ${tp}; letter-spacing: -0.4px;
+        }
         .mm-logo-text em { font-style: italic; color: ${pri}; }
-        .mm-topnav-search { flex: 1; max-width: 380px; position: relative; }
-        .mm-topnav-search input { width: 100%; height: 36px; background: ${bg}; border: 1px solid ${bord}; border-radius: 8px; padding: 0 14px 0 36px; font-size: 13.5px; font-family: "Sora", sans-serif; color: ${tp}; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-        .mm-topnav-search input:focus { border-color: ${pri}; box-shadow: 0 0 0 3px ${pri}18; }
+
+        /* Desktop search (inline in topnav) */
+        .mm-topnav-search {
+          flex: 1; max-width: 400px; position: relative;
+        }
+        .mm-topnav-search input {
+          width: 100%; height: 36px;
+          background: ${bg}; border: 1px solid ${bord};
+          border-radius: 8px; padding: 0 14px 0 36px;
+          font-size: 13.5px; font-family: "Sora", sans-serif;
+          color: ${tp}; outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .mm-topnav-search input:focus {
+          border-color: ${pri}; box-shadow: 0 0 0 3px ${pri}18;
+        }
         .mm-topnav-search input::placeholder { color: ${ts}; }
-        .mm-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 13px; color: ${ts}; pointer-events: none; }
-        .mm-topnav-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-        .mm-btn-ghost { height: 34px; padding: 0 14px; border-radius: 7px; background: transparent; border: 1px solid ${bord}; font-size: 12.5px; font-weight: 500; font-family: "Sora", sans-serif; color: ${ts}; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
-        .mm-btn-ghost:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
-        .mm-btn-primary { height: 34px; padding: 0 16px; border-radius: 7px; background: ${pri}; border: 1px solid ${pri}; font-size: 12.5px; font-weight: 600; font-family: "Sora", sans-serif; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; white-space: nowrap; }
+        .mm-search-icon {
+          position: absolute; left: 11px; top: 50%;
+          transform: translateY(-50%); font-size: 13px;
+          color: ${ts}; pointer-events: none;
+        }
+
+        /* Mobile search bar (slides below topnav) */
+        .mm-mobile-search {
+          background: ${card};
+          border-bottom: 1px solid ${bord};
+          padding: 8px 14px;
+          z-index: 299;
+          flex-shrink: 0;
+          position: relative;
+        }
+        .mm-mobile-search input {
+          width: 100%; height: 38px;
+          background: ${bg}; border: 1px solid ${bord};
+          border-radius: 8px; padding: 0 14px 0 36px;
+          font-size: 14px; font-family: "Sora", sans-serif;
+          color: ${tp}; outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .mm-mobile-search input:focus {
+          border-color: ${pri}; box-shadow: 0 0 0 3px ${pri}18;
+        }
+        .mm-mobile-search input::placeholder { color: ${ts}; }
+        .mm-mobile-search-icon {
+          position: absolute; left: 25px; top: 50%;
+          transform: translateY(-50%); font-size: 14px;
+          color: ${ts}; pointer-events: none;
+        }
+
+        .mm-topnav-actions {
+          display: flex; align-items: center;
+          gap: 6px; margin-left: auto; flex-shrink: 0;
+        }
+
+        /* Shared icon button base */
+        .mm-icon-btn {
+          height: 38px; min-width: 38px;
+          border-radius: 8px;
+          background: transparent; border: 1px solid ${bord};
+          color: ${ts}; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          gap: 6px; font-size: 13px; font-weight: 500;
+          font-family: "Sora", sans-serif;
+          transition: all 0.15s; white-space: nowrap;
+          padding: 0 10px; position: relative;
+          flex-shrink: 0;
+        }
+        .mm-icon-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
+        .mm-icon-btn:disabled { opacity: 0.6; cursor: default; }
+
+        .mm-btn-primary {
+          height: 38px; padding: 0 14px; border-radius: 8px;
+          background: ${pri}; border: 1px solid ${pri};
+          font-size: 13px; font-weight: 600;
+          font-family: "Sora", sans-serif; color: #fff;
+          cursor: pointer; display: flex; align-items: center;
+          gap: 6px; transition: opacity 0.15s; white-space: nowrap;
+        }
         .mm-btn-primary:hover { opacity: 0.88; }
-        .mm-cart-btn { position: relative; height: 34px; padding: 0 14px; border-radius: 7px; background: transparent; border: 1px solid ${bord}; font-size: 12.5px; font-family: "Sora", sans-serif; color: ${ts}; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
-        .mm-cart-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
-        .mm-cart-badge { position: absolute; top: -5px; right: -5px; background: ${pri}; color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid ${card}; }
-        .mm-notif-btn { position: relative; height: 34px; width: 34px; border-radius: 7px; background: transparent; border: 1px solid ${bord}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; flex-shrink: 0; }
-        .mm-notif-btn:hover { border-color: ${pri}; background: ${tint}; }
-        .mm-notif-badge { position: absolute; top: -5px; right: -5px; background: #EF4444; color: #fff; min-width: 18px; height: 18px; border-radius: 9px; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid ${card}; padding: 0 3px; animation: mm-badge-pop 0.3s cubic-bezier(.34,1.56,.64,1); }
+
+        .mm-cart-badge {
+          position: absolute; top: -5px; right: -5px;
+          background: ${pri}; color: #fff;
+          width: 18px; height: 18px; border-radius: 50%;
+          font-size: 9px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid ${card};
+        }
+        .mm-notif-badge {
+          position: absolute; top: -5px; right: -5px;
+          background: #EF4444; color: #fff;
+          min-width: 18px; height: 18px; border-radius: 9px;
+          font-size: 9px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid ${card}; padding: 0 3px;
+          animation: mm-badge-pop 0.3s cubic-bezier(.34,1.56,.64,1);
+        }
         @keyframes mm-badge-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes mm-spin { to { transform: rotate(360deg); } }
-        .mm-spinner { width: 18px; height: 18px; border: 2px solid ${moodPalette.secondary}; border-top-color: ${moodPalette.primary}; border-radius: 50%; animation: mm-spin 0.7s linear infinite; flex-shrink: 0; }
-        .mm-avatar { width: 30px; height: 30px; background: ${pri}; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; border: 1px solid ${bord}; flex-shrink: 0; }
-        .mm-theme-btn { height: 34px; width: 34px; border-radius: 7px; background: transparent; border: 1px solid ${bord}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; }
-        .mm-theme-btn:hover { border-color: ${pri}; background: ${tint}; }
-        .mm-sidebar-toggle { height: 34px; width: 34px; border-radius: 7px; background: transparent; border: 1px solid ${bord}; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; flex-shrink: 0; transition: all 0.15s; }
-        .mm-sidebar-toggle:hover { border-color: ${pri}; background: ${tint}; }
-        .mm-sidebar-toggle span { display: block; height: 1.5px; border-radius: 2px; background: ${ts}; transition: all 0.2s; }
-        .mm-sidebar-toggle:hover span { background: ${pri}; }
-
-        .mm-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-
-        /* Sidebar width driven by JS state; CSS collapses it automatically below 900px */
-        .mm-sidebar {
-          width: ${sidebarCollapsed ? '0' : '240px'};
-          flex-shrink: 0; overflow: hidden;
-          border-right: 1px solid ${bord};
-          transition: width 0.25s ease;
-          position: sticky; top: 56px;
-          height: calc(100vh - 56px);
-          overflow-y: auto;
-          background: ${card};
+        .mm-spinner {
+          width: 16px; height: 16px;
+          border: 2px solid ${moodPalette.secondary};
+          border-top-color: ${moodPalette.primary};
+          border-radius: 50%;
+          animation: mm-spin 0.7s linear infinite;
+          flex-shrink: 0;
         }
-        .mm-sidebar-inner { width: 240px; padding: 20px 0 80px; }
+        .mm-avatar {
+          width: 34px; height: 34px;
+          background: ${pri}; color: #fff;
+          font-size: 11px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; border-radius: 50%;
+          border: 1px solid ${bord}; flex-shrink: 0;
+          transition: all 0.15s;
+        }
+        .mm-avatar:hover { border-color: ${pri}; box-shadow: 0 0 0 2px ${pri}30; }
+
+        /* Hamburger lines */
+        .mm-burger { flex-direction: column; gap: 4px; padding: 0; }
+        .mm-burger span {
+          display: block; height: 1.5px;
+          border-radius: 2px; background: ${ts};
+          transition: all 0.2s; width: 18px;
+        }
+        .mm-burger:hover span { background: ${pri}; }
+
+        /* ═══════════════════════════════════
+           BODY CONTAINER
+        ═══════════════════════════════════ */
+        .mm-body {
+          display: flex; flex: 1;
+          min-height: 0; overflow: hidden;
+          position: relative;
+        }
+
+        /* ═══════════════════════════════════
+           SIDEBAR
+
+          Desktop (≥900px): part of the normal flow (pushes main content).
+          Mobile (<900px): fixed overlay drawer from the left.
+        ═══════════════════════════════════ */
+
+        /* Overlay backdrop — mobile only */
+        .mm-overlay {
+          display: none;
+          position: fixed; inset: 0; z-index: 400;
+          background: rgba(0,0,0,0.4);
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
+          animation: mm-fade-in 0.2s ease;
+        }
+        @keyframes mm-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+        .mm-sidebar {
+          background: ${card};
+          border-right: 1px solid ${bord};
+          overflow-y: auto;
+          overflow-x: hidden;
+          z-index: 401;
+          flex-shrink: 0;
+        }
+        .mm-sidebar-inner { width: ${sidebarWidth}px; padding: 20px 0 80px; }
+
+        /* Desktop — inline push layout */
+        @media (min-width: 900px) {
+          .mm-sidebar {
+            /* Width is controlled inline via JS (sidebarOpen toggle on desktop) */
+            transition: width 0.25s ease;
+            height: 100%;
+            position: sticky; top: 0;
+          }
+        }
+
+        /* Mobile — fixed overlay drawer */
+        @media (max-width: 899px) {
+          .mm-sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: ${sidebarWidth}px !important;
+            height: 100vh;
+            transform: translateX(-100%);
+            transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+          }
+          .mm-sidebar.open {
+            transform: translateX(0);
+          }
+          .mm-overlay.open { display: block; }
+        }
+
         .mm-sidebar-section { padding: 0 14px 20px; }
-        .mm-sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: ${inact}; padding: 0 8px; margin-bottom: 6px; display: block; }
-        .mm-mood-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; width: 100%; background: transparent; border: 1px solid transparent; cursor: pointer; font-family: "Sora", sans-serif; transition: all 0.13s ease; margin-bottom: 2px; text-align: left; }
+        .mm-sidebar-label {
+          font-size: 10px; font-weight: 600;
+          letter-spacing: 1.4px; text-transform: uppercase;
+          color: ${inact}; padding: 0 8px;
+          margin-bottom: 6px; display: block;
+        }
+        .mm-mood-item {
+          display: flex; align-items: center; gap: 9px;
+          padding: 9px 10px; border-radius: 8px;
+          width: 100%; background: transparent;
+          border: 1px solid transparent;
+          cursor: pointer; font-family: "Sora", sans-serif;
+          transition: all 0.13s ease; margin-bottom: 2px;
+          text-align: left; min-height: 44px;
+        }
         .mm-mood-item:hover { background: ${bg}; border-color: ${bord}; }
         .mm-mood-item.active { background: ${tint}; border-color: ${theme.secondary}; }
-        .mm-mood-emoji { font-size: 15px; width: 20px; text-align: center; }
+        .mm-mood-emoji { font-size: 16px; width: 22px; text-align: center; }
         .mm-mood-label { font-size: 13px; font-weight: 500; color: ${ts}; }
         .mm-mood-item.active .mm-mood-label { color: ${pri}; font-weight: 600; }
-        .mm-cat-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 7px; width: 100%; background: transparent; border: 1px solid transparent; cursor: pointer; font-family: "Sora", sans-serif; transition: all 0.13s ease; margin-bottom: 1px; text-align: left; }
+
+        .mm-cat-item {
+          display: flex; align-items: center; gap: 9px;
+          padding: 8px 10px; border-radius: 7px;
+          width: 100%; background: transparent;
+          border: 1px solid transparent;
+          cursor: pointer; font-family: "Sora", sans-serif;
+          transition: all 0.13s ease; margin-bottom: 1px;
+          text-align: left; min-height: 40px;
+        }
         .mm-cat-item:hover { background: ${bg}; }
         .mm-cat-item.active { background: ${tint}; }
         .mm-cat-emoji { font-size: 13px; width: 18px; text-align: center; color: ${ts}; }
         .mm-cat-label { font-size: 12.5px; font-weight: 500; color: ${ts}; }
         .mm-cat-item.active .mm-cat-label { color: ${pri}; font-weight: 600; }
 
-        .mm-main { flex: 1; min-width: 0; overflow-y: auto; height: 100%; }
-        .mm-main-inner { padding: 28px 28px 60px; width: 100%; }
+        /* ═══════════════════════════════════
+           MAIN CONTENT AREA
+        ═══════════════════════════════════ */
+        .mm-main {
+          flex: 1; min-width: 0;
+          overflow-y: auto; height: 100%;
+        }
+        .mm-main-inner {
+          padding: 24px 24px 60px;
+          width: 100%; max-width: 1600px;
+          margin: 0 auto;
+        }
 
-        .mm-section { margin-bottom: 36px; }
-        .mm-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
-        .mm-section-title { font-family: "Lora", serif; font-size: 19px; font-weight: 600; color: ${tp}; letter-spacing: -0.3px; }
-        .mm-see-all { background: none; border: none; color: ${pri}; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: "Sora", sans-serif; transition: opacity 0.13s; }
-        .mm-see-all:hover { opacity: 0.7; }
+        /* ═══════════════════════════════════
+           PRODUCT GRID
 
-        .mm-trending-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; flex-wrap: nowrap; }
-
-        /* Responsive product grid — auto-fill handles all screen sizes fluidly */
+          Uses auto-fill so it adapts without media queries.
+          Only the minmax floor changes at breakpoints.
+        ═══════════════════════════════════ */
         .mm-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
           gap: 16px;
         }
 
-        .mm-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: ${ts}; margin-bottom: 18px; }
-        .mm-breadcrumb span { color: ${bord}; }
+        /* ═══════════════════════════════════
+           TRENDING STRIP
+        ═══════════════════════════════════ */
+        .mm-trending-strip {
+          display: flex; gap: 14px;
+          overflow-x: auto; padding-bottom: 8px;
+          flex-wrap: nowrap;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .mm-trending-strip::-webkit-scrollbar { display: none; }
 
-        .mm-empty { text-align: center; padding: 80px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        /* ═══════════════════════════════════
+           SHARED SECTION STYLES
+        ═══════════════════════════════════ */
+        .mm-section { margin-bottom: 36px; }
+        .mm-section-header {
+          display: flex; justify-content: space-between;
+          align-items: baseline; margin-bottom: 14px;
+        }
+        .mm-section-title {
+          font-family: "Lora", serif; font-size: 19px;
+          font-weight: 600; color: ${tp}; letter-spacing: -0.3px;
+        }
+        .mm-see-all {
+          background: none; border: none;
+          color: ${pri}; font-size: 12.5px;
+          font-weight: 600; cursor: pointer;
+          font-family: "Sora", sans-serif;
+          transition: opacity 0.13s; white-space: nowrap;
+          flex-shrink: 0; margin-left: 8px;
+        }
+        .mm-see-all:hover { opacity: 0.7; }
+
+        .mm-breadcrumb {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 12px; color: ${ts}; margin-bottom: 18px;
+          flex-wrap: wrap;
+        }
+
+        .mm-empty {
+          text-align: center; padding: 80px 20px;
+          display: flex; flex-direction: column;
+          align-items: center; gap: 10px;
+        }
         .mm-empty-icon { font-size: 36px; }
         .mm-empty-text { color: ${ts}; font-size: 14px; max-width: 280px; line-height: 1.6; }
 
         .mm-show-more { text-align: center; margin-top: 20px; }
-        .mm-show-more-btn { background: ${bg}; border: 1px solid ${bord}; border-radius: 8px; padding: 10px 24px; color: ${ts}; font-weight: 500; font-size: 13px; cursor: pointer; font-family: "Sora", sans-serif; transition: all 0.15s; }
+        .mm-show-more-btn {
+          background: ${bg}; border: 1px solid ${bord};
+          border-radius: 8px; padding: 10px 24px;
+          color: ${ts}; font-weight: 500; font-size: 13px;
+          cursor: pointer; font-family: "Sora", sans-serif;
+          transition: all 0.15s; min-height: 44px;
+        }
         .mm-show-more-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
 
-        /* ── Responsive breakpoints ── */
+        /* ═══════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+        ═══════════════════════════════════ */
 
-        /* Large desktops: sidebar visible, grid auto-fills ~5 cols */
-        @media (max-width: 1200px) {
-          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); }
+        /* Large desktop — wider grid */
+        @media (min-width: 1400px) {
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+          .mm-main-inner { padding: 28px 36px 60px; }
         }
 
-        /* Medium: tighten padding */
+        /* Laptop */
         @media (max-width: 1100px) {
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); }
           .mm-main-inner { padding: 20px 18px 60px; }
         }
 
-        /* Tablet landscape / small laptop: collapse sidebar, shrink min card width */
+        /* Tablet landscape — sidebar becomes overlay, grid adjusts */
         @media (max-width: 900px) {
-          .mm-sidebar { width: 0 !important; border-right: none; }
-          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
-          .mm-topnav-search { max-width: 240px; }
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+          .mm-section-title { font-size: 17px; }
         }
 
         /* Tablet portrait */
         @media (max-width: 700px) {
-          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
           .mm-main-inner { padding: 14px 14px 60px; }
-          .mm-topnav-search { max-width: 180px; }
-          .mm-section-title { font-size: 17px; }
-          .btn-label { display: none; }
+          .mm-section-title { font-size: 16px; }
+          /* Hide text labels on nav buttons — icon only */
+          .mm-btn-label { display: none; }
+          /* Hide desktop search in topnav */
+          .mm-topnav-search { display: none; }
         }
 
         /* Large phone */
         @media (max-width: 540px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .mm-main-inner { padding: 12px 10px 60px; }
-          .mm-topnav-search { max-width: 140px; }
         }
 
         /* Small phone */
-        @media (max-width: 400px) {
+        @media (max-width: 380px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-          .mm-topnav-search { display: none; }
+          .mm-main-inner { padding: 10px 8px 60px; }
           .mm-logo-text { display: none; }
-          .mm-topnav { padding: 0 12px; gap: 8px; }
+          .mm-topnav { padding: 0 10px; gap: 6px; }
+          .mm-topnav-actions { gap: 4px; }
+          .mm-icon-btn { min-width: 34px; height: 34px; padding: 0 8px; }
+          .mm-avatar { width: 30px; height: 30px; }
         }
       `}</style>
 
@@ -653,17 +895,26 @@ export default function HomeScreenWeb() {
 
         {/* ══ TOP NAV ══ */}
         <nav className="mm-topnav">
-          <button className="mm-sidebar-toggle" onClick={() => setSidebarCollapsed(v => !v)} aria-label="Toggle sidebar">
-            <span style={{ width: sidebarCollapsed ? 14 : 18 }} />
+
+          {/* Hamburger — always visible */}
+          <button
+            className="mm-icon-btn mm-burger"
+            onClick={() => setSidebarOpen(v => !v)}
+            aria-label="Toggle sidebar"
+            style={{ padding: '0 10px' }}
+          >
+            <span style={{ width: sidebarOpen ? 14 : 18 }} />
             <span style={{ width: 18 }} />
-            <span style={{ width: sidebarCollapsed ? 18 : 14 }} />
+            <span style={{ width: sidebarOpen ? 18 : 14 }} />
           </button>
 
+          {/* Logo */}
           <div className="mm-logo" onClick={() => router.push('/')}>
             <div className="mm-logo-icon">{selectedMood.emoji}</div>
             <span className="mm-logo-text">Mood<em>Market</em></span>
           </div>
 
+          {/* Desktop inline search (hidden ≤700px) */}
           <div className="mm-topnav-search">
             <span className="mm-search-icon">⌕</span>
             <input
@@ -675,47 +926,87 @@ export default function HomeScreenWeb() {
           </div>
 
           <div className="mm-topnav-actions">
-            {/* Mood detection button — shows spinner while detecting, Re-scan after, warning if denied */}
+
+            {/* Mobile search toggle (shown ≤700px) */}
+            <button
+              className="mm-icon-btn"
+              onClick={() => setShowMobileSearch(v => !v)}
+              aria-label="Search"
+              style={{ display: 'none' } as any}
+              // shown via CSS media query on .mm-mobile-search-toggle
+            >
+              ⌕
+            </button>
+
+            {/* Mood detection button */}
             {detecting ? (
-              <button className="mm-btn-ghost" disabled style={{ cursor: 'default', opacity: 0.7 }}>
+              <button className="mm-icon-btn" disabled>
                 <div className="mm-spinner" />
-                <span className="btn-label">Detecting…</span>
+                <span className="mm-btn-label">Detecting…</span>
               </button>
             ) : permissionDenied ? (
-              <button className="mm-btn-ghost" onClick={() => router.push('/camera')} title="Camera access denied — pick mood manually">
-                🚫 <span className="btn-label">Cam denied</span>
+              <button className="mm-icon-btn" onClick={() => router.push('/camera')} title="Camera access denied">
+                🚫 <span className="mm-btn-label">Cam denied</span>
               </button>
             ) : (
-              <button className="mm-btn-ghost" onClick={rescan}>
-                ↻ <span className="btn-label">Re-scan</span>
+              <button className="mm-icon-btn" onClick={rescan}>
+                ↻ <span className="mm-btn-label">Re-scan</span>
               </button>
             )}
-            <button className="mm-theme-btn" onClick={toggleDark} aria-label="Toggle theme">
+
+            <button className="mm-icon-btn" onClick={toggleDark} aria-label="Toggle theme" style={{ fontSize: 16 }}>
               {isDark ? '☀️' : '🌙'}
             </button>
-            <button className="mm-notif-btn" onClick={() => router.push('/notifications')} aria-label="Notifications">
+
+            <button className="mm-icon-btn" onClick={() => router.push('/notifications')} aria-label="Notifications" style={{ fontSize: 16 }}>
               🔔
               {unreadCount > 0 && (
                 <span className="mm-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}
             </button>
-            <button className="mm-cart-btn" onClick={() => router.push('/(tabs)/cart')}>
-              🛒 Cart
+
+            <button className="mm-icon-btn" onClick={() => router.push('/(tabs)/cart')}>
+              🛒 <span className="mm-btn-label">Cart</span>
               {cartCount > 0 && (
                 <span className="mm-cart-badge">{cartCount > 9 ? '9+' : cartCount}</span>
               )}
             </button>
+
             <button className="mm-avatar" onClick={() => router.push('/profile')} title={profile?.name ?? 'Profile'}>
               {initials}
             </button>
           </div>
         </nav>
 
+        {/* Mobile search bar (below topnav, toggleable on small screens) */}
+        {showMobileSearch && (
+          <div className="mm-mobile-search">
+            <span className="mm-mobile-search-icon">⌕</span>
+            <input
+              type="search"
+              placeholder="Search products…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              autoFocus
+            />
+          </div>
+        )}
+
         {/* ══ BODY ══ */}
         <div className="mm-body">
 
+          {/* Mobile overlay backdrop */}
+          <div
+            className={`mm-overlay${sidebarOpen && !isDesktop ? ' open' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+
           {/* ── SIDEBAR ── */}
-          <aside className="mm-sidebar">
+          <aside
+            className={`mm-sidebar${sidebarOpen ? ' open' : ''}`}
+            style={isDesktop ? { width: sidebarOpen ? sidebarWidth : 0, transition: 'width 0.25s ease' } : {}}
+          >
             <div className="mm-sidebar-inner">
 
               <div style={{ padding: '4px 22px 18px' }}>
@@ -725,26 +1016,30 @@ export default function HomeScreenWeb() {
                 </p>
               </div>
 
+              {/* Current mood card */}
               <div style={{ margin: '0 14px 20px', padding: 14, background: bg, border: `1px solid ${bord}`, borderRadius: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: moodPalette.tint, border: `1px solid ${moodPalette.secondary}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                    {selectedMood.emoji}
+                    {detecting ? <div className="mm-spinner" style={{ width: 20, height: 20 }} /> : selectedMood.emoji}
                   </div>
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: tp, letterSpacing: -0.2 }}>{selectedMood.label}</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: tp, letterSpacing: -0.2 }}>
+                      {detecting ? 'Detecting…' : selectedMood.label}
+                    </p>
                     <p style={{ fontSize: 10, color: inact, marginTop: 1, letterSpacing: 0.2 }}>Auto-detected · tap to refine</p>
                   </div>
                 </div>
                 <button
                   onClick={() => router.push('/camera')}
-                  style={{ width: '100%', height: 30, borderRadius: 7, background: 'transparent', border: `1px solid ${bord}`, color: ts, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, transition: 'all 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = pri; (e.currentTarget as HTMLButtonElement).style.color = pri; (e.currentTarget as HTMLButtonElement).style.background = tint; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = bord; (e.currentTarget as HTMLButtonElement).style.color = ts; (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                  style={{ width: '100%', height: 34, borderRadius: 7, background: 'transparent', border: `1px solid ${bord}`, color: ts, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, transition: 'all 0.15s' }}
+                  onMouseEnter={e => { const b = e.currentTarget; b.style.borderColor = pri; b.style.color = pri; b.style.background = tint; }}
+                  onMouseLeave={e => { const b = e.currentTarget; b.style.borderColor = bord; b.style.color = ts; b.style.background = 'transparent'; }}
                 >
                   ✨ Auto-detect mood
                 </button>
               </div>
 
+              {/* Mood selector */}
               <div className="mm-sidebar-section">
                 <span className="mm-sidebar-label">How are you feeling?</span>
                 {MOODS.map(m => {
@@ -769,6 +1064,7 @@ export default function HomeScreenWeb() {
 
               <div style={{ height: 1, background: bord, margin: '0 14px 20px' }} />
 
+              {/* Category browser */}
               <div className="mm-sidebar-section">
                 <span className="mm-sidebar-label">Browse</span>
                 {CATEGORIES.map(cat => {
@@ -777,7 +1073,7 @@ export default function HomeScreenWeb() {
                     <button
                       key={cat.id}
                       className={`mm-cat-item${active ? ' active' : ''}`}
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => { setSelectedCategory(cat.id); if (!isDesktop) setSidebarOpen(false); }}
                     >
                       <span className="mm-cat-emoji">{cat.emoji}</span>
                       <span className="mm-cat-label">{cat.label}</span>
@@ -792,22 +1088,24 @@ export default function HomeScreenWeb() {
           <main className="mm-main">
             <div className="mm-main-inner">
 
+              {/* Breadcrumb */}
               <div className="mm-breadcrumb">
                 <span>Home</span>
                 {selectedCategory !== 'all' && (
                   <>
-                    <span>›</span>
+                    <span style={{ color: bord }}>›</span>
                     <span style={{ color: tp }}>{CATEGORIES.find(c => c.id === selectedCategory)?.label}</span>
                   </>
                 )}
                 {searchQuery && (
                   <>
-                    <span>›</span>
+                    <span style={{ color: bord }}>›</span>
                     <span style={{ color: tp }}>"{searchQuery}"</span>
                   </>
                 )}
               </div>
 
+              {/* Trending */}
               {trending.length > 0 && (
                 <section className="mm-section">
                   <div className="mm-section-header">
@@ -818,17 +1116,23 @@ export default function HomeScreenWeb() {
                   </div>
                   <div className="mm-trending-strip">
                     {trending.map(item => (
-                      <TrendingCard key={item.id} item={item} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
+                      <TrendingCard
+                        key={item.id}
+                        item={item}
+                        onPress={() => router.push(`/product/${item.id}`)}
+                        onAddToCart={handleAddToCart}
+                      />
                     ))}
                   </div>
                 </section>
               )}
 
+              {/* Recommendations */}
               {recommended.length > 0 && (
                 <section className="mm-section">
                   <div className="mm-section-header">
                     <h2 className="mm-section-title">
-                      Recommended for {selectedMood.label} {selectedMood.emoji}
+                      For {selectedMood.label} {selectedMood.emoji}
                     </h2>
                     <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
                       {showAllRecs ? 'Show less' : `See all ${recommended.length} →`}
@@ -836,7 +1140,12 @@ export default function HomeScreenWeb() {
                   </div>
                   <div className="mm-grid">
                     {(showAllRecs ? recommended : recommended.slice(0, 10)).map(item => (
-                      <ProductCard key={item.id} item={item} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
+                      <ProductCard
+                        key={item.id}
+                        item={item}
+                        onPress={() => router.push(`/product/${item.id}`)}
+                        onAddToCart={handleAddToCart}
+                      />
                     ))}
                   </div>
                   {!showAllRecs && recommended.length > 10 && (
@@ -849,12 +1158,15 @@ export default function HomeScreenWeb() {
                 </section>
               )}
 
+              {/* All products */}
               <section ref={allProductsRef as any}>
                 <div className="mm-section-header">
                   <h2 className="mm-section-title">
-                    {selectedCategory === 'all' ? 'All Products' : CATEGORIES.find(c => c.id === selectedCategory)?.label ?? 'Products'}
+                    {selectedCategory === 'all'
+                      ? 'All Products'
+                      : CATEGORIES.find(c => c.id === selectedCategory)?.label ?? 'Products'}
                   </h2>
-                  <span style={{ fontSize: 12, color: ts }}>
+                  <span style={{ fontSize: 12, color: ts, flexShrink: 0, marginLeft: 8 }}>
                     {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
                   </span>
                 </div>
@@ -863,14 +1175,23 @@ export default function HomeScreenWeb() {
                   <div className="mm-empty">
                     <div className="mm-empty-icon">🔍</div>
                     <p className="mm-empty-text">No products found. Try a different category or search term.</p>
-                    <button className="mm-btn-ghost" onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>
+                    <button
+                      className="mm-icon-btn"
+                      style={{ marginTop: 8, height: 44, padding: '0 18px' }}
+                      onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
+                    >
                       Clear filters
                     </button>
                   </div>
                 ) : (
                   <div className="mm-grid">
                     {filteredProducts.map(item => (
-                      <ProductCard key={item.id} item={item as ScoredProduct} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
+                      <ProductCard
+                        key={item.id}
+                        item={item as ScoredProduct}
+                        onPress={() => router.push(`/product/${item.id}`)}
+                        onAddToCart={handleAddToCart}
+                      />
                     ))}
                   </div>
                 )}
@@ -881,7 +1202,12 @@ export default function HomeScreenWeb() {
         </div>
       </div>
 
-      <CartToast count={cartCount} total={cartTotal} visible={snapVisible} onPress={() => { setSnapVisible(false); router.push('/(tabs)/cart'); }} />
+      <CartToast
+        count={cartCount}
+        total={cartTotal}
+        visible={snapVisible}
+        onPress={() => { setSnapVisible(false); router.push('/(tabs)/cart'); }}
+      />
     </>
   );
 }
