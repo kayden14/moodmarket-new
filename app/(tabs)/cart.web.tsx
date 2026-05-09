@@ -1,11 +1,6 @@
 /**
  * app/cart.web.tsx — MoodMarket Cart (Web)
- *
- * Full web version of the cart screen.
- * - Two-column layout: items list left, order summary sticky right
- * - Matches MoodMarket design: Sora + Lora, theme context, CSS-in-JS
- * - Quantity stepper, line totals, remove items
- * - Delivery progress bar, coupon field, Paystack checkout CTA
+ * RESPONSIVE: Full coverage for mobile (320px+), tablet (600–960px), laptop (960–1280px), desktop (1280px+)
  */
 
 import { useState } from 'react';
@@ -85,11 +80,12 @@ function CartItemRow({
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="cart-item-row"
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 16,
-        padding: '18px 20px',
+        gap: 12,
+        padding: '14px 16px',
         background: theme.card,
         border: `1px solid ${hovered ? theme.primary : theme.border}`,
         borderRadius: 16,
@@ -101,7 +97,7 @@ function CartItemRow({
     >
       {/* Index */}
       <span style={{
-        position: 'absolute', top: 10, left: 12,
+        position: 'absolute', top: 8, left: 10,
         fontSize: 9, fontWeight: 800, letterSpacing: 1,
         color: theme.inactive,
         fontFamily: '"Sora", sans-serif',
@@ -110,8 +106,8 @@ function CartItemRow({
       </span>
 
       {/* Image */}
-      <div style={{
-        width: 80, height: 80,
+      <div className="cart-item-image" style={{
+        width: 72, height: 72,
         borderRadius: 12,
         overflow: 'hidden',
         background: theme.tint,
@@ -129,8 +125,8 @@ function CartItemRow({
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
-          margin: '0 0 4px',
-          fontSize: 14, fontWeight: 700,
+          margin: '0 0 3px',
+          fontSize: 13, fontWeight: 700,
           color: theme.textPrimary,
           fontFamily: '"Lora", serif',
           letterSpacing: -0.2,
@@ -142,8 +138,8 @@ function CartItemRow({
           {item.products.name}
         </p>
         <p style={{
-          margin: '0 0 12px',
-          fontSize: 12, color: theme.textSecondary,
+          margin: '0 0 10px',
+          fontSize: 11, color: theme.textSecondary,
           fontFamily: '"Sora", sans-serif',
         }}>
           GH₵ {item.products.price.toFixed(2)} / unit
@@ -159,10 +155,10 @@ function CartItemRow({
       {/* Line total + delete */}
       <div style={{
         display: 'flex', flexDirection: 'column',
-        alignItems: 'flex-end', gap: 10, flexShrink: 0,
+        alignItems: 'flex-end', gap: 8, flexShrink: 0,
       }}>
         <span style={{
-          fontSize: 17, fontWeight: 800,
+          fontSize: 15, fontWeight: 800,
           color: theme.primary,
           fontFamily: '"Sora", sans-serif',
           letterSpacing: -0.4,
@@ -172,14 +168,14 @@ function CartItemRow({
         <button
           onClick={() => onRemove(item.id)}
           style={{
-            width: 32, height: 32,
+            width: 30, height: 30,
             borderRadius: 8,
             border: `1px solid ${isDark ? '#4D2525' : '#FFD6D6'}`,
             background: isDark ? '#2D1515' : '#FFF5F5',
             color: '#EF4444',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14,
+            fontSize: 13,
             transition: 'all 0.13s',
           }}
           title="Remove item"
@@ -204,24 +200,24 @@ function DeliveryProgress({ subtotal, theme, isDark }: { subtotal: number; theme
       background: theme.card,
       border: `1px solid ${theme.border}`,
       borderRadius: 14,
-      padding: '14px 18px',
+      padding: '12px 16px',
       marginBottom: 12,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isFree ? 0 : 10 }}>
         <div style={{
-          width: 30, height: 30,
+          width: 28, height: 28,
           borderRadius: 8,
           background: isFree
             ? (isDark ? '#0D2B1A' : '#E8F8F2')
             : (isDark ? '#2D1820' : '#FFF0F2'),
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14,
+          fontSize: 13, flexShrink: 0,
         }}>
           🚚
         </div>
         <p style={{
           margin: 0, flex: 1,
-          fontSize: 13, fontWeight: 600,
+          fontSize: 12, fontWeight: 600,
           color: isFree ? '#22C55E' : theme.textSecondary,
           fontFamily: '"Sora", sans-serif',
         }}>
@@ -280,7 +276,7 @@ function OrderSummary({
     }}>
       {/* Header */}
       <div style={{
-        padding: '20px 24px 16px',
+        padding: '18px 20px 14px',
         borderBottom: `1px solid ${theme.border}`,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
@@ -297,7 +293,7 @@ function OrderSummary({
           </p>
           <h3 style={{
             margin: 0,
-            fontSize: 18, fontWeight: 700,
+            fontSize: 17, fontWeight: 700,
             color: theme.textPrimary,
             fontFamily: '"Lora", serif',
             letterSpacing: -0.3,
@@ -310,11 +306,11 @@ function OrderSummary({
           background: isDark ? '#2D1820' : '#FFF0F2',
           border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
           borderRadius: 12,
-          padding: '6px 12px',
+          padding: '5px 10px',
         }}>
-          <span style={{ fontSize: 14 }}>🛒</span>
+          <span style={{ fontSize: 13 }}>🛒</span>
           <span style={{
-            fontSize: 14, fontWeight: 800,
+            fontSize: 13, fontWeight: 800,
             color: theme.textPrimary,
             fontFamily: '"Sora", sans-serif',
           }}>
@@ -324,7 +320,7 @@ function OrderSummary({
       </div>
 
       {/* Line items */}
-      <div style={{ padding: '20px 24px' }}>
+      <div style={{ padding: '18px 20px' }}>
         {[
           { label: 'Subtotal', value: `GH₵ ${subtotal.toFixed(2)}`, color: theme.textPrimary },
           {
@@ -340,7 +336,7 @@ function OrderSummary({
         ].map(row => (
           <div key={row.label} style={{
             display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', marginBottom: 12,
+            alignItems: 'center', marginBottom: 10,
           }}>
             <span style={{
               fontSize: 13, color: theme.textSecondary,
@@ -358,23 +354,22 @@ function OrderSummary({
           </div>
         ))}
 
-        {/* Divider */}
-        <div style={{ height: 1, background: theme.border, margin: '16px 0' }} />
+        <div style={{ height: 1, background: theme.border, margin: '14px 0' }} />
 
         {/* Total */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-          marginBottom: 20,
+          marginBottom: 18,
         }}>
           <span style={{
-            fontSize: 15, fontWeight: 700,
+            fontSize: 14, fontWeight: 700,
             color: theme.textPrimary,
             fontFamily: '"Sora", sans-serif',
           }}>
             Total
           </span>
           <span style={{
-            fontSize: 30, fontWeight: 900,
+            fontSize: 26, fontWeight: 900,
             color: theme.primary,
             fontFamily: '"Sora", sans-serif',
             letterSpacing: -1,
@@ -385,9 +380,7 @@ function OrderSummary({
 
         {/* Coupon */}
         {!couponApplied && (
-          <div style={{
-            display: 'flex', gap: 8, marginBottom: 20,
-          }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
             <input
               value={couponInput}
               onChange={e => setCouponInput(e.target.value)}
@@ -396,30 +389,32 @@ function OrderSummary({
               placeholder="Coupon code…"
               style={{
                 flex: 1,
-                padding: '10px 14px',
+                padding: '9px 12px',
                 borderRadius: 10,
                 border: `1.5px solid ${couponFocused ? theme.primary : theme.border}`,
                 background: theme.background,
                 color: theme.textPrimary,
-                fontSize: 13,
+                fontSize: 12,
                 fontFamily: '"Sora", sans-serif',
                 outline: 'none',
                 transition: 'border-color 0.15s',
+                minWidth: 0,
               }}
             />
             <button
               onClick={handleApplyCoupon}
               style={{
-                padding: '10px 16px',
+                padding: '9px 14px',
                 borderRadius: 10,
                 border: `1.5px solid ${theme.primary}`,
                 background: 'none',
                 color: theme.primary,
-                fontSize: 13, fontWeight: 700,
+                fontSize: 12, fontWeight: 700,
                 cursor: 'pointer',
                 fontFamily: '"Sora", sans-serif',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.13s',
+                flexShrink: 0,
               }}
             >
               Apply
@@ -431,12 +426,12 @@ function OrderSummary({
             display: 'flex', alignItems: 'center', gap: 8,
             background: isDark ? '#0D2B1A' : '#EDFBF1',
             border: '1px solid #86EFAC',
-            borderRadius: 10, padding: '10px 14px',
-            marginBottom: 20,
+            borderRadius: 10, padding: '9px 12px',
+            marginBottom: 18,
           }}>
-            <span style={{ fontSize: 14 }}>✅</span>
+            <span style={{ fontSize: 13 }}>✅</span>
             <span style={{
-              fontSize: 12, fontWeight: 600, color: '#22C55E',
+              fontSize: 11, fontWeight: 600, color: '#22C55E',
               fontFamily: '"Sora", sans-serif', flex: 1,
             }}>
               10% discount applied!
@@ -446,7 +441,7 @@ function OrderSummary({
               style={{
                 background: 'none', border: 'none',
                 color: '#22C55E', cursor: 'pointer',
-                fontSize: 13, fontFamily: '"Sora", sans-serif',
+                fontSize: 12, fontFamily: '"Sora", sans-serif',
               }}
             >
               Remove
@@ -458,11 +453,11 @@ function OrderSummary({
         <button
           onClick={onCheckout}
           style={{
-            width: '100%', padding: '16px 0',
+            width: '100%', padding: '14px 0',
             borderRadius: 14, border: 'none',
             background: theme.primary,
             color: '#fff',
-            fontSize: 15, fontWeight: 800,
+            fontSize: 14, fontWeight: 800,
             cursor: 'pointer',
             fontFamily: '"Sora", sans-serif',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -479,26 +474,26 @@ function OrderSummary({
             (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 24px ${theme.primary}44`;
           }}
         >
-          <span style={{ fontSize: 17 }}>⚡</span>
+          <span style={{ fontSize: 16 }}>⚡</span>
           Checkout Now
           <div style={{
-            width: 30, height: 30,
-            borderRadius: 8,
+            width: 28, height: 28,
+            borderRadius: 7,
             background: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 13, color: theme.primary, fontWeight: 900 }}>→</span>
+            <span style={{ fontSize: 12, color: theme.primary, fontWeight: 900 }}>→</span>
           </div>
         </button>
 
         {/* Security note */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 6, marginTop: 12,
+          gap: 6, marginTop: 10,
         }}>
-          <span style={{ fontSize: 11 }}>🔒</span>
+          <span style={{ fontSize: 10 }}>🔒</span>
           <span style={{
-            fontSize: 11, color: theme.inactive,
+            fontSize: 10, color: theme.inactive,
             fontFamily: '"Sora", sans-serif',
             letterSpacing: 0.2,
           }}>
@@ -517,21 +512,21 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
     <div style={{
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '80px 40px',
+      padding: '60px 24px',
       textAlign: 'center',
     }}>
       <div style={{
-        width: 100, height: 100, borderRadius: 28,
+        width: 90, height: 90, borderRadius: 24,
         background: isDark ? '#2D1820' : '#FFF0F2',
         border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 40, marginBottom: 28,
+        fontSize: 36, marginBottom: 24,
       }}>
         🛍️
       </div>
       <h2 style={{
         margin: '0 0 10px',
-        fontSize: 24, fontWeight: 700,
+        fontSize: 22, fontWeight: 700,
         color: theme.textPrimary,
         fontFamily: '"Lora", serif',
         letterSpacing: -0.5,
@@ -539,22 +534,22 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
         Your cart is empty
       </h2>
       <p style={{
-        margin: '0 0 32px',
-        fontSize: 14,
+        margin: '0 0 28px',
+        fontSize: 13,
         color: theme.textSecondary,
         fontFamily: '"Sora", sans-serif',
         lineHeight: 1.65,
-        maxWidth: 320,
+        maxWidth: 300,
       }}>
         Browse our collection and add items that match your mood.
       </p>
       <button
         onClick={onShop}
         style={{
-          padding: '14px 32px',
+          padding: '13px 28px',
           borderRadius: 14, border: 'none',
           background: theme.primary, color: '#fff',
-          fontSize: 14, fontWeight: 700,
+          fontSize: 13, fontWeight: 700,
           cursor: 'pointer',
           fontFamily: '"Sora", sans-serif',
           display: 'flex', alignItems: 'center', gap: 8,
@@ -576,247 +571,288 @@ export default function CartWeb() {
   const { cartItems, cartCount, cartTotal, loading, removeFromCart, updateQuantity } = useCart();
   const [coupon, setCoupon] = useState('');
 
-  const bg   = theme.background;
-  const card = theme.card;
-  const bord = theme.border;
-  const pri  = theme.primary;
-  const tp   = theme.textPrimary;
-  const ts   = theme.textSecondary;
-  const tint = theme.tint;
+  const bg    = theme.background;
+  const card  = theme.card;
+  const bord  = theme.border;
+  const pri   = theme.primary;
+  const tp    = theme.textPrimary;
+  const ts    = theme.textSecondary;
+  const tint  = theme.tint;
   const inact = theme.inactive;
 
   return (
     <>
       <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
 
-          *,
-          *::before,
-          *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
+        *, *::before, *::after {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
 
-          /* ───────────────── GLOBAL SCROLL FIX ───────────────── */
+        html, body, #root {
+          width: 100%;
+          min-height: 100%;
+          height: auto !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          position: static !important;
+          font-family: "Sora", sans-serif;
+          -webkit-overflow-scrolling: touch;
+        }
 
-          html,
-          body,
-          #root {
-            width: 100%;
-            min-height: 100%;
-            height: auto !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            position: static !important;
-            font-family: "Sora", sans-serif;
-            -webkit-overflow-scrolling: touch;
-          }
+        body { background: ${bg}; }
 
-          body {
-            background: ${bg};
-          }
+        body > div, #root > div {
+          min-height: 100vh;
+          overflow: visible !important;
+        }
 
-          /* Expo Router / RN Web wrappers */
-          body > div,
-          #root > div {
-            min-height: 100vh;
-            overflow: visible !important;
-          }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${bord}; border-radius: 10px; }
 
-          ::-webkit-scrollbar {
-            width: 5px;
-          }
+        /* ── APP ── */
+        .cart-app {
+          min-height: 100vh;
+          background: ${bg};
+          color: ${tp};
+          overflow-x: hidden;
+          overflow-y: visible;
+          position: relative;
+        }
 
-          ::-webkit-scrollbar-track {
-            background: transparent;
-          }
+        /* ── TOP NAV ── */
+        .cart-topnav {
+          height: 56px;
+          background: ${card};
+          border-bottom: 1px solid ${bord};
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 0 40px;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          backdrop-filter: blur(10px);
+        }
 
-          ::-webkit-scrollbar-thumb {
-            background: ${bord};
-            border-radius: 10px;
-          }
+        .cart-back {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: none;
+          border: 1px solid ${bord};
+          border-radius: 9px;
+          padding: 6px 13px;
+          font-size: 13px;
+          font-weight: 600;
+          color: ${ts};
+          cursor: pointer;
+          font-family: "Sora", sans-serif;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+        .cart-back:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
 
-          /* ───────────────── APP ───────────────── */
+        .cart-logo {
+          font-family: "Lora", serif;
+          font-size: 17px;
+          font-weight: 700;
+          color: ${tp};
+          letter-spacing: -0.3px;
+          margin-right: auto;
+          white-space: nowrap;
+        }
+        .cart-logo span { color: ${pri}; }
 
-          .cart-app {
-            min-height: 100vh;
-            background: ${bg};
-            color: ${tp};
+        /* ── BODY GRID ── */
+        .cart-body {
+          max-width: 1180px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 36px 40px 80px;
+          display: grid;
+          grid-template-columns: 1fr 360px;
+          gap: 28px;
+          align-items: start;
+          overflow: visible;
+        }
 
-            /* IMPORTANT */
-            overflow-x: hidden;
-            overflow-y: visible;
-            position: relative;
-          }
+        .cart-summary-col {
+          position: sticky;
+          top: 76px;
+          align-self: start;
+          overflow: visible;
+        }
 
-          /* ───────────────── TOP NAV ───────────────── */
+        .cart-page-title { margin-bottom: 22px; }
 
-          .cart-topnav {
-            height: 58px;
-            background: ${card};
-            border-bottom: 1px solid ${bord};
+        .cart-eyebrow {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 3px;
+          color: ${pri};
+          margin-bottom: 3px;
+          font-family: "Sora", sans-serif;
+          text-transform: uppercase;
+        }
 
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        .cart-h1 {
+          font-size: 30px;
+          font-weight: 700;
+          color: ${tp};
+          font-family: "Lora", serif;
+          letter-spacing: -0.8px;
+          line-height: 1.1;
+        }
 
-            padding: 0 40px;
+        /* ── BOTTOM STICKY BAR (mobile checkout) ── */
+        .cart-sticky-checkout {
+          display: none;
+        }
 
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* ─────────────────────────────────────────
+           RESPONSIVE BREAKPOINTS
+           ───────────────────────────────────────── */
 
-            backdrop-filter: blur(10px);
-          }
-
-          .cart-back {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-
-            background: none;
-            border: 1px solid ${bord};
-
-            border-radius: 9px;
-            padding: 7px 14px;
-
-            font-size: 13px;
-            font-weight: 600;
-            color: ${ts};
-
-            cursor: pointer;
-            font-family: "Sora", sans-serif;
-
-            transition: all 0.15s;
-          }
-
-          .cart-back:hover {
-            border-color: ${pri};
-            color: ${pri};
-            background: ${tint};
-          }
-
-          .cart-logo {
-            font-family: "Lora", serif;
-            font-size: 18px;
-            font-weight: 700;
-            color: ${tp};
-            letter-spacing: -0.3px;
-            margin-right: auto;
-          }
-
-          .cart-logo span {
-            color: ${pri};
-          }
-
-          /* ───────────────── BODY ───────────────── */
-
+        /* Laptop / medium desktop: 961px – 1280px */
+        @media (min-width: 961px) and (max-width: 1280px) {
           .cart-body {
-            max-width: 1180px;
-            width: 100%;
-
-            margin: 0 auto;
-
-            padding: 40px 40px 80px;
-
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 32px;
-
-            align-items: start;
-
-            /* IMPORTANT */
-            overflow: visible;
+            grid-template-columns: 1fr 320px;
+            padding: 28px 28px 60px;
+            gap: 22px;
           }
+        }
 
-          /* Sticky summary works ONLY if parents don't hide overflow */
-          .cart-summary-col {
-            position: sticky;
-            top: 78px;
-
-            align-self: start;
-
-            overflow: visible;
+        /* Tablet landscape + small laptop: 769px – 960px */
+        @media (min-width: 769px) and (max-width: 960px) {
+          .cart-topnav { padding: 0 28px; }
+          .cart-body {
+            grid-template-columns: 1fr 300px;
+            padding: 24px 28px 60px;
+            gap: 18px;
           }
+          .cart-h1 { font-size: 26px; }
+        }
 
-          /* ───────────────── PAGE TITLE ───────────────── */
-
-          .cart-page-title {
-            margin-bottom: 28px;
+        /* Tablet portrait: 600px – 768px */
+        @media (min-width: 600px) and (max-width: 768px) {
+          .cart-topnav { padding: 0 20px; height: 52px; }
+          .cart-body {
+            grid-template-columns: 1fr;
+            padding: 20px 20px 100px;
+            gap: 16px;
           }
-
-          .cart-eyebrow {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 3px;
-
-            color: ${pri};
-
-            margin-bottom: 4px;
-
-            font-family: "Sora", sans-serif;
-            text-transform: uppercase;
+          .cart-summary-col { position: static; }
+          .cart-h1 { font-size: 24px; }
+          /* Show floating checkout bar on tablet portrait */
+          .cart-sticky-checkout {
+            display: flex;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: ${card};
+            border-top: 1px solid ${bord};
+            padding: 12px 20px;
+            gap: 12px;
+            align-items: center;
+            z-index: 90;
+            backdrop-filter: blur(12px);
           }
+        }
 
-          .cart-h1 {
-            font-size: 34px;
-            font-weight: 700;
-
-            color: ${tp};
-
-            font-family: "Lora", serif;
-
-            letter-spacing: -0.8px;
-            line-height: 1.1;
+        /* Mobile large: 480px – 599px */
+        @media (min-width: 480px) and (max-width: 599px) {
+          .cart-topnav { padding: 0 16px; height: 50px; }
+          .cart-body {
+            grid-template-columns: 1fr;
+            padding: 16px 16px 90px;
+            gap: 14px;
           }
-
-          /* ───────────────── RESPONSIVE ───────────────── */
-
-          @media (max-width: 960px) {
-            .cart-body {
-              grid-template-columns: 1fr;
-              padding: 24px 24px 60px;
-            }
-
-            .cart-summary-col {
-              position: static;
-            }
-
-            .cart-topnav {
-              padding: 0 24px;
-            }
+          .cart-summary-col { position: static; }
+          .cart-h1 { font-size: 22px; }
+          .cart-back span { display: none; } /* hide "Back" text, keep arrow */
+          .cart-sticky-checkout {
+            display: flex;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: ${card};
+            border-top: 1px solid ${bord};
+            padding: 10px 16px;
+            gap: 10px;
+            align-items: center;
+            z-index: 90;
+            backdrop-filter: blur(12px);
           }
+        }
 
-          @media (max-width: 640px) {
-            .cart-body {
-              padding: 16px 16px 60px;
-              gap: 20px;
-            }
-
-            .cart-topnav {
-              padding: 0 16px;
-            }
-
-            .cart-h1 {
-              font-size: 26px;
-            }
+        /* Mobile small: 320px – 479px */
+        @media (max-width: 479px) {
+          .cart-topnav {
+            padding: 0 14px;
+            height: 50px;
+            gap: 10px;
           }
-        `}</style>
+          .cart-body {
+            grid-template-columns: 1fr;
+            padding: 14px 14px 90px;
+            gap: 12px;
+          }
+          .cart-summary-col { position: static; }
+          .cart-h1 { font-size: 20px; }
+          .cart-eyebrow { display: none; }
+          .cart-back span { display: none; }
+          /* On very small screens, hide the full summary panel — use sticky bar */
+          .cart-summary-col { display: none; }
+          .cart-sticky-checkout {
+            display: flex;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: ${card};
+            border-top: 1px solid ${bord};
+            padding: 10px 14px;
+            gap: 10px;
+            align-items: center;
+            z-index: 90;
+            backdrop-filter: blur(12px);
+          }
+          /* Show a mini total in the sticky bar label */
+          .cart-sticky-total-label { display: block !important; }
+        }
+
+        /* Touch: remove hover-only effects on touch devices */
+        @media (hover: none) {
+          .cart-back:hover {
+            border-color: ${bord};
+            color: ${ts};
+            background: none;
+          }
+        }
+
+        /* Print */
+        @media print {
+          .cart-topnav, .cart-sticky-checkout { display: none; }
+          .cart-body { grid-template-columns: 1fr; padding: 0; }
+          .cart-summary-col { position: static; }
+        }
+      `}</style>
 
       <div className="cart-app">
 
         {/* ── TOP NAV ── */}
         <nav className="cart-topnav">
-          <button className="cart-back" onClick={() => router.back()}>← Back</button>
+          <button className="cart-back" onClick={() => router.back()}>
+            ← <span>Back</span>
+          </button>
           <span className="cart-logo">Mood<span>Market</span></span>
           <button
             style={{
               background: 'none', border: `1px solid ${bord}`,
-              borderRadius: 9, width: 36, height: 36,
-              cursor: 'pointer', fontSize: 16,
+              borderRadius: 9, width: 34, height: 34,
+              cursor: 'pointer', fontSize: 15,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s',
+              transition: 'all 0.15s', flexShrink: 0,
             }}
             onClick={toggleDark}
             title="Toggle theme"
@@ -828,28 +864,28 @@ export default function CartWeb() {
         {/* ── CONTENT ── */}
         {!user ? (
           <div style={{
-            maxWidth: 480, margin: '80px auto', textAlign: 'center',
-            padding: '0 24px',
+            maxWidth: 420, margin: '0 auto', textAlign: 'center',
+            padding: '64px 24px',
           }}>
             <div style={{
-              width: 90, height: 90, borderRadius: 24, margin: '0 auto 24px',
+              width: 80, height: 80, borderRadius: 22, margin: '0 auto 22px',
               background: isDark ? '#2D1820' : '#FFF0F2',
               border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 38,
+              fontSize: 34,
             }}>👤</div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>
               Sign in first
             </h2>
-            <p style={{ fontSize: 14, color: ts, lineHeight: 1.65, marginBottom: 28, fontFamily: '"Sora", sans-serif' }}>
+            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif' }}>
               Log in to view your cart and check out.
             </p>
             <button
               onClick={() => router.push('/login')}
               style={{
-                padding: '14px 32px', borderRadius: 14,
+                padding: '13px 28px', borderRadius: 14,
                 border: 'none', background: pri, color: '#fff',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 fontFamily: '"Sora", sans-serif',
                 boxShadow: `0 6px 20px ${pri}44`,
               }}
@@ -860,7 +896,7 @@ export default function CartWeb() {
         ) : loading ? (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: 300, color: inact, fontSize: 14,
+            height: 260, color: inact, fontSize: 14,
             fontFamily: '"Sora", sans-serif',
           }}>
             Loading cart…
@@ -868,70 +904,113 @@ export default function CartWeb() {
         ) : cartItems.length === 0 ? (
           <CartEmpty theme={theme} isDark={isDark} onShop={() => router.push('/(tabs)')} />
         ) : (
-          <div className="cart-body">
+          <>
+            <div className="cart-body">
 
-            {/* ── LEFT: items ── */}
-            <div>
-              <div className="cart-page-title">
-                <p className="cart-eyebrow">YOUR ORDER</p>
-                <h1 className="cart-h1">My Cart</h1>
-              </div>
+              {/* ── LEFT: items ── */}
+              <div>
+                <div className="cart-page-title">
+                  <p className="cart-eyebrow">YOUR ORDER</p>
+                  <h1 className="cart-h1">My Cart</h1>
+                </div>
 
-              <DeliveryProgress subtotal={cartTotal} theme={theme} isDark={isDark} />
+                <DeliveryProgress subtotal={cartTotal} theme={theme} isDark={isDark} />
 
-              <div style={{ marginTop: 12 }}>
-                {cartItems.map((item, index) => (
-                  <CartItemRow
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    onQtyChange={updateQuantity}
-                    onRemove={removeFromCart}
+                <div style={{ marginTop: 10 }}>
+                  {cartItems.map((item, index) => (
+                    <CartItemRow
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      onQtyChange={updateQuantity}
+                      onRemove={removeFromCart}
+                      theme={theme}
+                      isDark={isDark}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => router.push('/(tabs)')}
+                  style={{
+                    marginTop: 14,
+                    background: 'none',
+                    border: 'none',
+                    color: pri,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: '"Sora", sans-serif',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    padding: '4px 0',
+                    opacity: 0.85,
+                    transition: 'opacity 0.13s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'}
+                >
+                  ← Continue Shopping
+                </button>
+
+                {/* Inline summary shown on mobile/tablet instead of side panel */}
+                <div className="cart-summary-col" style={{ marginTop: 20 }}>
+                  <OrderSummary
+                    subtotal={cartTotal}
+                    coupon={coupon}
+                    setCoupon={setCoupon}
+                    onCheckout={() => router.push('/checkout')}
                     theme={theme}
                     isDark={isDark}
+                    cartCount={cartCount}
                   />
-                ))}
+                </div>
               </div>
 
-              {/* Continue shopping link */}
-              <button
-                onClick={() => router.push('/(tabs)')}
-                style={{
-                  marginTop: 16,
-                  background: 'none',
-                  border: 'none',
-                  color: pri,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: '"Sora", sans-serif',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '4px 0',
-                  opacity: 0.85,
-                  transition: 'opacity 0.13s',
-                }}
-                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}
-                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'}
-              >
-                ← Continue Shopping
-              </button>
+              {/* ── RIGHT: summary (desktop/laptop) ── */}
+              <div className="cart-summary-col">
+                <OrderSummary
+                  subtotal={cartTotal}
+                  coupon={coupon}
+                  setCoupon={setCoupon}
+                  onCheckout={() => router.push('/checkout')}
+                  theme={theme}
+                  isDark={isDark}
+                  cartCount={cartCount}
+                />
+              </div>
             </div>
 
-            {/* ── RIGHT: summary ── */}
-            <div className="cart-summary-col">
-              <OrderSummary
-                subtotal={cartTotal}
-                coupon={coupon}
-                setCoupon={setCoupon}
-                onCheckout={() => router.push('/checkout')}
-                theme={theme}
-                isDark={isDark}
-                cartCount={cartCount}
-              />
+            {/* ── STICKY CHECKOUT BAR (small screens) ── */}
+            <div className="cart-sticky-checkout">
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Sora", sans-serif', fontWeight: 600 }}>
+                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                </p>
+                <p style={{ margin: 0, fontSize: 17, fontWeight: 900, color: pri, fontFamily: '"Sora", sans-serif', letterSpacing: -0.5 }}>
+                  GH₵ {(cartTotal + (cartTotal >= 200 ? 0 : 15)).toFixed(2)}
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/checkout')}
+                style={{
+                  padding: '12px 22px',
+                  borderRadius: 12, border: 'none',
+                  background: pri, color: '#fff',
+                  fontSize: 13, fontWeight: 800,
+                  cursor: 'pointer',
+                  fontFamily: '"Sora", sans-serif',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  boxShadow: `0 6px 20px ${pri}44`,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                ⚡ Checkout
+              </button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </>

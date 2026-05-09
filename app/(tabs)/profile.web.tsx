@@ -1,12 +1,10 @@
 /**
  * app/profile.web.tsx — MoodMarket Profile (Web)
- * FIX: Mood history entries now always visible in both light and dark mode.
- *      Each entry uses its own mood-tinted background + explicit accent color text
- *      instead of the page background + inherited text color (which collapsed in light mode).
- * FIX 2: Mood label never shows "Unknown" — always falls back to the raw mood key value.
- * FIX 3: Robust mood key extraction — tries every common field name so "Unknown"
- *         is never shown when data exists under a different field.
- *         Logs unrecognized keys to console so you can identify the DB shape.
+ * RESPONSIVE: Full coverage for mobile (320px+), tablet (600–960px), laptop (960–1280px), desktop (1280px+)
+ *
+ * FIX: Mood history entries always visible in light and dark mode.
+ * FIX 2: Mood label never shows "Unknown" — always falls back to raw mood key.
+ * FIX 3: Robust mood key extraction.
  */
 
 import { useState, useEffect } from 'react';
@@ -52,25 +50,13 @@ const MOOD_EMOJI_MAP: Record<string, string> = {
   'Inspired': '✨', 'Neutral': '😐',
 };
 
-/**
- * FIX 3: Extracts the mood key from an entry by trying every known field name.
- * Guards against garbage entries (URLs, "POST", numbers, booleans) that ended up
- * in mood_history due to a broken append_mood RPC call storing its own request metadata.
- * The confirmed DB field name is "mood_key" (from console logs).
- */
 let _debugLogged = false;
 function extractMoodKey(item: any): string {
-  // Guard: skip non-objects — the DB has corrupted scalar values mixed in
-  if (!item || typeof item !== 'object' || Array.isArray(item)) {
-    return '';
-  }
-
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return '';
   if (!_debugLogged) {
     console.log('[MoodMarket] MOOD ENTRY SAMPLE (raw DB shape):', JSON.stringify(item, null, 2));
     _debugLogged = true;
   }
-
-  // mood_key is the confirmed field name from Supabase DB logs
   const candidate =
     item.mood_key    ??
     item.mood        ??
@@ -81,34 +67,15 @@ function extractMoodKey(item: any): string {
     item.emotion     ??
     item.feeling     ??
     '';
-
   const key = String(candidate ?? '').trim();
-
-  if (!key) {
-    console.warn('[MoodMarket] Could not resolve mood key from entry:', JSON.stringify(item));
-  } else if (!MOOD_META[key]) {
-    console.warn('[MoodMarket] Unrecognized mood key:', JSON.stringify(key));
-  }
-
+  if (!key) console.warn('[MoodMarket] Could not resolve mood key from entry:', JSON.stringify(item));
+  else if (!MOOD_META[key]) console.warn('[MoodMarket] Unrecognized mood key:', JSON.stringify(key));
   return key;
 }
 
-/**
- * FIX 2: label always resolves to something readable.
- * Priority: MOOD_META label → raw moodKey (the key itself IS the label when unknown)
- */
 function getMoodMeta(key: string, isDark: boolean) {
-  const m = MOOD_META[key] ?? {
-    label: key || 'Unknown',
-    color: '#0A7EA4',
-    lightBg: '#E0F2FE',
-    darkBg: '#0C2A38',
-  };
-  return {
-    label: m.label || key || 'Unknown',
-    color: m.color,
-    bg: isDark ? m.darkBg : m.lightBg,
-  };
+  const m = MOOD_META[key] ?? { label: key || 'Unknown', color: '#0A7EA4', lightBg: '#E0F2FE', darkBg: '#0C2A38' };
+  return { label: m.label || key || 'Unknown', color: m.color, bg: isDark ? m.darkBg : m.lightBg };
 }
 
 function getMoodEmoji(key: string): string {
@@ -125,7 +92,7 @@ function getStatusConfig(status: string, isDark: boolean) {
     case 'shipped':   return { label: 'Shipped',   color: '#7C5CBF', bg: isDark ? '#1E1428' : '#F0EBF8', dot: '#7C5CBF' };
     case 'delivered': return { label: 'Delivered', color: '#22C55E', bg: isDark ? '#0D2B1A' : '#EDFBF1', dot: '#22C55E' };
     case 'cancelled': return { label: 'Cancelled', color: '#E53E3E', bg: isDark ? '#2D1515' : '#FFF0F0', dot: '#E53E3E' };
-    default:          return { label: status,      color: '#888',    bg: isDark ? '#222' : '#F5F5F5',    dot: '#888'    };
+    default:          return { label: status,      color: '#888',    bg: isDark ? '#222' : '#F5F5F5',    dot: '#888' };
   }
 }
 
@@ -145,8 +112,8 @@ function OrderCard({ order, theme, isDark }: { order: Order; theme: any; isDark:
       onMouseLeave={() => setHovered(false)}
       onClick={() => router.push({ pathname: '/order/[id]' as any, params: { id: order.id } })}
       style={{
-        display: 'flex', alignItems: 'center', gap: 16,
-        padding: '16px 20px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '14px 16px',
         background: theme.card,
         border: `1px solid ${hovered ? theme.primary : theme.border}`,
         borderRadius: 16, marginBottom: 8, cursor: 'pointer',
@@ -155,33 +122,33 @@ function OrderCard({ order, theme, isDark }: { order: Order; theme: any; isDark:
       }}
     >
       <div style={{
-        width: 42, height: 42, borderRadius: 12,
+        width: 40, height: 40, borderRadius: 11,
         background: isDark ? '#2D1820' : '#FFF0F2',
         border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 17, flexShrink: 0,
+        fontSize: 16, flexShrink: 0,
       }}>🛍️</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>ORDER</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: 0.5 }}>#{order.id.slice(0, 8).toUpperCase()}</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: 0.5 }}>#{order.id.slice(0, 8).toUpperCase()}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>📅 {date}</span>
           <span style={{ color: theme.border }}>·</span>
           <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>📦 {order.products.length} items</span>
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: cfg.bg, borderRadius: 20, padding: '4px 12px' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, fontFamily: '"Sora", sans-serif', textTransform: 'capitalize' }}>{cfg.label}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: cfg.bg, borderRadius: 20, padding: '3px 10px' }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, fontFamily: '"Sora", sans-serif', textTransform: 'capitalize' }}>{cfg.label}</span>
         </div>
-        <span style={{ fontSize: 15, fontWeight: 800, color: theme.primary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.4 }}>
+        <span style={{ fontSize: 14, fontWeight: 800, color: theme.primary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.4 }}>
           GH₵ {Number(order.total_price).toFixed(2)}
         </span>
       </div>
-      <span style={{ color: theme.inactive, fontSize: 16 }}>›</span>
+      <span style={{ color: theme.inactive, fontSize: 15, flexShrink: 0 }}>›</span>
     </div>
   );
 }
@@ -194,17 +161,17 @@ function StatCard({ value, label, icon, theme, isDark }: {
   return (
     <div style={{
       background: theme.card, border: `1px solid ${theme.border}`,
-      borderRadius: 16, padding: '20px',
+      borderRadius: 16, padding: '18px 16px',
       display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
     }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 10,
+        width: 34, height: 34, borderRadius: 10,
         background: isDark ? '#2D1820' : '#FFF0F2',
         border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
       }}>{icon}</div>
-      <div style={{ fontSize: 26, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.8, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 12, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.8, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', fontWeight: 500 }}>{label}</div>
     </div>
   );
 }
@@ -221,23 +188,23 @@ function SettingsRow({ icon, label, sub, onPress, theme, isDark }: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '14px 18px', background: theme.card,
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 16px', background: theme.card,
         border: `1px solid ${hovered ? theme.primary : theme.border}`,
         borderRadius: 14, cursor: 'pointer', transition: 'all 0.14s', marginBottom: 8,
       }}
     >
       <div style={{
-        width: 38, height: 38, borderRadius: 11,
+        width: 36, height: 36, borderRadius: 10,
         background: isDark ? '#1E1E2E' : '#FFF0F2',
         border: `1px solid ${isDark ? '#2A2A4A' : '#FFD6DE'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0,
       }}>{icon}</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 12, color: theme.textSecondary, fontFamily: '"Sora", sans-serif' }}>{sub}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
       </div>
-      <span style={{ color: theme.inactive, fontSize: 16 }}>›</span>
+      <span style={{ color: theme.inactive, fontSize: 15, flexShrink: 0 }}>›</span>
     </div>
   );
 }
@@ -251,11 +218,11 @@ function TabBtn({ active, onClick, children, theme, isDark }: {
     <button
       onClick={onClick}
       style={{
-        padding: '9px 18px', borderRadius: 10,
+        padding: '8px 15px', borderRadius: 10,
         border: active ? `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}` : '1.5px solid transparent',
         background: active ? (isDark ? '#2D1820' : '#FFF0F2') : 'none',
         color: active ? theme.primary : theme.textSecondary,
-        fontSize: 13, fontWeight: active ? 700 : 500,
+        fontSize: 12, fontWeight: active ? 700 : 500,
         cursor: 'pointer', fontFamily: '"Sora", sans-serif',
         transition: 'all 0.14s', whiteSpace: 'nowrap',
       }}
@@ -270,130 +237,63 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
   pri: string; tp: string; ts: string; card: string; bord: string; isDark: boolean;
 }) {
   return (
-    <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28 }}>
-
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Sora", sans-serif', textTransform: 'uppercase' }}>
-            YOUR VIBES
-          </p>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>
-            Mood History
-          </h3>
+          <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Sora", sans-serif', textTransform: 'uppercase' }}>YOUR VIBES</p>
+          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Mood History</h3>
         </div>
         {moodCount > 0 && (
-          <span style={{
-            background: isDark ? '#2D1820' : '#FFF0F2',
-            border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
-            borderRadius: 20, padding: '2px 10px',
-            fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif',
-          }}>
+          <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}>
             {moodCount} entries
           </span>
         )}
       </div>
 
-      {/* Empty */}
       {moodCount === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
-          <p style={{ fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>
-            No mood entries yet
-          </p>
-          <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>
-            Your mood selections will appear here.
-          </p>
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ fontSize: 44, marginBottom: 14 }}>✨</div>
+          <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No mood entries yet</p>
+          <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif' }}>Your mood selections will appear here.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {moodHistory.map((item: any, i: number) => {
-            // FIX 3: Use robust key extractor — tries all common field names
             const moodKey = extractMoodKey(item);
             const meta    = getMoodMeta(moodKey, isDark);
             const emoji   = getMoodEmoji(moodKey);
-
-            // FIX 2: Resolution chain — never shows "Unknown" when key has a real value
-            const label = item.label || meta.label || moodKey || 'Unknown';
-
-            // Date field — try common field names
+            const label   = item.label || meta.label || moodKey || 'Unknown';
             const rawDate = item.date ?? item.created_at ?? item.recorded_at ?? item.logged_at ?? item.timestamp ?? '';
-            const dateShort = rawDate
-              ? new Date(rawDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-              : '';
-            const dateLong = rawDate
-              ? new Date(rawDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-              : '';
-
-            // Note field — try common field names
+            const dateShort = rawDate ? new Date(rawDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+            const dateLong  = rawDate ? new Date(rawDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
             const note = item.note ?? item.notes ?? item.comment ?? item.description ?? '';
 
             return (
-              <div
-                key={i}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  background: meta.bg,
-                  border: `1.5px solid ${meta.color}40`,
-                  borderRadius: 14, padding: '14px 16px',
-                }}
-              >
-                {/* Emoji bubble */}
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                background: meta.bg,
+                border: `1.5px solid ${meta.color}40`,
+                borderRadius: 14, padding: '12px 14px',
+              }}>
                 <div style={{
-                  width: 46, height: 46, borderRadius: 13, flexShrink: 0,
+                  width: 42, height: 42, borderRadius: 12, flexShrink: 0,
                   background: isDark ? `${meta.color}22` : `${meta.color}18`,
                   border: `1.5px solid ${meta.color}50`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24,
-                }}>
-                  {emoji}
-                </div>
-
-                {/* Text */}
+                  fontSize: 22,
+                }}>{emoji}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{
-                    display: 'block', fontSize: 14, fontWeight: 700,
-                    color: meta.color,
-                    fontFamily: '"Sora", sans-serif', marginBottom: 3,
-                  }}>
-                    {label}
-                  </span>
+                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: meta.color, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</span>
                   {dateLong && (
-                    <span style={{
-                      display: 'block', fontSize: 11,
-                      color: isDark ? '#94A3B8' : '#475569',
-                      fontFamily: '"Sora", sans-serif',
-                      marginBottom: note ? 5 : 0,
-                    }}>
-                      🗓 {dateLong}
-                    </span>
+                    <span style={{ display: 'block', fontSize: 10, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', marginBottom: note ? 4 : 0 }}>🗓 {dateLong}</span>
                   )}
                   {!!note && (
-                    <span style={{
-                      display: 'block', fontSize: 12,
-                      color: isDark ? '#94A3B8' : '#475569',
-                      fontFamily: '"Sora", sans-serif',
-                      fontStyle: 'italic', lineHeight: 1.55,
-                    }}>
-                      "{note}"
-                    </span>
+                    <span style={{ display: 'block', fontSize: 11, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', fontStyle: 'italic', lineHeight: 1.55 }}>"{note}"</span>
                   )}
                 </div>
-
-                {/* Date badge */}
                 {dateShort && (
                   <div style={{ flexShrink: 0, paddingTop: 2 }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700,
-                      color: meta.color,
-                      background: isDark ? `${meta.color}22` : `${meta.color}15`,
-                      padding: '3px 9px', borderRadius: 8,
-                      whiteSpace: 'nowrap',
-                      border: `1px solid ${meta.color}40`,
-                      fontFamily: '"Sora", sans-serif',
-                    }}>
-                      {dateShort}
-                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, background: isDark ? `${meta.color}22` : `${meta.color}15`, padding: '3px 8px', borderRadius: 8, whiteSpace: 'nowrap', border: `1px solid ${meta.color}40`, fontFamily: '"Sora", sans-serif' }}>{dateShort}</span>
                   </div>
                 )}
               </div>
@@ -417,6 +317,7 @@ export default function ProfileWeb() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [adminTaps, setAdminTaps] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const moodHistory: any[] = (() => {
     const mh = profile?.mood_history;
@@ -424,13 +325,10 @@ export default function ProfileWeb() {
     if (!mh) return [];
     if (Array.isArray(mh)) raw = mh;
     else if (typeof mh === 'object') raw = Object.values(mh);
-    // Filter out garbage entries (strings, numbers, booleans, URLs)
-    // that ended up in the array due to broken append_mood RPC calls
     return raw.filter(e => e && typeof e === 'object' && !Array.isArray(e));
   })();
   const moodCount = moodHistory.length;
 
-  // Reset debug log flag when profile changes so we always get a fresh sample
   useEffect(() => { _debugLogged = false; }, [profile]);
 
   const handleLogoClick = () => {
@@ -454,13 +352,13 @@ export default function ProfileWeb() {
 
   const handleSignOut = async () => { await signOut(); router.replace('/login'); };
 
-  const bg   = theme.background;
-  const card = theme.card;
-  const bord = theme.border;
-  const pri  = theme.primary;
-  const tp   = theme.textPrimary;
-  const ts   = theme.textSecondary;
-  const tint = theme.tint;
+  const bg    = theme.background;
+  const card  = theme.card;
+  const bord  = theme.border;
+  const pri   = theme.primary;
+  const tp    = theme.textPrimary;
+  const ts    = theme.textSecondary;
+  const tint  = theme.tint;
   const inact = theme.inactive;
 
   const totalSpend     = orders.reduce((s, o) => s + Number(o.total_price), 0);
@@ -469,57 +367,365 @@ export default function ProfileWeb() {
     ? profile.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
     : '??';
 
+  const NAV_ITEMS: { key: Tab; icon: string; label: string }[] = [
+    { key: 'overview', icon: '📊', label: 'Overview'     },
+    { key: 'orders',   icon: '📦', label: 'Orders'       },
+    { key: 'mood',     icon: '✨', label: 'Mood History' },
+    { key: 'settings', icon: '⚙️', label: 'Settings'     },
+  ];
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-family: "Sora", sans-serif; }
-        body { min-height: 100%; font-family: "Sora", sans-serif; overflow-y: auto; }
+
+        html {
+          font-family: "Sora", sans-serif;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+        body {
+          min-height: 100%;
+          font-family: "Sora", sans-serif;
+          overflow-y: auto;
+          background: ${bg};
+        }
+
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${bord}; border-radius: 10px; }
 
-        .prof-app { min-height: 100vh; background: ${bg}; display: flex; flex-direction: column; color: ${tp}; overflow-y: auto; }
+        /* ── APP ── */
+        .prof-app {
+          min-height: 100vh;
+          background: ${bg};
+          display: flex;
+          flex-direction: column;
+          color: ${tp};
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
 
-        .prof-topnav { height: 58px; background: ${card}; border-bottom: 1px solid ${bord}; display: flex; align-items: center; padding: 0 40px; gap: 16px; position: sticky; top: 0; z-index: 100; }
-        .prof-back { background: none; border: 1px solid ${bord}; border-radius: 9px; padding: 7px 14px; font-size: 13px; font-weight: 600; color: ${ts}; cursor: pointer; font-family: "Sora", sans-serif; transition: all 0.15s; }
+        /* ── TOP NAV ── */
+        .prof-topnav {
+          height: 56px;
+          background: ${card};
+          border-bottom: 1px solid ${bord};
+          display: flex;
+          align-items: center;
+          padding: 0 40px;
+          gap: 14px;
+          position: sticky;
+          top: 0;
+          z-index: 200;
+          backdrop-filter: blur(10px);
+        }
+
+        .prof-back {
+          background: none;
+          border: 1px solid ${bord};
+          border-radius: 9px;
+          padding: 6px 13px;
+          font-size: 13px;
+          font-weight: 600;
+          color: ${ts};
+          cursor: pointer;
+          font-family: "Sora", sans-serif;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
         .prof-back:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
-        .prof-logo { font-family: "Lora", serif; font-size: 18px; font-weight: 700; color: ${tp}; letter-spacing: -0.3; cursor: pointer; transition: opacity 0.13s; margin-right: auto; }
+
+        .prof-logo {
+          font-family: "Lora", serif;
+          font-size: 17px;
+          font-weight: 700;
+          color: ${tp};
+          letter-spacing: -0.3px;
+          cursor: pointer;
+          transition: opacity 0.13s;
+          margin-right: auto;
+          white-space: nowrap;
+        }
         .prof-logo:hover { opacity: 0.8; }
         .prof-logo span { color: ${pri}; }
 
-        .prof-body { max-width: 1100px; margin: 0 auto; width: 100%; padding: 40px 40px 80px; display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+        /* Hamburger (mobile) */
+        .prof-hamburger {
+          display: none;
+          background: none;
+          border: 1px solid ${bord};
+          border-radius: 9px;
+          width: 36px;
+          height: 36px;
+          cursor: pointer;
+          font-size: 16px;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+          flex-shrink: 0;
+        }
 
-        .prof-sidebar { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 12px; }
-        .prof-avatar-card { background: ${card}; border: 1px solid ${bord}; border-radius: 22px; padding: 28px 24px; text-align: center; }
-        .prof-avatar { width: 72px; height: 72px; border-radius: 20px; background: ${pri}; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: #fff; font-family: "Sora", sans-serif; letter-spacing: -0.5px; }
-        .prof-name  { font-size: 17px; font-weight: 700; color: ${tp}; font-family: "Lora", serif; letter-spacing: -0.2px; margin-bottom: 4px; }
-        .prof-email { font-size: 12px; color: ${inact}; font-family: "Sora", sans-serif; margin-bottom: 18px; }
-        .prof-edit-btn { width: 100%; height: 38px; border-radius: 10px; border: 1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}; background: ${isDark ? '#2D1820' : '#FFF0F2'}; color: ${pri}; font-size: 13px; font-weight: 700; cursor: pointer; font-family: "Sora", sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.14s; }
+        /* ── BODY GRID ── */
+        .prof-body {
+          max-width: 1100px;
+          margin: 0 auto;
+          width: 100%;
+          padding: 36px 40px 80px;
+          display: grid;
+          grid-template-columns: 270px 1fr;
+          gap: 24px;
+          align-items: start;
+        }
+
+        /* ── SIDEBAR ── */
+        .prof-sidebar {
+          position: sticky;
+          top: 76px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .prof-avatar-card {
+          background: ${card};
+          border: 1px solid ${bord};
+          border-radius: 22px;
+          padding: 24px 20px;
+          text-align: center;
+        }
+
+        .prof-avatar {
+          width: 68px;
+          height: 68px;
+          border-radius: 18px;
+          background: ${pri};
+          margin: 0 auto 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          font-weight: 900;
+          color: #fff;
+          font-family: "Sora", sans-serif;
+          letter-spacing: -0.5px;
+        }
+
+        .prof-name  { font-size: 16px; font-weight: 700; color: ${tp}; font-family: "Lora", serif; letter-spacing: -0.2px; margin-bottom: 3px; }
+        .prof-email { font-size: 11px; color: ${inact}; font-family: "Sora", sans-serif; margin-bottom: 16px; word-break: break-all; }
+
+        .prof-edit-btn {
+          width: 100%;
+          height: 36px;
+          border-radius: 10px;
+          border: 1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'};
+          background: ${isDark ? '#2D1820' : '#FFF0F2'};
+          color: ${pri};
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: "Sora", sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          transition: opacity 0.14s;
+        }
         .prof-edit-btn:hover { opacity: 0.8; }
 
-        .prof-sidenav { background: ${card}; border: 1px solid ${bord}; border-radius: 18px; overflow: hidden; }
-        .prof-sidenav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; border-bottom: 1px solid ${bord}; transition: background 0.12s; font-size: 13px; font-weight: 600; color: ${ts}; font-family: "Sora", sans-serif; }
+        .prof-sidenav {
+          background: ${card};
+          border: 1px solid ${bord};
+          border-radius: 18px;
+          overflow: hidden;
+        }
+
+        .prof-sidenav-item {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 13px 18px;
+          cursor: pointer;
+          border-bottom: 1px solid ${bord};
+          transition: background 0.12s;
+          font-size: 13px;
+          font-weight: 600;
+          color: ${ts};
+          font-family: "Sora", sans-serif;
+        }
         .prof-sidenav-item:last-child { border-bottom: none; }
         .prof-sidenav-item:hover { background: ${tint}; }
         .prof-sidenav-item.active { color: ${pri}; background: ${isDark ? '#2D1820' : '#FFF0F2'}; }
-        .prof-sidenav-icon  { font-size: 15px; }
+
+        .prof-sidenav-icon  { font-size: 14px; }
         .prof-sidenav-arrow { margin-left: auto; color: ${inact}; }
 
-        .prof-tabs { display: flex; gap: 6px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+        /* ── TABS BAR ── */
+        .prof-tabs {
+          display: flex;
+          gap: 5px;
+          margin-bottom: 20px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch;
+        }
         .prof-tabs::-webkit-scrollbar { height: 0; }
 
-        @media (max-width: 900px) {
-          .prof-body { grid-template-columns: 1fr; padding: 24px 24px 60px; }
-          .prof-sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
-          .prof-avatar-card { flex: 1 1 260px; }
-          .prof-sidenav { display: none; }
-          .prof-topnav { padding: 0 24px; }
+        /* ── MOBILE DRAWER ── */
+        .prof-mobile-drawer {
+          display: none;
+          position: fixed;
+          top: 56px; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.4);
+          z-index: 150;
+          backdrop-filter: blur(4px);
         }
-        @media (max-width: 600px) {
-          .prof-body { padding: 16px 16px 60px; }
+        .prof-mobile-drawer.open { display: block; }
+
+        .prof-mobile-drawer-panel {
+          position: absolute;
+          top: 0; left: 0;
+          width: 280px;
+          height: 100%;
+          background: ${card};
+          border-right: 1px solid ${bord};
+          overflow-y: auto;
+          padding: 20px 0;
+        }
+
+        /* ─────────────────────────────────────────
+           RESPONSIVE BREAKPOINTS
+           ───────────────────────────────────────── */
+
+        /* Laptop: 961px – 1280px */
+        @media (min-width: 961px) and (max-width: 1280px) {
+          .prof-body {
+            grid-template-columns: 240px 1fr;
+            padding: 28px 28px 60px;
+            gap: 20px;
+          }
+        }
+
+        /* Tablet landscape: 769px – 960px */
+        @media (min-width: 769px) and (max-width: 960px) {
+          .prof-topnav { padding: 0 28px; }
+          .prof-body {
+            grid-template-columns: 220px 1fr;
+            padding: 22px 24px 60px;
+            gap: 16px;
+          }
+          .prof-sidebar { position: sticky; top: 72px; }
+          .prof-avatar-card { padding: 18px 16px; }
+          .prof-avatar { width: 58px; height: 58px; font-size: 18px; }
+          .prof-name { font-size: 14px; }
+        }
+
+        /* Tablet portrait: 600px – 768px */
+        @media (min-width: 600px) and (max-width: 768px) {
+          .prof-topnav { padding: 0 20px; }
+          .prof-body {
+            grid-template-columns: 1fr;
+            padding: 20px 20px 60px;
+            gap: 16px;
+          }
+          .prof-sidebar {
+            position: static;
+            flex-direction: row;
+            flex-wrap: wrap;
+          }
+          .prof-avatar-card { flex: 1 1 240px; }
+          .prof-sidenav { display: none; }
+          .prof-tabs { margin-bottom: 16px; }
+        }
+
+        /* Mobile large: 480px – 599px */
+        @media (min-width: 480px) and (max-width: 599px) {
           .prof-topnav { padding: 0 16px; }
+          .prof-body {
+            grid-template-columns: 1fr;
+            padding: 16px 16px 60px;
+            gap: 14px;
+          }
+          .prof-sidebar { position: static; }
+          .prof-sidenav { display: none; }
+          .prof-hamburger { display: flex; }
+          .prof-mobile-drawer { display: none; } /* controlled by JS class */
+          .prof-avatar-card { display: flex; align-items: center; gap: 16px; text-align: left; padding: 16px; }
+          .prof-avatar { margin: 0; width: 56px; height: 56px; font-size: 18px; flex-shrink: 0; }
+          .prof-email { margin-bottom: 10px; }
+        }
+
+        /* Mobile small: 320px – 479px */
+        @media (max-width: 479px) {
+          .prof-topnav {
+            padding: 0 14px;
+            height: 52px;
+            gap: 10px;
+          }
+          .prof-body {
+            grid-template-columns: 1fr;
+            padding: 14px 14px 60px;
+            gap: 12px;
+          }
+          .prof-sidebar { position: static; }
+          .prof-sidenav { display: none; }
+          .prof-hamburger { display: flex; }
+          .prof-avatar-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-align: left;
+            padding: 14px;
+            border-radius: 16px;
+          }
+          .prof-avatar { margin: 0; width: 52px; height: 52px; font-size: 16px; flex-shrink: 0; }
+          .prof-name { font-size: 14px; }
+          .prof-email { font-size: 10px; }
+          /* compact tabs: icon-only on very narrow */
+          .prof-tab-label-short { display: none; }
+          .prof-tab-icon { display: inline !important; }
+        }
+
+        /* Stats grid adapts */
+        .prof-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+          margin-bottom: 24px;
+        }
+        @media (max-width: 960px) {
+          .prof-stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 479px) {
+          .prof-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+
+        /* Quick actions grid */
+        .prof-quick-actions {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+        }
+        @media (max-width: 768px) {
+          .prof-quick-actions { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 479px) {
+          .prof-quick-actions { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+
+        /* Touch: no hover flicker */
+        @media (hover: none) {
+          .prof-back:hover { border-color: ${bord}; color: ${ts}; background: none; }
+          .prof-sidenav-item:hover { background: transparent; }
+        }
+
+        /* Print */
+        @media print {
+          .prof-topnav, .prof-sidenav, .prof-hamburger, .prof-mobile-drawer { display: none !important; }
+          .prof-body { grid-template-columns: 1fr; padding: 0; }
+          .prof-sidebar { position: static; }
         }
       `}</style>
 
@@ -529,23 +735,80 @@ export default function ProfileWeb() {
         <nav className="prof-topnav">
           <button className="prof-back" onClick={() => router.back()}>← Back</button>
           <span className="prof-logo" onClick={handleLogoClick}>Mood<span>Market</span></span>
+          {/* Hamburger — visible on mobile */}
+          {user && (
+            <button
+              className="prof-hamburger"
+              onClick={() => setMobileMenuOpen(v => !v)}
+              title="Menu"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
+          )}
           <button
-            style={{ background: 'none', border: `1px solid ${bord}`, borderRadius: 9, width: 36, height: 36, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            style={{
+              background: 'none', border: `1px solid ${bord}`,
+              borderRadius: 9, width: 34, height: 34,
+              cursor: 'pointer', fontSize: 15,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s', flexShrink: 0,
+            }}
             onClick={toggleDark}
           >
             {isDark ? '☀️' : '🌙'}
           </button>
         </nav>
 
+        {/* MOBILE DRAWER */}
+        {user && (
+          <div
+            className={`prof-mobile-drawer${mobileMenuOpen ? ' open' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <div
+              className="prof-mobile-drawer-panel"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Avatar in drawer */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px 20px', borderBottom: `1px solid ${bord}`, marginBottom: 8 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: pri, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: '"Sora", sans-serif', flexShrink: 0 }}>{initials}</div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name ?? 'User'}</p>
+                  <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Sora", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email}</p>
+                </div>
+              </div>
+              {NAV_ITEMS.map(item => (
+                <div
+                  key={item.key}
+                  className={`prof-sidenav-item${activeTab === item.key ? ' active' : ''}`}
+                  onClick={() => { setActiveTab(item.key); setMobileMenuOpen(false); }}
+                >
+                  <span className="prof-sidenav-icon">{item.icon}</span>
+                  {item.label}
+                  <span className="prof-sidenav-arrow">›</span>
+                </div>
+              ))}
+              <div
+                className="prof-sidenav-item"
+                onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}
+                style={{ color: '#EF4444', borderBottom: 'none' }}
+              >
+                <span className="prof-sidenav-icon">🚪</span>Sign Out
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MAIN CONTENT */}
         {!user ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
-            <div style={{ width: 90, height: 90, borderRadius: 24, margin: '0 auto 24px', background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38 }}>👤</div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>You're not signed in</h2>
-            <p style={{ fontSize: 14, color: ts, lineHeight: 1.65, marginBottom: 28, fontFamily: '"Sora", sans-serif', maxWidth: 320 }}>Log in to view your profile, orders, and mood history.</p>
-            <button onClick={() => router.push('/login')} style={{ padding: '14px 32px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44` }}>Sign In →</button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', textAlign: 'center' }}>
+            <div style={{ width: 80, height: 80, borderRadius: 22, margin: '0 auto 22px', background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}>👤</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>You're not signed in</h2>
+            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif', maxWidth: 300 }}>Log in to view your profile, orders, and mood history.</p>
+            <button onClick={() => router.push('/login')} style={{ padding: '13px 28px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44` }}>Sign In →</button>
           </div>
         ) : loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: inact, fontSize: 14, fontFamily: '"Sora", sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 260, color: inact, fontSize: 14, fontFamily: '"Sora", sans-serif' }}>
             Loading profile…
           </div>
         ) : (
@@ -555,18 +818,15 @@ export default function ProfileWeb() {
             <aside className="prof-sidebar">
               <div className="prof-avatar-card">
                 <div className="prof-avatar">{initials}</div>
-                <p className="prof-name">{profile?.name ?? 'User'}</p>
-                <p className="prof-email">{profile?.email}</p>
-                <button className="prof-edit-btn" onClick={() => router.push('/edit-profile')}>✏ Edit Profile</button>
+                <div>
+                  <p className="prof-name">{profile?.name ?? 'User'}</p>
+                  <p className="prof-email">{profile?.email}</p>
+                  <button className="prof-edit-btn" onClick={() => router.push('/edit-profile')}>✏ Edit Profile</button>
+                </div>
               </div>
               <div className="prof-sidenav">
-                {[
-                  { key: 'overview', icon: '📊', label: 'Overview'     },
-                  { key: 'orders',   icon: '📦', label: 'Orders'       },
-                  { key: 'mood',     icon: '✨', label: 'Mood History' },
-                  { key: 'settings', icon: '⚙️', label: 'Settings'     },
-                ].map(item => (
-                  <div key={item.key} className={`prof-sidenav-item${activeTab === item.key ? ' active' : ''}`} onClick={() => setActiveTab(item.key as Tab)}>
+                {NAV_ITEMS.map(item => (
+                  <div key={item.key} className={`prof-sidenav-item${activeTab === item.key ? ' active' : ''}`} onClick={() => setActiveTab(item.key)}>
                     <span className="prof-sidenav-icon">{item.icon}</span>
                     {item.label}
                     <span className="prof-sidenav-arrow">›</span>
@@ -583,13 +843,14 @@ export default function ProfileWeb() {
               {/* Tab bar */}
               <div className="prof-tabs">
                 {[
-                  { key: 'overview', label: '📊 Overview' },
-                  { key: 'orders',   label: `📦 Orders (${orders.length})` },
-                  { key: 'mood',     label: `✨ Mood History (${moodCount})` },
-                  { key: 'settings', label: '⚙️ Settings' },
+                  { key: 'overview', short: '📊', label: '📊 Overview' },
+                  { key: 'orders',   short: '📦', label: `📦 Orders (${orders.length})` },
+                  { key: 'mood',     short: '✨', label: `✨ Mood (${moodCount})` },
+                  { key: 'settings', short: '⚙️', label: '⚙️ Settings' },
                 ].map(t => (
                   <TabBtn key={t.key} active={activeTab === t.key as Tab} onClick={() => setActiveTab(t.key as Tab)} theme={theme} isDark={isDark}>
-                    {t.label}
+                    <span className="prof-tab-icon" style={{ display: 'none' }}>{t.short}</span>
+                    <span className="prof-tab-label-short">{t.label}</span>
                   </TabBtn>
                 ))}
               </div>
@@ -597,38 +858,41 @@ export default function ProfileWeb() {
               {/* ── OVERVIEW ── */}
               {activeTab === 'overview' && (
                 <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 28 }}>
-                    <StatCard value={String(orders.length)}           label="Total orders"  icon="📦" theme={theme} isDark={isDark} />
-                    <StatCard value={String(deliveredCount)}          label="Delivered"     icon="✅" theme={theme} isDark={isDark} />
-                    <StatCard value={`GH₵${totalSpend.toFixed(0)}`}  label="Total spent"   icon="💰" theme={theme} isDark={isDark} />
-                    <StatCard value={String(moodCount)}               label="Mood entries"  icon="✨" theme={theme} isDark={isDark} />
+                  <div className="prof-stats-grid">
+                    <StatCard value={String(orders.length)}          label="Total orders" icon="📦" theme={theme} isDark={isDark} />
+                    <StatCard value={String(deliveredCount)}         label="Delivered"    icon="✅" theme={theme} isDark={isDark} />
+                    <StatCard value={`GH₵${totalSpend.toFixed(0)}`} label="Total spent"  icon="💰" theme={theme} isDark={isDark} />
+                    <StatCard value={String(moodCount)}              label="Mood entries" icon="✨" theme={theme} isDark={isDark} />
                   </div>
-                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28, marginBottom: 24 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>Recent Orders</h3>
-                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>View all →</button>
+
+                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                      <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>Recent Orders</h3>
+                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>View all →</button>
                     </div>
                     {orders.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                        <div style={{ fontSize: 32, marginBottom: 12 }}>📦</div>
-                        <p style={{ fontSize: 14, color: ts, fontFamily: '"Sora", sans-serif' }}>No orders yet</p>
+                      <div style={{ textAlign: 'center', padding: '28px 0' }}>
+                        <div style={{ fontSize: 30, marginBottom: 10 }}>📦</div>
+                        <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>No orders yet</p>
                       </div>
                     ) : orders.slice(0, 3).map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
                   </div>
-                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28 }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Quick Actions</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+
+                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
+                    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Quick Actions</h3>
+                    <div className="prof-quick-actions">
                       {[
                         { icon: '🛍️', label: 'Shop Now',    action: () => router.push('/(tabs)') },
                         { icon: '🛒', label: 'View Cart',   action: () => router.push('/cart') },
                         { icon: '✏️', label: 'Edit Profile', action: () => router.push('/edit-profile') },
                         { icon: '🚪', label: 'Sign Out',    action: handleSignOut },
                       ].map(({ icon, label, action }) => (
-                        <button key={label} onClick={action} style={{ padding: '14px 12px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.13s' }}
+                        <button key={label} onClick={action}
+                          style={{ padding: '13px 10px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, transition: 'all 0.13s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = label === 'Sign Out' ? '#EF4444' : pri; (e.currentTarget as HTMLButtonElement).style.background = label === 'Sign Out' ? (isDark ? '#2D1515' : '#FFF0F0') : tint; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = bord; (e.currentTarget as HTMLButtonElement).style.background = bg; }}
                         >
-                          <span style={{ fontSize: 20 }}>{icon}</span>{label}
+                          <span style={{ fontSize: 18 }}>{icon}</span>{label}
                         </button>
                       ))}
                     </div>
@@ -638,20 +902,20 @@ export default function ProfileWeb() {
 
               {/* ── ORDERS ── */}
               {activeTab === 'orders' && (
-                <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
                       <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Sora", sans-serif', textTransform: 'uppercase' }}>HISTORY</p>
-                      <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>All Orders</h3>
+                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>All Orders</h3>
                     </div>
-                    <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}>{orders.length}</span>
+                    <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}>{orders.length}</span>
                   </div>
                   {orders.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                      <div style={{ fontSize: 48, marginBottom: 16 }}>📦</div>
-                      <p style={{ fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No orders yet</p>
-                      <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif', marginBottom: 24 }}>Start shopping to see your orders here.</p>
-                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '12px 24px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>Browse Products →</button>
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <div style={{ fontSize: 44, marginBottom: 14 }}>📦</div>
+                      <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No orders yet</p>
+                      <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif', marginBottom: 20 }}>Start shopping to see your orders here.</p>
+                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '11px 22px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>Browse Products →</button>
                     </div>
                   ) : orders.map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
                 </div>
@@ -659,43 +923,37 @@ export default function ProfileWeb() {
 
               {/* ── MOOD HISTORY ── */}
               {activeTab === 'mood' && (
-                <MoodHistoryTab
-                  moodHistory={moodHistory}
-                  moodCount={moodCount}
-                  pri={pri} tp={tp} ts={ts}
-                  card={card} bord={bord}
-                  isDark={isDark}
-                />
+                <MoodHistoryTab moodHistory={moodHistory} moodCount={moodCount} pri={pri} tp={tp} ts={ts} card={card} bord={bord} isDark={isDark} />
               )}
 
               {/* ── SETTINGS ── */}
               {activeTab === 'settings' && (
                 <div>
-                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28, marginBottom: 20 }}>
-                    <h3 style={{ margin: '0 0 20px', fontSize: 18, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Account Settings</h3>
+                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Account Settings</h3>
                     <SettingsRow icon="✏️" label="Edit Profile"        sub="Update your name and phone number"  onPress={() => router.push('/edit-profile')} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🔔" label="Notifications"       sub="Manage push and email alerts"       onPress={() => {}} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🔒" label="Privacy & Security"  sub="Password and account security"     onPress={() => {}} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🎨" label="App Preferences"     sub="Theme, mood reminders and more"    onPress={() => {}} theme={theme} isDark={isDark} />
                   </div>
-                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: 28, marginBottom: 20 }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Appearance</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', background: bg, border: `1px solid ${bord}`, borderRadius: 14 }}>
+                  <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Appearance</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: bg, border: `1px solid ${bord}`, borderRadius: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 18 }}>{isDark ? '🌙' : '☀️'}</span>
+                        <span style={{ fontSize: 16 }}>{isDark ? '🌙' : '☀️'}</span>
                         <div>
-                          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Sora", sans-serif' }}>{isDark ? 'Dark Mode' : 'Light Mode'}</p>
-                          <p style={{ margin: 0, fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif' }}>Toggle interface theme</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Sora", sans-serif' }}>{isDark ? 'Dark Mode' : 'Light Mode'}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Toggle interface theme</p>
                         </div>
                       </div>
-                      <button onClick={toggleDark} style={{ width: 52, height: 28, borderRadius: 20, border: 'none', background: isDark ? pri : bord, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                        <div style={{ position: 'absolute', top: 3, left: isDark ? 26 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
+                      <button onClick={toggleDark} style={{ width: 50, height: 27, borderRadius: 20, border: 'none', background: isDark ? pri : bord, position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+                        <div style={{ position: 'absolute', top: 2.5, left: isDark ? 24 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
                       </button>
                     </div>
                   </div>
-                  <div style={{ background: card, border: `1px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, borderRadius: 22, padding: 28 }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: '#EF4444', fontFamily: '"Lora", serif' }}>Danger Zone</h3>
-                    <button onClick={handleSignOut} style={{ width: '100%', padding: '14px 0', borderRadius: 12, border: `1.5px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, background: isDark ? '#2D1515' : '#FFF5F5', color: '#EF4444', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.13s' }}>
+                  <div style={{ background: card, border: `1px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, borderRadius: 22, padding: '22px 20px' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#EF4444', fontFamily: '"Lora", serif' }}>Danger Zone</h3>
+                    <button onClick={handleSignOut} style={{ width: '100%', padding: '13px 0', borderRadius: 12, border: `1.5px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, background: isDark ? '#2D1515' : '#FFF5F5', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.13s' }}>
                       🚪 Sign Out
                     </button>
                   </div>

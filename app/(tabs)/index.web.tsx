@@ -10,18 +10,13 @@
  *   • Large phone         400–539px   — no sidebar, 2-col grid
  *   • Small phone         <400px      — no sidebar, 2-col grid, minimal topnav
  *
- * CHANGES FROM PREVIOUS VERSION:
- * - Sidebar is OVERLAY (not push) on ≤900px so it never squeezes the grid
- * - Overlay backdrop click closes sidebar on mobile
- * - Topnav: search hidden <540px (moves to a drop-down bar), icon-only buttons <700px
- * - Mobile search bar slides down below topnav on small screens
- * - Trending strip uses CSS snap scrolling on mobile
- * - Trending card widths/image heights scale per breakpoint via CSS custom properties
- * - Product names in trending cards are truncated with ellipsis
- * - Grid min-width floors out at 140px so it always shows 2 cols on phones
- * - CartToast repositioned above mobile safe-area
- * - All interactive targets ≥44px tall (iOS/Android HIG)
- * - Recommendations limit raised to 50 (default)
+ * MOBILE NAVBAR UPDATE:
+ * - On ≤700px: profile avatar, dark mode toggle, and notifications are
+ *   collapsed into a single avatar button that opens an animated dropdown
+ * - Dropdown contains: user name/email, profile link, notifications (with badge),
+ *   dark/light mode toggle, and current mood display
+ * - Dropdown closes on outside click or item selection
+ * - Re-scan button hidden on mobile to reduce clutter
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -234,8 +229,6 @@ function TrendingCard({ item, onPress, onAddToCart }: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        /* Width & image height are now driven by CSS custom properties set
-           on .mm-trending-strip so they respond to breakpoints cleanly.    */
         flex: '0 0 var(--trending-card-w, 200px)',
         minWidth: 'var(--trending-card-w, 200px)',
         borderRadius: 14, overflow: 'hidden',
@@ -247,7 +240,6 @@ function TrendingCard({ item, onPress, onAddToCart }: {
         scrollSnapAlign: 'start',
       }}
     >
-      {/* Image height responds to breakpoint custom property */}
       <div style={{ position: 'relative', height: 'var(--trending-img-h, 140px)' as any }}>
         <Image
           source={{ uri: getProductImage(item) }}
@@ -264,7 +256,6 @@ function TrendingCard({ item, onPress, onAddToCart }: {
         }}>Hot</div>
       </div>
       <div style={{ padding: '11px 12px 12px' }}>
-        {/* Name truncated so long titles never force the card wider */}
         <p style={{
           margin: '0 0 8px',
           fontSize: 'var(--trending-name-fs, 13px)' as any,
@@ -376,8 +367,11 @@ export default function HomeScreenWeb() {
   const [isDesktop, setIsDesktop]               = useState(true);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [unreadCount, setUnreadCount]           = useState(0);
+  const [moreMenuOpen, setMoreMenuOpen]         = useState(false);
+
   const snapTimer      = useRef<ReturnType<typeof setTimeout> | null>(null);
   const allProductsRef = useRef<HTMLElement | null>(null);
+  const moreMenuRef    = useRef<HTMLDivElement | null>(null);
 
   // How many recs to show in the collapsed grid before "See all"
   const REC_PREVIEW = 10;
@@ -394,6 +388,17 @@ export default function HomeScreenWeb() {
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
+  }, []);
+
+  /* ── Close more menu on outside click ────────────────────────────────── */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   /* ── Passive ambient mood detection ───────────────────────────────────── */
@@ -700,6 +705,196 @@ export default function HomeScreenWeb() {
         .mm-burger:hover span { background: ${pri}; }
 
         /* ═══════════════════════════════════
+           DESKTOP/MOBILE VISIBILITY HELPERS
+        ═══════════════════════════════════ */
+        .mm-desktop-only { display: flex; }
+        .mm-mobile-only  { display: none; }
+
+        /* ═══════════════════════════════════
+           MORE DROPDOWN (mobile/tablet)
+        ═══════════════════════════════════ */
+        .mm-more-menu-wrap {
+          position: relative;
+        }
+
+        .mm-more-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: 240px;
+          background: ${card};
+          border: 1px solid ${bord};
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.10);
+          z-index: 500;
+          overflow: hidden;
+          animation: mm-dropdown-in 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+          transform-origin: top right;
+        }
+
+        @keyframes mm-dropdown-in {
+          from { opacity: 0; transform: scale(0.90) translateY(-8px); }
+          to   { opacity: 1; transform: scale(1)    translateY(0);    }
+        }
+
+        .mm-more-header {
+          padding: 16px 16px 12px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .mm-more-header-avatar {
+          width: 42px; height: 42px;
+          border-radius: 50%;
+          background: ${pri};
+          color: #fff;
+          font-size: 14px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          border: 2px solid ${tint};
+        }
+
+        .mm-more-header-info {
+          min-width: 0;
+        }
+
+        .mm-more-header-name {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: ${tp};
+          letter-spacing: -0.2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .mm-more-header-email {
+          font-size: 11px;
+          color: ${ts};
+          margin-top: 1px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .mm-more-divider {
+          height: 1px;
+          background: ${bord};
+          margin: 2px 0;
+        }
+
+        .mm-more-item {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          width: 100%;
+          padding: 12px 16px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-family: "Sora", sans-serif;
+          font-size: 13.5px;
+          font-weight: 500;
+          color: ${tp};
+          text-align: left;
+          transition: background 0.12s;
+          min-height: 48px;
+          position: relative;
+        }
+        .mm-more-item:hover { background: ${bg}; }
+        .mm-more-item:active { background: ${tint}; }
+
+        .mm-more-item-icon {
+          font-size: 18px;
+          width: 26px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .mm-more-item-label {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .mm-more-item-sub {
+          font-size: 11px;
+          color: ${ts};
+          margin-top: 1px;
+          font-weight: 400;
+        }
+
+        .mm-more-badge {
+          background: #EF4444;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 700;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 9px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 5px;
+          flex-shrink: 0;
+        }
+
+        .mm-more-mood-row {
+          padding: 12px 16px 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .mm-more-mood-pip {
+          width: 38px; height: 38px;
+          border-radius: 10px;
+          background: ${tint};
+          border: 1px solid ${bord};
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          flex-shrink: 0;
+        }
+
+        .mm-more-mood-info {}
+
+        .mm-more-mood-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: ${tp};
+          letter-spacing: -0.2px;
+        }
+
+        .mm-more-mood-sub {
+          font-size: 10.5px;
+          color: ${ts};
+          margin-top: 1px;
+          font-weight: 400;
+        }
+
+        /* toggle pill inside dropdown */
+        .mm-toggle-pill {
+          margin-left: auto;
+          width: 40px; height: 22px;
+          border-radius: 11px;
+          border: none;
+          cursor: pointer;
+          position: relative;
+          transition: background 0.2s;
+          flex-shrink: 0;
+          background: ${pri};
+        }
+        .mm-toggle-pill-knob {
+          position: absolute;
+          top: 3px;
+          width: 16px; height: 16px;
+          border-radius: 50%;
+          background: #fff;
+          transition: left 0.2s cubic-bezier(0.34,1.3,0.64,1);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+        }
+
+        /* ═══════════════════════════════════
            BODY CONTAINER
         ═══════════════════════════════════ */
         .mm-body {
@@ -814,8 +1009,6 @@ export default function HomeScreenWeb() {
 
         /* ═══════════════════════════════════
            TRENDING STRIP
-           Card dimensions are driven by CSS custom properties so they
-           respond to breakpoints without touching the React component.
         ═══════════════════════════════════ */
         .mm-trending-strip {
           display: flex; gap: 14px;
@@ -825,7 +1018,6 @@ export default function HomeScreenWeb() {
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
 
-          /* Default (desktop) card dimensions */
           --trending-card-w:  200px;
           --trending-img-h:   140px;
           --trending-name-fs: 13px;
@@ -941,7 +1133,7 @@ export default function HomeScreenWeb() {
           }
         }
 
-        /* ── Tablet portrait ≤700px — hide text labels + inline search ── */
+        /* ── Tablet portrait ≤700px — collapse to dropdown ── */
         @media (max-width: 700px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
           .mm-main-inner { padding: 14px 14px 60px; }
@@ -954,12 +1146,19 @@ export default function HomeScreenWeb() {
           .mm-topnav-search { display: none; }
           .mm-search-toggle { display: flex; }
 
+          /* Desktop-only nav items hidden; mobile dropdown shown */
+          .mm-desktop-only { display: none !important; }
+          .mm-mobile-only  { display: flex; }
+
+          /* Hide re-scan on mobile to save space */
+          .mm-rescan-btn { display: none !important; }
+
           .mm-topnav { height: 52px; padding: 0 14px; gap: 6px; }
           .mm-topnav-actions { gap: 4px; }
           .mm-icon-btn { height: 36px; min-width: 36px; padding: 0 8px; font-size: 15px; }
           .mm-logo-text { font-size: 17px; }
           .mm-logo-icon { width: 30px; height: 30px; font-size: 15px; }
-          .mm-avatar { width: 32px; height: 32px; font-size: 10px; }
+          .mm-avatar { width: 34px; height: 34px; font-size: 11px; }
           .mm-trending-strip {
             --trending-card-w:  158px;
             --trending-img-h:   110px;
@@ -980,7 +1179,7 @@ export default function HomeScreenWeb() {
           .mm-icon-btn { height: 34px; min-width: 34px; padding: 0 7px; font-size: 14px; }
           .mm-logo-text { font-size: 16px; }
           .mm-logo-icon { width: 28px; height: 28px; font-size: 14px; border-radius: 7px; }
-          .mm-avatar { width: 30px; height: 30px; font-size: 10px; }
+          .mm-avatar { width: 32px; height: 32px; font-size: 10px; }
           .mm-topnav-actions { gap: 3px; }
           .mm-trending-strip {
             --trending-card-w:  146px;
@@ -1006,7 +1205,7 @@ export default function HomeScreenWeb() {
           .mm-topnav-actions { gap: 2px; }
           .mm-icon-btn { min-width: 32px; height: 32px; padding: 0 6px; font-size: 13px; }
           .mm-logo-icon { width: 26px; height: 26px; font-size: 13px; border-radius: 6px; }
-          .mm-avatar { width: 28px; height: 28px; font-size: 9px; }
+          .mm-avatar { width: 30px; height: 30px; font-size: 10px; }
           .mm-burger { min-width: 36px; padding: 0 8px; }
           .mm-trending-strip {
             --trending-card-w:  134px;
@@ -1054,6 +1253,7 @@ export default function HomeScreenWeb() {
 
           <div className="mm-topnav-actions">
 
+            {/* Mobile search toggle */}
             <button
               className="mm-icon-btn mm-search-toggle"
               onClick={() => setShowMobileSearch(v => !v)}
@@ -1062,32 +1262,45 @@ export default function HomeScreenWeb() {
               ⌕
             </button>
 
+            {/* Re-scan button (hidden on mobile via CSS) */}
             {detecting ? (
-              <button className="mm-icon-btn" disabled>
+              <button className="mm-icon-btn mm-rescan-btn" disabled>
                 <div className="mm-spinner" />
                 <span className="mm-btn-label">Detecting…</span>
               </button>
             ) : permissionDenied ? (
-              <button className="mm-icon-btn" onClick={() => router.push('/camera')} title="Camera access denied">
+              <button className="mm-icon-btn mm-rescan-btn" onClick={() => router.push('/camera')} title="Camera access denied">
                 🚫 <span className="mm-btn-label">Cam denied</span>
               </button>
             ) : (
-              <button className="mm-icon-btn" onClick={rescan}>
+              <button className="mm-icon-btn mm-rescan-btn" onClick={rescan}>
                 ↻ <span className="mm-btn-label">Re-scan</span>
               </button>
             )}
 
-            <button className="mm-icon-btn" onClick={toggleDark} aria-label="Toggle theme" style={{ fontSize: 16 }}>
+            {/* ── Desktop-only individual buttons ── */}
+            <button
+              className="mm-icon-btn mm-desktop-only"
+              onClick={toggleDark}
+              aria-label="Toggle theme"
+              style={{ fontSize: 16 }}
+            >
               {isDark ? '☀️' : '🌙'}
             </button>
 
-            <button className="mm-icon-btn" onClick={() => router.push('/notifications')} aria-label="Notifications" style={{ fontSize: 16 }}>
+            <button
+              className="mm-icon-btn mm-desktop-only"
+              onClick={() => router.push('/notifications')}
+              aria-label="Notifications"
+              style={{ fontSize: 16 }}
+            >
               🔔
               {unreadCount > 0 && (
                 <span className="mm-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}
             </button>
 
+            {/* Cart always visible */}
             <button className="mm-icon-btn" onClick={() => router.push('/(tabs)/cart')}>
               🛒 <span className="mm-btn-label">Cart</span>
               {cartCount > 0 && (
@@ -1095,9 +1308,118 @@ export default function HomeScreenWeb() {
               )}
             </button>
 
-            <button className="mm-avatar" onClick={() => router.push('/profile')} title={profile?.name ?? 'Profile'}>
+            {/* Desktop-only avatar */}
+            <button
+              className="mm-avatar mm-desktop-only"
+              onClick={() => router.push('/profile')}
+              title={profile?.name ?? 'Profile'}
+            >
               {initials}
             </button>
+
+            {/* ── Mobile/tablet: avatar opens dropdown ── */}
+            <div className="mm-more-menu-wrap mm-mobile-only" ref={moreMenuRef}>
+              <button
+                className="mm-avatar"
+                onClick={() => setMoreMenuOpen(v => !v)}
+                aria-label="Account menu"
+                aria-expanded={moreMenuOpen}
+                style={{
+                  outline: moreMenuOpen ? `2px solid ${pri}` : 'none',
+                  outlineOffset: 2,
+                }}
+              >
+                {initials}
+              </button>
+
+              {moreMenuOpen && (
+                <div className="mm-more-dropdown" role="menu">
+
+                  {/* Header: avatar + name + email */}
+                  <div className="mm-more-header">
+                    <div className="mm-more-header-avatar">{initials}</div>
+                    <div className="mm-more-header-info">
+                      <div className="mm-more-header-name">{profile?.name ?? 'Account'}</div>
+                      <div className="mm-more-header-email">{user?.email ?? ''}</div>
+                    </div>
+                  </div>
+
+                  <div className="mm-more-divider" />
+
+                  {/* Profile */}
+                  <button
+                    className="mm-more-item"
+                    role="menuitem"
+                    onClick={() => { router.push('/profile'); setMoreMenuOpen(false); }}
+                  >
+                    <span className="mm-more-item-icon">👤</span>
+                    <span className="mm-more-item-label">
+                      <div>Profile</div>
+                      <div className="mm-more-item-sub">View & edit your account</div>
+                    </span>
+                  </button>
+
+                  {/* Notifications */}
+                  <button
+                    className="mm-more-item"
+                    role="menuitem"
+                    onClick={() => { router.push('/notifications'); setMoreMenuOpen(false); }}
+                  >
+                    <span className="mm-more-item-icon">🔔</span>
+                    <span className="mm-more-item-label">
+                      <div>Notifications</div>
+                      {unreadCount > 0 && (
+                        <div className="mm-more-item-sub">{unreadCount} unread</div>
+                      )}
+                    </span>
+                    {unreadCount > 0 && (
+                      <span className="mm-more-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    )}
+                  </button>
+
+                  {/* Dark / Light mode */}
+                  <button
+                    className="mm-more-item"
+                    role="menuitem"
+                    onClick={() => { toggleDark(); setMoreMenuOpen(false); }}
+                  >
+                    <span className="mm-more-item-icon">{isDark ? '☀️' : '🌙'}</span>
+                    <span className="mm-more-item-label">
+                      <div>{isDark ? 'Light mode' : 'Dark mode'}</div>
+                      <div className="mm-more-item-sub">Currently {isDark ? 'dark' : 'light'}</div>
+                    </span>
+                    {/* Visual toggle pill */}
+                    <div
+                      className="mm-toggle-pill"
+                      style={{ background: isDark ? pri : `${bord}` }}
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="mm-toggle-pill-knob"
+                        style={{ left: isDark ? '21px' : '3px' }}
+                      />
+                    </div>
+                  </button>
+
+                  <div className="mm-more-divider" />
+
+                  {/* Current mood */}
+                  <div className="mm-more-mood-row">
+                    <div className="mm-more-mood-pip">
+                      {detecting
+                        ? <div className="mm-spinner" style={{ width: 18, height: 18 }} />
+                        : selectedMood.emoji}
+                    </div>
+                    <div className="mm-more-mood-info">
+                      <div className="mm-more-mood-label">{detecting ? 'Detecting…' : selectedMood.label}</div>
+                      <div className="mm-more-mood-sub">Current mood · auto-detected</div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </div>
+
           </div>
         </nav>
 
@@ -1236,7 +1558,7 @@ export default function HomeScreenWeb() {
                 </section>
               )}
 
-              {/* Recommendations — up to 50, paginated at REC_PREVIEW */}
+              {/* Recommendations */}
               {recommended.length > 0 && (
                 <section className="mm-section">
                   <div className="mm-section-header">
