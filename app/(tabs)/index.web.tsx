@@ -543,39 +543,40 @@ export default function HomeScreenWeb() {
         ═══════════════════════════════════ */
         .mm-topnav {
           position: sticky; top: 0; z-index: 300;
-          height: 56px;
+          height: 60px;
           background: ${card};
           border-bottom: 1px solid ${bord};
           display: flex; align-items: center;
-          padding: 0 16px; gap: 10px;
+          padding: 0 24px; gap: 12px;
           flex-shrink: 0;
           backdrop-filter: blur(20px) saturate(1.4);
           -webkit-backdrop-filter: blur(20px) saturate(1.4);
         }
 
         .mm-logo {
-          display: flex; align-items: center; gap: 8px;
+          display: flex; align-items: center; gap: 9px;
           flex-shrink: 0; text-decoration: none; cursor: pointer;
         }
         .mm-logo-icon {
-          width: 30px; height: 30px; border-radius: 8px;
+          width: 34px; height: 34px; border-radius: 9px;
           background: ${pri};
           display: flex; align-items: center; justify-content: center;
-          font-size: 15px; flex-shrink: 0;
+          font-size: 17px; flex-shrink: 0;
         }
         .mm-logo-text {
-          font-family: "Lora", serif; font-size: 18px;
+          font-family: "Lora", serif; font-size: 19px;
           font-weight: 600; color: ${tp}; letter-spacing: -0.4px;
         }
         .mm-logo-text em { font-style: italic; color: ${pri}; }
 
+        /* ── Inline search (desktop/laptop) ── */
         .mm-topnav-search {
-          flex: 1; max-width: 400px; position: relative;
+          flex: 1; max-width: 480px; position: relative;
         }
         .mm-topnav-search input {
-          width: 100%; height: 36px;
+          width: 100%; height: 38px;
           background: ${bg}; border: 1px solid ${bord};
-          border-radius: 8px; padding: 0 14px 0 36px;
+          border-radius: 9px; padding: 0 14px 0 38px;
           font-size: 13.5px; font-family: "Sora", sans-serif;
           color: ${tp}; outline: none;
           transition: border-color 0.15s, box-shadow 0.15s;
@@ -585,11 +586,12 @@ export default function HomeScreenWeb() {
         }
         .mm-topnav-search input::placeholder { color: ${ts}; }
         .mm-search-icon {
-          position: absolute; left: 11px; top: 50%;
-          transform: translateY(-50%); font-size: 13px;
+          position: absolute; left: 12px; top: 50%;
+          transform: translateY(-50%); font-size: 14px;
           color: ${ts}; pointer-events: none;
         }
 
+        /* ── Mobile drop-down search bar ── */
         .mm-mobile-search {
           background: ${card};
           border-bottom: 1px solid ${bord};
@@ -599,9 +601,9 @@ export default function HomeScreenWeb() {
           position: relative;
         }
         .mm-mobile-search input {
-          width: 100%; height: 38px;
+          width: 100%; height: 40px;
           background: ${bg}; border: 1px solid ${bord};
-          border-radius: 8px; padding: 0 14px 0 36px;
+          border-radius: 9px; padding: 0 14px 0 38px;
           font-size: 14px; font-family: "Sora", sans-serif;
           color: ${tp}; outline: none;
           transition: border-color 0.15s, box-shadow 0.15s;
@@ -616,28 +618,33 @@ export default function HomeScreenWeb() {
           color: ${ts}; pointer-events: none;
         }
 
+        /* ── Action group ── */
         .mm-topnav-actions {
           display: flex; align-items: center;
-          gap: 6px; margin-left: auto; flex-shrink: 0;
+          gap: 8px; margin-left: auto; flex-shrink: 0;
         }
 
+        /* ── Icon buttons ── */
         .mm-icon-btn {
           height: 38px; min-width: 38px;
-          border-radius: 8px;
+          border-radius: 9px;
           background: transparent; border: 1px solid ${bord};
           color: ${ts}; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           gap: 6px; font-size: 13px; font-weight: 500;
           font-family: "Sora", sans-serif;
           transition: all 0.15s; white-space: nowrap;
-          padding: 0 10px; position: relative;
+          padding: 0 12px; position: relative;
           flex-shrink: 0;
         }
         .mm-icon-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
         .mm-icon-btn:disabled { opacity: 0.6; cursor: default; }
 
+        /* Search-toggle icon: hidden on wide screens, shown on narrow */
+        .mm-search-toggle { display: none; }
+
         .mm-btn-primary {
-          height: 38px; padding: 0 14px; border-radius: 8px;
+          height: 38px; padding: 0 14px; border-radius: 9px;
           background: ${pri}; border: 1px solid ${pri};
           font-size: 13px; font-weight: 600;
           font-family: "Sora", sans-serif; color: #fff;
@@ -674,9 +681,9 @@ export default function HomeScreenWeb() {
           flex-shrink: 0;
         }
         .mm-avatar {
-          width: 34px; height: 34px;
+          width: 36px; height: 36px;
           background: ${pri}; color: #fff;
-          font-size: 11px; font-weight: 700;
+          font-size: 12px; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; border-radius: 50%;
           border: 1px solid ${bord}; flex-shrink: 0;
@@ -684,7 +691,7 @@ export default function HomeScreenWeb() {
         }
         .mm-avatar:hover { border-color: ${pri}; box-shadow: 0 0 0 2px ${pri}30; }
 
-        .mm-burger { flex-direction: column; gap: 4px; padding: 0; }
+        .mm-burger { flex-direction: column; gap: 4px; padding: 0 10px; min-width: 42px; border: none; }
         .mm-burger span {
           display: block; height: 1.5px;
           border-radius: 2px; background: ${ts};
@@ -879,9 +886,17 @@ export default function HomeScreenWeb() {
            RESPONSIVE BREAKPOINTS
         ═══════════════════════════════════ */
 
+        /* ── Large desktop ≥1400px ── */
         @media (min-width: 1400px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
           .mm-main-inner { padding: 28px 36px 60px; }
+          .mm-topnav { height: 64px; padding: 0 32px; gap: 16px; }
+          .mm-topnav-search { max-width: 560px; }
+          .mm-topnav-search input { height: 40px; font-size: 14px; }
+          .mm-logo-icon { width: 36px; height: 36px; font-size: 18px; }
+          .mm-logo-text { font-size: 20px; }
+          .mm-icon-btn { height: 40px; min-width: 40px; font-size: 13.5px; }
+          .mm-avatar { width: 38px; height: 38px; font-size: 13px; }
           .mm-trending-strip {
             --trending-card-w:  220px;
             --trending-img-h:   155px;
@@ -890,30 +905,61 @@ export default function HomeScreenWeb() {
           }
         }
 
+        /* ── Laptop 1100–1399px ── */
+        @media (max-width: 1399px) and (min-width: 1101px) {
+          .mm-topnav { height: 60px; padding: 0 24px; gap: 12px; }
+          .mm-topnav-search { max-width: 420px; }
+        }
+
+        /* ── Small laptop ≤1100px ── */
         @media (max-width: 1100px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); }
           .mm-main-inner { padding: 20px 18px 60px; }
+          .mm-topnav { height: 56px; padding: 0 20px; gap: 10px; }
+          .mm-topnav-search { max-width: 340px; }
+          .mm-topnav-search input { height: 36px; }
+          .mm-topnav-actions { gap: 6px; }
           .mm-trending-strip {
             --trending-card-w:  185px;
             --trending-img-h:   128px;
           }
         }
 
+        /* ── Tablet landscape ≤900px ── */
         @media (max-width: 900px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
           .mm-section-title { font-size: 17px; }
+          .mm-topnav { height: 54px; padding: 0 16px; gap: 8px; }
+          .mm-topnav-search { max-width: 280px; }
+          .mm-topnav-search input { height: 34px; font-size: 13px; }
+          .mm-icon-btn { height: 36px; min-width: 36px; padding: 0 10px; font-size: 12.5px; }
+          .mm-avatar { width: 34px; height: 34px; font-size: 11px; }
+          .mm-topnav-actions { gap: 5px; }
           .mm-trending-strip {
             --trending-card-w:  170px;
             --trending-img-h:   118px;
           }
         }
 
+        /* ── Tablet portrait ≤700px — hide text labels + inline search ── */
         @media (max-width: 700px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
           .mm-main-inner { padding: 14px 14px 60px; }
           .mm-section-title { font-size: 16px; }
+
+          /* Labels disappear, icons only */
           .mm-btn-label { display: none; }
+
+          /* Inline search bar hidden — toggle button appears instead */
           .mm-topnav-search { display: none; }
+          .mm-search-toggle { display: flex; }
+
+          .mm-topnav { height: 52px; padding: 0 14px; gap: 6px; }
+          .mm-topnav-actions { gap: 4px; }
+          .mm-icon-btn { height: 36px; min-width: 36px; padding: 0 8px; font-size: 15px; }
+          .mm-logo-text { font-size: 17px; }
+          .mm-logo-icon { width: 30px; height: 30px; font-size: 15px; }
+          .mm-avatar { width: 32px; height: 32px; font-size: 10px; }
           .mm-trending-strip {
             --trending-card-w:  158px;
             --trending-img-h:   110px;
@@ -926,9 +972,16 @@ export default function HomeScreenWeb() {
           }
         }
 
+        /* ── Large phone ≤540px ── */
         @media (max-width: 540px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .mm-main-inner { padding: 12px 10px 60px; }
+          .mm-topnav { height: 50px; padding: 0 12px; gap: 5px; }
+          .mm-icon-btn { height: 34px; min-width: 34px; padding: 0 7px; font-size: 14px; }
+          .mm-logo-text { font-size: 16px; }
+          .mm-logo-icon { width: 28px; height: 28px; font-size: 14px; border-radius: 7px; }
+          .mm-avatar { width: 30px; height: 30px; font-size: 10px; }
+          .mm-topnav-actions { gap: 3px; }
           .mm-trending-strip {
             --trending-card-w:  146px;
             --trending-img-h:   100px;
@@ -941,14 +994,20 @@ export default function HomeScreenWeb() {
           }
         }
 
+        /* ── Small phone ≤380px ── */
         @media (max-width: 380px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
           .mm-main-inner { padding: 10px 8px 60px; }
+
+          /* Hide logo wordmark — icon only */
           .mm-logo-text { display: none; }
-          .mm-topnav { padding: 0 10px; gap: 6px; }
-          .mm-topnav-actions { gap: 4px; }
-          .mm-icon-btn { min-width: 34px; height: 34px; padding: 0 8px; }
-          .mm-avatar { width: 30px; height: 30px; }
+
+          .mm-topnav { height: 48px; padding: 0 10px; gap: 4px; }
+          .mm-topnav-actions { gap: 2px; }
+          .mm-icon-btn { min-width: 32px; height: 32px; padding: 0 6px; font-size: 13px; }
+          .mm-logo-icon { width: 26px; height: 26px; font-size: 13px; border-radius: 6px; }
+          .mm-avatar { width: 28px; height: 28px; font-size: 9px; }
+          .mm-burger { min-width: 36px; padding: 0 8px; }
           .mm-trending-strip {
             --trending-card-w:  134px;
             --trending-img-h:   90px;
@@ -996,10 +1055,9 @@ export default function HomeScreenWeb() {
           <div className="mm-topnav-actions">
 
             <button
-              className="mm-icon-btn"
+              className="mm-icon-btn mm-search-toggle"
               onClick={() => setShowMobileSearch(v => !v)}
               aria-label="Search"
-              style={{ display: 'none' } as any}
             >
               ⌕
             </button>
