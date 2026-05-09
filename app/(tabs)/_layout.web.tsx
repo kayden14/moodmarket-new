@@ -292,7 +292,6 @@ export default function WebTabLayout() {
         <Tabs.Screen name="index" />
         <Tabs.Screen name="cart" />
         <Tabs.Screen name="profile" />
-        <Tabs.Screen name="notifications" />
       </Tabs>
     </>
   );
