@@ -19,6 +19,12 @@ import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductImage } from '@/utils/images';
 import { notifyUser } from '@/services/notifyUser';
+import ProductRecommendations from '@/components/ProductRecommendations.web';
+import {
+  Star, Pencil, Trash2, MessageSquare, User, ShoppingBag,
+  Package, ArrowLeft, ArrowUp, Moon, Sun, Heart, ShoppingCart,
+  Link, Search, Minus, Check,
+} from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,15 +57,14 @@ function StarInput({ value, onChange, disabled = false }: {
           style={{
             background: 'none', border: 'none', padding: 0,
             cursor: disabled ? 'default' : 'pointer',
-            fontSize: 32,
-            color: i <= active ? '#F59E0B' : '#ccc',
-            transition: 'color 0.12s, transform 0.1s',
+            transition: 'transform 0.1s',
             transform: hovered === i ? 'scale(1.25)' : 'scale(1)',
             lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
         >
-          {i <= active ? '★' : '☆'}
+          <Star size={32} color={i <= active ? '#F59E0B' : '#ccc'} fill={i <= active ? '#F59E0B' : 'none'} strokeWidth={1.5} />
         </button>
       ))}
     </div>
@@ -71,9 +76,7 @@ function StarDisplay({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
     <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ fontSize: size, color: i <= full ? '#F59E0B' : '#ddd', lineHeight: 1 }}>
-          {i <= full ? '★' : '☆'}
-        </span>
+        <Star key={i} size={size} color={i <= full ? '#F59E0B' : '#ddd'} fill={i <= full ? '#F59E0B' : 'none'} strokeWidth={1.5} />
       ))}
     </div>
   );
@@ -133,13 +136,15 @@ function ReviewCard({ review, isOwn, onEdit, onDelete, theme }: {
                 fontSize: 13, color: theme.primary, padding: '2px 4px',
                 fontFamily: '"Sora", sans-serif', fontWeight: 600,
                 transition: 'opacity 0.13s',
-              }}>✏ Edit</button>
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}><Pencil size={13} color={theme.primary} strokeWidth={2} /> Edit</button>
               <button onClick={onDelete} style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontSize: 13, color: '#EF4444', padding: '2px 4px',
                 fontFamily: '"Sora", sans-serif', fontWeight: 600,
                 transition: 'opacity 0.13s',
-              }}>🗑 Delete</button>
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}><Trash2 size={13} color="#EF4444" strokeWidth={2} /> Delete</button>
             </div>
           )}
         </div>
@@ -232,7 +237,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 16 }}>💬</span>
+          <MessageSquare size={16} color={theme.primary} strokeWidth={2} />
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>
             Reviews
           </h3>
@@ -262,7 +267,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
               transition: 'opacity 0.15s',
             }}
           >
-            ✏ {hasReviewed ? 'Edit yours' : 'Write a review'}
+            <Pencil size={13} color={theme.primary} strokeWidth={2.5} /> {hasReviewed ? 'Edit yours' : 'Write a review'}
           </button>
         )}
       </div>
@@ -337,7 +342,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
                 boxShadow: draftRating > 0 ? `0 4px 14px ${theme.primary}44` : 'none',
               }}
             >
-              {submitting ? '…' : '↑ Submit Review'}
+              {submitting ? '…' : <><ArrowUp size={14} color="#fff" strokeWidth={2.5} /> Submit Review</>}
             </button>
           </div>
         </div>
@@ -350,7 +355,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
           background: theme.card, border: `1px solid ${theme.border}`,
           borderRadius: 12, padding: '14px 18px', marginBottom: 20,
         }}>
-          <span style={{ fontSize: 16 }}>👤</span>
+          <User size={16} color={theme.inactive} strokeWidth={2} />
           <span style={{ fontSize: 13, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>
             Sign in to leave a review
           </span>
@@ -381,7 +386,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
         <div style={{ textAlign: 'center', padding: '32px 0', color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>Loading reviews…</div>
       ) : reviews.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 36 }}>⭐</span>
+          <Star size={36} color="#F59E0B" fill="#F59E0B" strokeWidth={1.5} />
           <p style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, margin: 0, fontFamily: '"Lora", serif' }}>No reviews yet</p>
           <p style={{ fontSize: 13, color: theme.textSecondary, margin: 0, fontFamily: '"Sora", sans-serif' }}>Be the first to share your thoughts!</p>
         </div>
@@ -467,7 +472,7 @@ export default function ProductDetailWeb() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
       `}</style>
       <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, fontFamily: '"Sora", sans-serif' }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={24} color={pri} strokeWidth={2} /></div>
         <p style={{ color: ts, fontSize: 14, fontWeight: 500 }}>Loading product…</p>
       </div>
     </>
@@ -478,10 +483,10 @@ export default function ProductDetailWeb() {
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
       <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Sora", sans-serif' }}>
-        <span style={{ fontSize: 48 }}>📦</span>
+        <Package size={48} color={tp} strokeWidth={1.5} />
         <p style={{ fontSize: 18, fontWeight: 700, color: tp }}>Product not found</p>
         <button onClick={() => router.back()} style={{ marginTop: 8, padding: '12px 28px', background: pri, border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>
-          ← Go Back
+          <ArrowLeft size={16} color="#fff" strokeWidth={2} /> Go Back
         </button>
       </div>
     </>
@@ -717,7 +722,7 @@ export default function ProductDetailWeb() {
         {/* ══ TOP NAV ══ */}
         <nav className="pd-topnav">
           <button className="pd-back-btn" onClick={() => router.back()}>
-            ← Back
+            <ArrowLeft size={16} color={ts} strokeWidth={2} /> Back
           </button>
 
           {/* breadcrumb */}
@@ -731,7 +736,7 @@ export default function ProductDetailWeb() {
 
           <div className="pd-nav-actions">
             <button className="pd-nav-btn" onClick={toggleDark} title="Toggle theme">
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? <Sun size={18} color={ts} strokeWidth={2} /> : <Moon size={18} color={ts} strokeWidth={2} />}
             </button>
             <button
               className="pd-nav-btn"
@@ -741,18 +746,17 @@ export default function ProductDetailWeb() {
                 return next;
               })}
               title={wished ? 'Remove from wishlist' : 'Add to wishlist'}
-              style={{ fontSize: 18, color: wished ? pri : ts }}
             >
-              {wished ? '♥' : '♡'}
+              <Heart size={18} color={wished ? pri : ts} fill={wished ? pri : 'none'} strokeWidth={2} />
             </button>
             <button className="pd-nav-btn" onClick={() => router.push('/(tabs)/cart')} title="Cart" style={{ position: 'relative' }}>
-              🛒
+              <ShoppingCart size={18} color={ts} strokeWidth={2} />
               {cartCount > 0 && (
                 <span className="pd-cart-badge">{cartCount > 9 ? '9+' : cartCount}</span>
               )}
             </button>
             <button className="pd-nav-btn" onClick={handleShare} title="Share">
-              🔗
+              <Link size={18} color={ts} strokeWidth={2} />
             </button>
           </div>
         </nav>
@@ -792,8 +796,9 @@ export default function ProductDetailWeb() {
                 fontSize: 11, fontFamily: '"Sora", sans-serif',
                 opacity: imgHovered ? 1 : 0,
                 transition: 'opacity 0.2s',
+                display: 'flex', alignItems: 'center', gap: 4,
               }}>
-                🔍 Product image
+                <Search size={11} color="#fff" strokeWidth={2} /> Product image
               </div>
             </div>
 
@@ -877,7 +882,7 @@ export default function ProductDetailWeb() {
                       onClick={() => setQuantity(q => Math.max(1, q - 1))}
                       disabled={quantity <= 1}
                     >
-                      −
+                      <Minus size={20} color={tp} strokeWidth={2.5} />
                     </button>
                     <span className="pd-qty-val">{quantity}</span>
                     <button
@@ -900,9 +905,9 @@ export default function ProductDetailWeb() {
                       return next;
                     })}
                     title={wished ? 'Remove from wishlist' : 'Save to wishlist'}
-                    style={{ color: wished ? pri : inact, borderColor: wished ? pri : bord, background: wished ? tint : bg }}
+                    style={{ borderColor: wished ? pri : bord, background: wished ? tint : bg }}
                   >
-                    {wished ? '♥' : '♡'}
+                    <Heart size={22} color={wished ? pri : inact} fill={wished ? pri : 'none'} strokeWidth={2} />
                   </button>
 
                   <button
@@ -913,9 +918,9 @@ export default function ProductDetailWeb() {
                     {addingToCart ? (
                       <span style={{ fontSize: 13 }}>Adding…</span>
                     ) : added ? (
-                      <><span style={{ fontSize: 18 }}>✓</span> Added to Cart!</>
+                      <><Check size={18} color="#fff" strokeWidth={2.5} /> Added to Cart!</>
                     ) : (
-                      <><span style={{ fontSize: 18 }}>🛒</span> Add to Cart</>
+                      <><ShoppingCart size={18} color="#fff" strokeWidth={2} /> Add to Cart</>
                     )}
                   </button>
 
@@ -951,6 +956,16 @@ export default function ProductDetailWeb() {
                   isDark={isDark}
                 />
               </div>
+
+              {/* ── RECOMMENDATIONS ── */}
+              {product.mood_tags && product.mood_tags.length > 0 && (
+                <div style={{ marginTop: 32 }}>
+                  <ProductRecommendations
+                    currentProductId={id as string}
+                    moodTags={product.mood_tags}
+                  />
+                </div>
+              )}
 
             </div>
           </div>

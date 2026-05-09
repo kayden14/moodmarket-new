@@ -144,7 +144,7 @@ export default function SearchScreen() {
           data={results}
           keyExtractor={i => i.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 60 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: theme.border, marginLeft: 92 }} />}

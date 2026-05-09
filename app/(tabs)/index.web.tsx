@@ -31,6 +31,33 @@ import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
 import { NotificationService } from '@/services/notifications';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
+import {
+  LayoutGrid, Sparkles, Coffee, BookOpen, Gem, Flower2,
+  Heart, Star, Search, RefreshCw, Ban, Sun, Moon, Bell,
+  ShoppingCart, User, ChevronRight, ArrowRight,
+} from 'lucide-react';
+
+/* ── helpers ───────────────────────────────────────────────────────────── */
+
+function WebEmoji({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <span style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, emoji', ...style }}>
+      {children}
+    </span>
+  );
+}
+
+function CategoryIcon({ id, size = 13, color = 'currentColor' }: { id: string; size?: number; color?: string }) {
+  switch (id) {
+    case 'all': return <LayoutGrid size={size} color={color} />;
+    case 'self-care': return <Sparkles size={size} color={color} />;
+    case 'food': return <Coffee size={size} color={color} />;
+    case 'books': return <BookOpen size={size} color={color} />;
+    case 'accessories': return <Gem size={size} color={color} />;
+    case 'relaxation': return <Flower2 size={size} color={color} />;
+    default: return null;
+  }
+}
 
 /* ─────────────────────────────── constants ─────────────────────────────── */
 
@@ -46,12 +73,12 @@ const MOODS: { key: MoodKey; emoji: string; label: string }[] = [
 ];
 
 const CATEGORIES = [
-  { id: 'all',         label: 'All Products',  emoji: '⊞',  keywords: [] as string[] },
-  { id: 'self-care',   label: 'Self Care',      emoji: '✦',  keywords: ['self-care','self care','skincare','skin care','beauty','moisturiser','moisturizer','cleanser','serum','toner','face','body','lotion','soap','scrub','bath','hygiene','wellness','nurturing','soothing','pamper'] },
-  { id: 'food',        label: 'Food & Drink',   emoji: '◈',  keywords: ['food','snack','drink','tea','coffee','chocolate','candy','sweet','beverage','juice','smoothie','protein','supplement','vitamin','nutrition','healthy','organic','herbal','cocoa','honey','granola','cookie','biscuit','fruit','nut'] },
-  { id: 'books',       label: 'Books',          emoji: '⬡',  keywords: ['book','novel','journal','diary','planner','notebook','magazine','guide','read','fiction','non-fiction','poetry','motivational','self-help','mindfulness','spiritual','educational'] },
-  { id: 'accessories', label: 'Accessories',    emoji: '◇',  keywords: ['accessory','accessories','jewellery','jewelry','bracelet','necklace','ring','earring','bag','purse','wallet','watch','sunglasses','hat','scarf','belt','keychain','pin','charm','crystal','stone','gem'] },
-  { id: 'relaxation',  label: 'Relaxation',     emoji: '◯',  keywords: ['relaxation','relax','calm','candle','aromatherapy','diffuser','essential oil','massage','yoga','meditation','pillow','blanket','sleep','rest','stress','anxiety','zen','peaceful','spa','bath bomb','incense','music','sound','breathing'] },
+  { id: 'all',         label: 'All Products',  emoji: '',  keywords: [] as string[] },
+  { id: 'self-care',   label: 'Self Care',      emoji: '',  keywords: ['self-care','self care','skincare','skin care','beauty','moisturiser','moisturizer','cleanser','serum','toner','face','body','lotion','soap','scrub','bath','hygiene','wellness','nurturing','soothing','pamper'] },
+  { id: 'food',        label: 'Food & Drink',   emoji: '',  keywords: ['food','snack','drink','tea','coffee','chocolate','candy','sweet','beverage','juice','smoothie','protein','supplement','vitamin','nutrition','healthy','organic','herbal','cocoa','honey','granola','cookie','biscuit','fruit','nut'] },
+  { id: 'books',       label: 'Books',          emoji: '',  keywords: ['book','novel','journal','diary','planner','notebook','magazine','guide','read','fiction','non-fiction','poetry','motivational','self-help','mindfulness','spiritual','educational'] },
+  { id: 'accessories', label: 'Accessories',    emoji: '',  keywords: ['accessory','accessories','jewellery','jewelry','bracelet','necklace','ring','earring','bag','purse','wallet','watch','sunglasses','hat','scarf','belt','keychain','pin','charm','crystal','stone','gem'] },
+  { id: 'relaxation',  label: 'Relaxation',     emoji: '',  keywords: ['relaxation','relax','calm','candle','aromatherapy','diffuser','essential oil','massage','yoga','meditation','pillow','blanket','sleep','rest','stress','anxiety','zen','peaceful','spa','bath bomb','incense','music','sound','breathing'] },
 ];
 
 function getProductImage(product: Product): string {
@@ -156,7 +183,7 @@ function ProductCard({ item, onPress, onAddToCart }: {
           }}
           aria-label={liked ? 'Unlike' : 'Like'}
         >
-          {liked ? '♥' : '♡'}
+          <Heart size={14} fill={liked ? 'currentColor' : 'none'} color={liked ? theme.primary : 'rgba(0,0,0,0.3)'} />
         </button>
         {'reason' in item && (item as ScoredProduct).reason && (
           <div style={{
@@ -177,9 +204,7 @@ function ProductCard({ item, onPress, onAddToCart }: {
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {[1,2,3,4,5].map(i => (
-            <span key={i} style={{ fontSize: 12, color: i <= stars ? '#F59E0B' : theme.border, lineHeight: 1 }}>
-              {i <= stars ? '★' : '☆'}
-            </span>
+            <Star key={i} size={12} fill={i <= stars ? '#F59E0B' : 'none'} color={i <= stars ? '#F59E0B' : theme.border} style={{ flexShrink: 0 }} />
           ))}
           <span style={{ fontSize: 11, color: theme.textSecondary, marginLeft: 3 }}>
             {(item as Product).rating?.toFixed(1)}
@@ -333,7 +358,9 @@ function CartToast({ count, total, visible, onPress }: {
         maxWidth: 'calc(100vw - 32px)',
       }}
     >
-      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>🛒</div>
+      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <ShoppingCart size={15} color="#fff" />
+      </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ color: '#fff', fontWeight: 600, fontSize: 13, letterSpacing: -0.2 }}>Added to cart</div>
         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
@@ -341,7 +368,7 @@ function CartToast({ count, total, visible, onPress }: {
         </div>
       </div>
       <div style={{ marginLeft: 6, color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 600, borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 10, flexShrink: 0 }}>
-        View →
+        View <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
       </div>
     </div>
   );
@@ -510,8 +537,8 @@ export default function HomeScreenWeb() {
   if (loading) {
     return (
       <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Sora", sans-serif' }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
-          {selectedMood.emoji}
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <WebEmoji style={{ fontSize: 22 }}>{selectedMood.emoji}</WebEmoji>
         </div>
         <p style={{ color: ts, fontSize: 14, margin: 0, fontWeight: 500 }}>Loading your mood feed…</p>
       </div>
@@ -1238,12 +1265,12 @@ export default function HomeScreenWeb() {
           </button>
 
           <div className="mm-logo" onClick={() => router.push('/')}>
-            <div className="mm-logo-icon">{selectedMood.emoji}</div>
+            <div className="mm-logo-icon"><WebEmoji style={{ fontSize: 17 }}>{selectedMood.emoji}</WebEmoji></div>
             <span className="mm-logo-text">Mood<em>Market</em></span>
           </div>
 
           <div className="mm-topnav-search">
-            <span className="mm-search-icon">⌕</span>
+            <Search size={14} color={ts} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             <input
               type="search"
               placeholder="Search products…"
@@ -1260,7 +1287,7 @@ export default function HomeScreenWeb() {
               onClick={() => setShowMobileSearch(v => !v)}
               aria-label="Search"
             >
-              ⌕
+              <Search size={14} color={ts} />
             </button>
 
             {/* Re-scan button (hidden on mobile via CSS) */}
@@ -1271,11 +1298,11 @@ export default function HomeScreenWeb() {
               </button>
             ) : permissionDenied ? (
               <button className="mm-icon-btn mm-rescan-btn" onClick={() => router.push('/camera')} title="Camera access denied">
-                🚫 <span className="mm-btn-label">Cam denied</span>
+                <Ban size={14} color={ts} /> <span className="mm-btn-label">Cam denied</span>
               </button>
             ) : (
               <button className="mm-icon-btn mm-rescan-btn" onClick={rescan}>
-                ↻ <span className="mm-btn-label">Re-scan</span>
+                <RefreshCw size={14} color={ts} /> <span className="mm-btn-label">Re-scan</span>
               </button>
             )}
 
@@ -1284,18 +1311,16 @@ export default function HomeScreenWeb() {
               className="mm-icon-btn mm-desktop-only"
               onClick={toggleDark}
               aria-label="Toggle theme"
-              style={{ fontSize: 16 }}
             >
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? <Sun size={16} color={ts} /> : <Moon size={16} color={ts} />}
             </button>
 
             <button
               className="mm-icon-btn mm-desktop-only"
               onClick={() => router.push('/notifications')}
               aria-label="Notifications"
-              style={{ fontSize: 16 }}
             >
-              🔔
+              <Bell size={16} color={ts} />
               {unreadCount > 0 && (
                 <span className="mm-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}
@@ -1303,7 +1328,7 @@ export default function HomeScreenWeb() {
 
             {/* Cart always visible */}
             <button className="mm-icon-btn" onClick={() => router.push('/(tabs)/cart')}>
-              🛒 <span className="mm-btn-label">Cart</span>
+              <ShoppingCart size={14} color={ts} /> <span className="mm-btn-label">Cart</span>
               {cartCount > 0 && (
                 <span className="mm-cart-badge">{cartCount > 9 ? '9+' : cartCount}</span>
               )}
@@ -1353,7 +1378,7 @@ export default function HomeScreenWeb() {
                     role="menuitem"
                     onClick={() => { router.push('/profile'); setMoreMenuOpen(false); }}
                   >
-                    <span className="mm-more-item-icon">👤</span>
+                    <span className="mm-more-item-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><User size={18} color={tp} /></span>
                     <span className="mm-more-item-label">
                       <div>Profile</div>
                       <div className="mm-more-item-sub">View & edit your account</div>
@@ -1366,7 +1391,7 @@ export default function HomeScreenWeb() {
                     role="menuitem"
                     onClick={() => { router.push('/notifications'); setMoreMenuOpen(false); }}
                   >
-                    <span className="mm-more-item-icon">🔔</span>
+                    <span className="mm-more-item-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} color={tp} /></span>
                     <span className="mm-more-item-label">
                       <div>Notifications</div>
                       {unreadCount > 0 && (
@@ -1384,7 +1409,7 @@ export default function HomeScreenWeb() {
                     role="menuitem"
                     onClick={() => { toggleDark(); setMoreMenuOpen(false); }}
                   >
-                    <span className="mm-more-item-icon">{isDark ? '☀️' : '🌙'}</span>
+                    <span className="mm-more-item-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{isDark ? <Sun size={18} color={tp} /> : <Moon size={18} color={tp} />}</span>
                     <span className="mm-more-item-label">
                       <div>{isDark ? 'Light mode' : 'Dark mode'}</div>
                       <div className="mm-more-item-sub">Currently {isDark ? 'dark' : 'light'}</div>
@@ -1409,7 +1434,7 @@ export default function HomeScreenWeb() {
                     <div className="mm-more-mood-pip">
                       {detecting
                         ? <div className="mm-spinner" style={{ width: 18, height: 18 }} />
-                        : selectedMood.emoji}
+                        : <WebEmoji style={{ fontSize: 20 }}>{selectedMood.emoji}</WebEmoji>}
                     </div>
                     <div className="mm-more-mood-info">
                       <div className="mm-more-mood-label">{detecting ? 'Detecting…' : selectedMood.label}</div>
@@ -1426,7 +1451,7 @@ export default function HomeScreenWeb() {
 
         {showMobileSearch && (
           <div className="mm-mobile-search">
-            <span className="mm-mobile-search-icon">⌕</span>
+            <Search size={14} color={ts} style={{ position: 'absolute', left: 25, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             <input
               type="search"
               placeholder="Search products…"
@@ -1455,15 +1480,15 @@ export default function HomeScreenWeb() {
 
               <div style={{ padding: '4px 22px 18px' }}>
                 <p style={{ fontSize: 11, color: ts, fontWeight: 400 }}>{greeting}</p>
-                <p style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 600, color: tp, letterSpacing: -0.3, marginTop: 2 }}>
+                <p style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: tp, letterSpacing: -0.5, marginTop: 2 }}>
                   {firstName ?? 'Welcome'}
                 </p>
               </div>
 
               <div style={{ margin: '0 14px 20px', padding: 14, background: bg, border: `1px solid ${bord}`, borderRadius: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: moodPalette.tint, border: `1px solid ${moodPalette.secondary}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                    {detecting ? <div className="mm-spinner" style={{ width: 20, height: 20 }} /> : selectedMood.emoji}
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: moodPalette.tint, border: `1px solid ${moodPalette.secondary}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {detecting ? <div className="mm-spinner" style={{ width: 20, height: 20 }} /> : <WebEmoji style={{ fontSize: 20 }}>{selectedMood.emoji}</WebEmoji>}
                   </div>
                   <div>
                     <p style={{ fontSize: 14, fontWeight: 600, color: tp, letterSpacing: -0.2 }}>
@@ -1486,7 +1511,7 @@ export default function HomeScreenWeb() {
                       onClick={() => handleMoodSelect(m)}
                       style={active ? { background: palette.tint, borderColor: palette.secondary } : {}}
                     >
-                      <span className="mm-mood-emoji">{m.emoji}</span>
+                      <span className="mm-mood-emoji"><WebEmoji style={{ fontSize: 16 }}>{m.emoji}</WebEmoji></span>
                       <span className="mm-mood-label" style={active ? { color: palette.primary } : {}}>{m.label}</span>
                       {active && (
                         <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: palette.primary, flexShrink: 0 }} />
@@ -1508,7 +1533,7 @@ export default function HomeScreenWeb() {
                       className={`mm-cat-item${active ? ' active' : ''}`}
                       onClick={() => { setSelectedCategory(cat.id); if (!isDesktop) setSidebarOpen(false); }}
                     >
-                      <span className="mm-cat-emoji">{cat.emoji}</span>
+                      <span className="mm-cat-emoji" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={cat.id} size={13} color={ts} /></span>
                       <span className="mm-cat-label">{cat.label}</span>
                     </button>
                   );
@@ -1525,13 +1550,13 @@ export default function HomeScreenWeb() {
                 <span>Home</span>
                 {selectedCategory !== 'all' && (
                   <>
-                    <span style={{ color: bord }}>›</span>
+                    <ChevronRight size={12} color={bord} style={{ flexShrink: 0 }} />
                     <span style={{ color: tp }}>{CATEGORIES.find(c => c.id === selectedCategory)?.label}</span>
                   </>
                 )}
                 {searchQuery && (
                   <>
-                    <span style={{ color: bord }}>›</span>
+                    <ChevronRight size={12} color={bord} style={{ flexShrink: 0 }} />
                     <span style={{ color: tp }}>"{searchQuery}"</span>
                   </>
                 )}
@@ -1543,7 +1568,7 @@ export default function HomeScreenWeb() {
                   <div className="mm-section-header">
                     <h2 className="mm-section-title">Trending Now</h2>
                     <button className="mm-see-all" onClick={() => allProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-                      See all →
+                      See all <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
                     </button>
                   </div>
                   <div className="mm-trending-strip">
@@ -1564,10 +1589,10 @@ export default function HomeScreenWeb() {
                 <section className="mm-section">
                   <div className="mm-section-header">
                     <h2 className="mm-section-title">
-                      For {selectedMood.label} {selectedMood.emoji}
+                      For {selectedMood.label} <WebEmoji>{selectedMood.emoji}</WebEmoji>
                     </h2>
                     <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
-                      {showAllRecs ? 'Show less' : `See all ${recommended.length} →`}
+                      {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} /></>}
                     </button>
                   </div>
                   <div className="mm-grid">
@@ -1605,7 +1630,7 @@ export default function HomeScreenWeb() {
 
                 {filteredProducts.length === 0 ? (
                   <div className="mm-empty">
-                    <div className="mm-empty-icon">🔍</div>
+                    <div className="mm-empty-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Search size={36} color={ts} strokeWidth={1.5} /></div>
                     <p className="mm-empty-text">No products found. Try a different category or search term.</p>
                     <button
                       className="mm-icon-btn"

@@ -379,9 +379,9 @@ function MoodHistoryScreenWeb() {
   const noteBg = isDark ? '#111827' : '#F1F5F9';
 
   const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: ${bg}; }
+    body { font-family: 'Sora', sans-serif; background: ${bg}; }
     @keyframes fade-up  { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
     @keyframes spin     { to   { transform: rotate(360deg); } }
     @keyframes bar-grow { from { width: 0; } }
@@ -403,7 +403,7 @@ function MoodHistoryScreenWeb() {
       display:inline-flex; align-items:center; gap:6px;
       padding:8px 16px; border-radius:999px; border:1.5px solid ${bord};
       background:none; cursor:pointer; font-size:13px; font-weight:700;
-      font-family:'Plus Jakarta Sans',sans-serif; color:${tp};
+      font-family:'Sora',sans-serif; color:${tp};
       transition:all .15s; white-space:nowrap;
     }
     .filter-chip:hover  { border-color:${pri}; color:${pri}; }
@@ -420,7 +420,7 @@ function MoodHistoryScreenWeb() {
       display:inline-flex; align-items:center; gap:8px;
       padding:10px 20px; border-radius:12px; border:1.5px solid ${bord};
       background:${card}; cursor:pointer; font-size:13px; font-weight:700;
-      font-family:'Plus Jakarta Sans',sans-serif; color:${pri}; transition:all .15s;
+      font-family:'Sora',sans-serif; color:${pri}; transition:all .15s;
     }
     .refresh-btn:hover:not(:disabled) { border-color:${pri}; }
     .refresh-btn:disabled { opacity:.5; cursor:not-allowed; }
@@ -443,11 +443,11 @@ function MoodHistoryScreenWeb() {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div style={{ minHeight:'60vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:20, padding:40, background:bg, fontFamily:'"Plus Jakarta Sans",sans-serif' }}>
+        <div style={{ minHeight:'60vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:20, padding:40, background:bg, fontFamily:'"Sora",sans-serif' }}>
           <div style={{ fontSize:64 }}>✨</div>
-          <h2 style={{ fontFamily:'"Fraunces",serif', fontSize:28, fontWeight:900, color:tp, textAlign:'center' }}>Sign in to see your mood history</h2>
+          <h2 style={{ fontFamily:'"Lora",serif', fontSize:28, fontWeight:900, color:tp, textAlign:'center' }}>Sign in to see your mood history</h2>
           <p style={{ color:ts, fontSize:15, textAlign:'center', maxWidth:360, lineHeight:1.65 }}>Track your emotional journey and discover patterns over time.</p>
-          <button onClick={() => router.push('/login' as any)} style={{ background:pri, border:'none', borderRadius:14, padding:'14px 36px', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:'"Plus Jakarta Sans",sans-serif', boxShadow:`0 6px 20px ${pri}44` }}>
+          <button onClick={() => router.push('/login' as any)} style={{ background:pri, border:'none', borderRadius:14, padding:'14px 36px', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:'"Sora",sans-serif', boxShadow:`0 6px 20px ${pri}44` }}>
             Sign In →
           </button>
         </div>
@@ -458,20 +458,20 @@ function MoodHistoryScreenWeb() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div style={{ minHeight:'100vh', background:bg, fontFamily:'"Plus Jakarta Sans",sans-serif', color:tp }}>
+      <div style={{ minHeight:'100vh', background:bg, fontFamily:'"Sora",sans-serif', color:tp }}>
 
         {/* PAGE HEADER */}
         <div style={{ background:card, borderBottom:`1px solid ${bord}`, padding:'28px 0 20px' }}>
           <div style={{ maxWidth:960, margin:'0 auto', padding:'0 24px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16, fontSize:13, color:ts }}>
-              <button onClick={() => router.push('/(tabs)' as any)} style={{ background:'none', border:'none', cursor:'pointer', color:ts, fontFamily:'"Plus Jakarta Sans",sans-serif', fontSize:13 }}>Home</button>
+              <button onClick={() => router.push('/(tabs)' as any)} style={{ background:'none', border:'none', cursor:'pointer', color:ts, fontFamily:'"Sora",sans-serif', fontSize:13 }}>Home</button>
               <span style={{ color:inact }}>›</span>
               <span style={{ color:tp, fontWeight:600 }}>Mood History</span>
             </div>
             <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
               <div>
                 <p style={{ fontSize:10, fontWeight:800, letterSpacing:3, color:pri, textTransform:'uppercase', marginBottom:6 }}>YOUR JOURNEY</p>
-                <h1 style={{ fontFamily:'"Fraunces",serif', fontSize:36, fontWeight:900, color:tp, letterSpacing:-0.8, lineHeight:1.1 }}>Mood History</h1>
+                <h1 style={{ fontFamily:'"Lora",serif', fontSize:36, fontWeight:900, color:tp, letterSpacing:-0.8, lineHeight:1.1 }}>Mood History</h1>
                 <p style={{ color:ts, marginTop:8, fontSize:14 }}>
                   {loading ? 'Loading…' : `${moodHistory.length} entries · live updates enabled`}
                 </p>
@@ -491,7 +491,7 @@ function MoodHistoryScreenWeb() {
           {!!error && (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, padding:'14px 18px', borderRadius:14, background:isDark?'#2D0D0D':'#FEF2F2', border:`1px solid ${isDark?'#5C1A1A':'#FECACA'}`, marginBottom:24 }}>
               <span style={{ color:'#EF4444', fontSize:13 }}>{error}</span>
-              <button onClick={refresh} style={{ background:'none', border:'none', cursor:'pointer', color:'#EF4444', fontWeight:700, fontSize:13, fontFamily:'"Plus Jakarta Sans",sans-serif' }}>Retry →</button>
+              <button onClick={refresh} style={{ background:'none', border:'none', cursor:'pointer', color:'#EF4444', fontWeight:700, fontSize:13, fontFamily:'"Sora",sans-serif' }}>Retry →</button>
             </div>
           )}
 
@@ -507,7 +507,7 @@ function MoodHistoryScreenWeb() {
           {!loading && moodHistory.length === 0 && (
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:320, gap:16, background:card, borderRadius:24, border:`1px solid ${bord}`, padding:48, textAlign:'center' }}>
               <div style={{ fontSize:64 }}>✨</div>
-              <h2 style={{ fontFamily:'"Fraunces",serif', fontSize:26, fontWeight:900, color:tp }}>No mood entries yet</h2>
+              <h2 style={{ fontFamily:'"Lora",serif', fontSize:26, fontWeight:900, color:tp }}>No mood entries yet</h2>
               <p style={{ color:ts, fontSize:14, maxWidth:340, lineHeight:1.65 }}>Start tracking your mood on the app — your history will appear here automatically.</p>
             </div>
           )}
@@ -520,13 +520,13 @@ function MoodHistoryScreenWeb() {
 
                 <div className="stat-card">
                   <p style={{ fontSize:10, fontWeight:800, letterSpacing:2, color:inact, textTransform:'uppercase', marginBottom:8 }}>Total Entries</p>
-                  <p style={{ fontFamily:'"Fraunces",serif', fontSize:38, fontWeight:900, color:tp, lineHeight:1 }}>{moodHistory.length}</p>
+                  <p style={{ fontFamily:'"Lora",serif', fontSize:38, fontWeight:900, color:tp, lineHeight:1 }}>{moodHistory.length}</p>
                   <p style={{ fontSize:12, color:ts, marginTop:5 }}>moods logged</p>
                 </div>
 
                 <div className="stat-card">
                   <p style={{ fontSize:10, fontWeight:800, letterSpacing:2, color:inact, textTransform:'uppercase', marginBottom:8 }}>Day Streak</p>
-                  <p style={{ fontFamily:'"Fraunces",serif', fontSize:38, fontWeight:900, color:pri, lineHeight:1 }}>{streak}</p>
+                  <p style={{ fontFamily:'"Lora",serif', fontSize:38, fontWeight:900, color:pri, lineHeight:1 }}>{streak}</p>
                   <p style={{ fontSize:12, color:ts, marginTop:5 }}>days in a row 🔥</p>
                 </div>
 
@@ -544,7 +544,7 @@ function MoodHistoryScreenWeb() {
 
                 <div className="stat-card">
                   <p style={{ fontSize:10, fontWeight:800, letterSpacing:2, color:inact, textTransform:'uppercase', marginBottom:8 }}>Variety</p>
-                  <p style={{ fontFamily:'"Fraunces",serif', fontSize:38, fontWeight:900, color:tp, lineHeight:1 }}>{Object.keys(moodCounts).length}</p>
+                  <p style={{ fontFamily:'"Lora",serif', fontSize:38, fontWeight:900, color:tp, lineHeight:1 }}>{Object.keys(moodCounts).length}</p>
                   <p style={{ fontSize:12, color:ts, marginTop:5 }}>different moods</p>
                 </div>
               </div>
@@ -599,8 +599,8 @@ function MoodHistoryScreenWeb() {
               {filteredHistory.length === 0 && (
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:200, gap:14, background:card, borderRadius:18, border:`1px solid ${bord}`, padding:40, textAlign:'center' }}>
                   <div style={{ fontSize:44 }}>{filterMood ? getMoodEmoji(filterMood) : '🔍'}</div>
-                  <p style={{ fontFamily:'"Fraunces",serif', fontSize:20, fontWeight:800, color:tp }}>No entries</p>
-                  <button onClick={() => setFilterMood(null)} style={{ background:'none', border:`1.5px solid ${bord}`, borderRadius:20, padding:'8px 20px', color:tp, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'"Plus Jakarta Sans",sans-serif' }}>Clear filter</button>
+                  <p style={{ fontFamily:'"Lora",serif', fontSize:20, fontWeight:800, color:tp }}>No entries</p>
+                  <button onClick={() => setFilterMood(null)} style={{ background:'none', border:`1.5px solid ${bord}`, borderRadius:20, padding:'8px 20px', color:tp, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'"Sora",sans-serif' }}>Clear filter</button>
                 </div>
               )}
 

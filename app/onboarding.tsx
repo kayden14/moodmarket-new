@@ -23,6 +23,8 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import EmojiText from '@/components/EmojiText';
+import { ArrowRight } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import Svg, {
   Path, Circle, Rect, Ellipse, G,
@@ -183,10 +185,10 @@ function OnboardingScreenWeb() {
   };
 
   const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
-    .ob-root { height: 100vh; display: flex; font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; }
+    .ob-root { height: 100vh; display: flex; font-family: 'Sora', sans-serif; background: #fff; }
 
     /* LEFT PANEL */
     .ob-left {
@@ -222,7 +224,7 @@ function OnboardingScreenWeb() {
 
     /* Title */
     .ob-title {
-      font-family: 'Fraunces', serif;
+      font-family: 'Lora', serif;
       font-size: clamp(32px, 4vw, 52px);
       font-weight: 900; color: #1A1A1A; line-height: 1.12;
       letter-spacing: -1px; margin-bottom: 18px;
@@ -252,7 +254,7 @@ function OnboardingScreenWeb() {
       background: #FF7A8A; color: #fff; border: none; border-radius: 16px;
       padding: 17px 32px; font-size: 16px; font-weight: 800;
       cursor: pointer; width: 100%; max-width: 340px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Sora', sans-serif;
       box-shadow: 0 8px 24px rgba(255,122,138,0.35);
       transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.15s;
       letter-spacing: 0.2px;
@@ -265,7 +267,7 @@ function OnboardingScreenWeb() {
       position: absolute; top: 28px; right: 36px;
       background: none; border: 1px solid #E5E7EB; border-radius: 20px;
       padding: 7px 18px; font-size: 13px; font-weight: 600; color: #9CA3AF;
-      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer; font-family: 'Sora', sans-serif;
       transition: border-color 0.15s, color 0.15s;
     }
     .ob-skip:hover { border-color: #FF7A8A; color: #FF7A8A; }
@@ -314,19 +316,19 @@ function OnboardingScreenWeb() {
 
   const FEATURES = [
     [
-      { icon: '🛍️', text: 'Mood-curated products' },
-      { icon: '⚡', text: 'Instant recommendations' },
-      { icon: '🔒', text: 'Secure & private shopping' },
+      { icon: <span style={{ fontFamily: undefined }}>🛍️</span>, text: 'Mood-curated products' },
+      { icon: <span style={{ fontFamily: undefined }}>⚡</span>, text: 'Instant recommendations' },
+      { icon: <span style={{ fontFamily: undefined }}>🔒</span>, text: 'Secure & private shopping' },
     ],
     [
-      { icon: '📷', text: 'Face scan in seconds' },
-      { icon: '🧠', text: 'On-device AI — no data sent' },
-      { icon: '🎯', text: '8 mood categories' },
+      { icon: <span style={{ fontFamily: undefined }}>📷</span>, text: 'Face scan in seconds' },
+      { icon: <span style={{ fontFamily: undefined }}>🧠</span>, text: 'On-device AI — no data sent' },
+      { icon: <span style={{ fontFamily: undefined }}>🎯</span>, text: '8 mood categories' },
     ],
     [
-      { icon: '✨', text: 'Hyper-personalised picks' },
-      { icon: '🔄', text: 'Syncs across all devices' },
-      { icon: '❤️', text: 'Save your favourites' },
+      { icon: <span style={{ fontFamily: undefined }}>✨</span>, text: 'Hyper-personalised picks' },
+      { icon: <span style={{ fontFamily: undefined }}>🔄</span>, text: 'Syncs across all devices' },
+      { icon: <span style={{ fontFamily: undefined }}>❤️</span>, text: 'Save your favourites' },
     ],
   ];
 
@@ -345,7 +347,7 @@ function OnboardingScreenWeb() {
         <div className="ob-left" style={{ background: tintBg[current] }}>
           <div className="ob-illus">
             <div className="ob-illus-emoji" style={{ background: slides[current].bgTop }}>
-              {slide.webEmoji}
+              <span style={{ fontFamily: undefined }}>{slide.webEmoji}</span>
             </div>
             <div className="ob-feature-pills">
               {FEATURES[current].map((f, i) => (
@@ -367,7 +369,7 @@ function OnboardingScreenWeb() {
           <button className="ob-skip" onClick={() => router.replace('/login')}>Skip</button>
 
           <div className="ob-pill">
-            <span>●</span> {slide.label}
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF7A8A', display: 'inline-block' }} /> {slide.label}
           </div>
 
           <h1 className="ob-title">
@@ -471,9 +473,12 @@ function OnboardingScreenMobile() {
           ))}
         </View>
         <TouchableOpacity onPress={goToNextSlide} style={s.nextButton} activeOpacity={0.85}>
-          <Text style={s.nextText}>
-            {currentSlide === slides.length - 1 ? 'Get Started →' : 'Continue →'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={s.nextText}>
+              {currentSlide === slides.length - 1 ? 'Get Started' : 'Continue'}
+            </Text>
+            <ArrowRight size={18} color="#fff" />
+          </View>
         </TouchableOpacity>
         {currentSlide === slides.length - 1 && (
           <TouchableOpacity onPress={skip} style={s.signinLink}>

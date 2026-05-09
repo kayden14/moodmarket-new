@@ -350,7 +350,7 @@ const s = StyleSheet.create({
   headerTitle:   { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
   settingsBtn:   { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1 },
   settingsBtnTxt:{ fontSize: 12, fontWeight: '700' },
-  scroll:        { padding: 16 },
+  scroll:        { padding: 16, paddingBottom: 120 },
   hero:          { flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 18, marginBottom: 10, borderWidth: 1, gap: 16,
                    ...Platform.select({ ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }, android: { elevation: 1 } }) },
   avatar:        { width: 60, height: 60, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },

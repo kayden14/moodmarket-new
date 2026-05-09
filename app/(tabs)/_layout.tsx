@@ -137,7 +137,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-      <View style={[b.safeAreaFill, { height: Math.max(bottom, Platform.OS === 'ios' ? 28 : 10), backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]} />
+      <View style={[b.safeAreaFill, { height: Math.max(bottom, Platform.OS === 'ios' ? 28 : 24), backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]} />
     </View>
   );
 }

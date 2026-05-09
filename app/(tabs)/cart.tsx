@@ -308,5 +308,5 @@ const s = StyleSheet.create({
   headerTitle:  { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
   cartBadge:    { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
   cartBadgeTxt: { fontSize: 14, fontWeight: '800' },
-  list:         { padding: 16, paddingBottom: 8 },
+  list:         { padding: 16, paddingBottom: 120 },
 });

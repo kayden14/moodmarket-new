@@ -12,6 +12,9 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ShoppingCart, ShoppingBag, BarChart3, Package, CheckCircle, DollarSign, ArrowRight, ArrowLeft, LogOut, Bell, Lock, Palette, Settings, Sun, Moon, User, Calendar, CalendarDays, ChevronRight, X, Menu } from 'lucide-react';
+
+const WebEmoji = ({ children, style }: any) => <span style={{ ...style, fontFamily: undefined }}>{children}</span>;
 import { Order } from '@/types/database';
 
 // ─── Mood helpers ─────────────────────────────────────────────────────────────
@@ -127,16 +130,16 @@ function OrderCard({ order, theme, isDark }: { order: Order; theme: any; isDark:
         border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 16, flexShrink: 0,
-      }}>🛍️</div>
+      }}><ShoppingBag size={16} /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>ORDER</span>
           <span style={{ fontSize: 12, fontWeight: 800, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: 0.5 }}>#{order.id.slice(0, 8).toUpperCase()}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>📅 {date}</span>
+          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Calendar size={11} /> {date}</span>
           <span style={{ color: theme.border }}>·</span>
-          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>📦 {order.products.length} items</span>
+          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Package size={11} /> {order.products.length} items</span>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
@@ -156,7 +159,7 @@ function OrderCard({ order, theme, isDark }: { order: Order; theme: any; isDark:
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 
 function StatCard({ value, label, icon, theme, isDark }: {
-  value: string; label: string; icon: string; theme: any; isDark: boolean;
+  value: string; label: string; icon: React.ReactNode; theme: any; isDark: boolean;
 }) {
   return (
     <div style={{
@@ -179,7 +182,7 @@ function StatCard({ value, label, icon, theme, isDark }: {
 // ─── Settings Row ─────────────────────────────────────────────────────────────
 
 function SettingsRow({ icon, label, sub, onPress, theme, isDark }: {
-  icon: string; label: string; sub: string; onPress: () => void; theme: any; isDark: boolean;
+  icon: React.ReactNode; label: string; sub: string; onPress: () => void; theme: any; isDark: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -252,7 +255,7 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
 
       {moodCount === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <div style={{ fontSize: 44, marginBottom: 14 }}>✨</div>
+          <div style={{ fontSize: 44, marginBottom: 14 }}><WebEmoji style={{ fontSize: 44 }}>✨</WebEmoji></div>
           <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No mood entries yet</p>
           <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif' }}>Your mood selections will appear here.</p>
         </div>
@@ -281,11 +284,11 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
                   border: `1.5px solid ${meta.color}50`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 22,
-                }}>{emoji}</div>
+                }}><WebEmoji style={{ fontSize: 22 }}>{emoji}</WebEmoji></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: meta.color, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</span>
                   {dateLong && (
-                    <span style={{ display: 'block', fontSize: 10, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', marginBottom: note ? 4 : 0 }}>🗓 {dateLong}</span>
+                    <span style={{ fontSize: 10, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', marginBottom: note ? 4 : 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarDays size={10} /> {dateLong}</span>
                   )}
                   {!!note && (
                     <span style={{ display: 'block', fontSize: 11, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', fontStyle: 'italic', lineHeight: 1.55 }}>"{note}"</span>
@@ -367,11 +370,11 @@ export default function ProfileWeb() {
     ? profile.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
     : '??';
 
-  const NAV_ITEMS: { key: Tab; icon: string; label: string }[] = [
-    { key: 'overview', icon: '📊', label: 'Overview'     },
-    { key: 'orders',   icon: '📦', label: 'Orders'       },
-    { key: 'mood',     icon: '✨', label: 'Mood History' },
-    { key: 'settings', icon: '⚙️', label: 'Settings'     },
+  const NAV_ITEMS: { key: Tab; icon: React.ReactNode; label: string }[] = [
+    { key: 'overview', icon: <BarChart3 size={14} />, label: 'Overview'     },
+    { key: 'orders',   icon: <Package size={14} />,   label: 'Orders'       },
+    { key: 'mood',     icon: <WebEmoji style={{ fontSize: 14 }}>✨</WebEmoji>, label: 'Mood History' },
+    { key: 'settings', icon: <Settings size={14} />,  label: 'Settings'     },
   ];
 
   return (
@@ -733,7 +736,7 @@ export default function ProfileWeb() {
 
         {/* TOP NAV */}
         <nav className="prof-topnav">
-          <button className="prof-back" onClick={() => router.back()}>← Back</button>
+          <button className="prof-back" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
           <span className="prof-logo" onClick={handleLogoClick}>Mood<span>Market</span></span>
           {/* Hamburger — visible on mobile */}
           {user && (
@@ -742,7 +745,7 @@ export default function ProfileWeb() {
               onClick={() => setMobileMenuOpen(v => !v)}
               title="Menu"
             >
-              {mobileMenuOpen ? '✕' : '☰'}
+              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           )}
           <button
@@ -755,7 +758,7 @@ export default function ProfileWeb() {
             }}
             onClick={toggleDark}
           >
-            {isDark ? '☀️' : '🌙'}
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </nav>
 
@@ -802,10 +805,10 @@ export default function ProfileWeb() {
         {/* MAIN CONTENT */}
         {!user ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', textAlign: 'center' }}>
-            <div style={{ width: 80, height: 80, borderRadius: 22, margin: '0 auto 22px', background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}>👤</div>
+            <div style={{ width: 80, height: 80, borderRadius: 22, margin: '0 auto 22px', background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}><User size={34} /></div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>You're not signed in</h2>
             <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif', maxWidth: 300 }}>Log in to view your profile, orders, and mood history.</p>
-            <button onClick={() => router.push('/login')} style={{ padding: '13px 28px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44` }}>Sign In →</button>
+            <button onClick={() => router.push('/login')} style={{ padding: '13px 28px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44`, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Sign In <ArrowRight size={14} /></button>
           </div>
         ) : loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 260, color: inact, fontSize: 14, fontFamily: '"Sora", sans-serif' }}>
@@ -843,10 +846,10 @@ export default function ProfileWeb() {
               {/* Tab bar */}
               <div className="prof-tabs">
                 {[
-                  { key: 'overview', short: '📊', label: '📊 Overview' },
-                  { key: 'orders',   short: '📦', label: `📦 Orders (${orders.length})` },
-                  { key: 'mood',     short: '✨', label: `✨ Mood (${moodCount})` },
-                  { key: 'settings', short: '⚙️', label: '⚙️ Settings' },
+                  { key: 'overview', short: <BarChart3 size={14} />, label: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><BarChart3 size={14} /> Overview</span> },
+                  { key: 'orders',   short: <Package size={14} />,   label: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Package size={14} /> Orders ({orders.length})</span> },
+                  { key: 'mood',     short: <WebEmoji style={{ fontSize: 14 }}>✨</WebEmoji>, label: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><WebEmoji style={{ fontSize: 14 }}>✨</WebEmoji> Mood ({moodCount})</span> },
+                  { key: 'settings', short: <Settings size={14} />,  label: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Settings size={14} /> Settings</span> },
                 ].map(t => (
                   <TabBtn key={t.key} active={activeTab === t.key as Tab} onClick={() => setActiveTab(t.key as Tab)} theme={theme} isDark={isDark}>
                     <span className="prof-tab-icon" style={{ display: 'none' }}>{t.short}</span>
@@ -859,20 +862,20 @@ export default function ProfileWeb() {
               {activeTab === 'overview' && (
                 <div>
                   <div className="prof-stats-grid">
-                    <StatCard value={String(orders.length)}          label="Total orders" icon="📦" theme={theme} isDark={isDark} />
-                    <StatCard value={String(deliveredCount)}         label="Delivered"    icon="✅" theme={theme} isDark={isDark} />
-                    <StatCard value={`GH₵${totalSpend.toFixed(0)}`} label="Total spent"  icon="💰" theme={theme} isDark={isDark} />
-                    <StatCard value={String(moodCount)}              label="Mood entries" icon="✨" theme={theme} isDark={isDark} />
+                    <StatCard value={String(orders.length)}          label="Total orders" icon={<Package size={15} />} theme={theme} isDark={isDark} />
+                    <StatCard value={String(deliveredCount)}         label="Delivered"    icon={<CheckCircle size={15} />} theme={theme} isDark={isDark} />
+                    <StatCard value={`GH₵${totalSpend.toFixed(0)}`} label="Total spent"  icon={<DollarSign size={15} />} theme={theme} isDark={isDark} />
+                    <StatCard value={String(moodCount)}              label="Mood entries" icon={<WebEmoji style={{ fontSize: 15 }}>✨</WebEmoji>} theme={theme} isDark={isDark} />
                   </div>
 
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                       <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>Recent Orders</h3>
-                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>View all →</button>
+                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>View all <ArrowRight size={12} /></button>
                     </div>
                     {orders.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '28px 0' }}>
-                        <div style={{ fontSize: 30, marginBottom: 10 }}>📦</div>
+                        <div style={{ fontSize: 30, marginBottom: 10 }}><Package size={30} /></div>
                         <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>No orders yet</p>
                       </div>
                     ) : orders.slice(0, 3).map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
@@ -882,17 +885,17 @@ export default function ProfileWeb() {
                     <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Quick Actions</h3>
                     <div className="prof-quick-actions">
                       {[
-                        { icon: '🛍️', label: 'Shop Now',    action: () => router.push('/(tabs)') },
-                        { icon: '🛒', label: 'View Cart',   action: () => router.push('/cart') },
-                        { icon: '✏️', label: 'Edit Profile', action: () => router.push('/edit-profile') },
-                        { icon: '🚪', label: 'Sign Out',    action: handleSignOut },
+                        { icon: <ShoppingBag size={18} />, label: 'Shop Now',    action: () => router.push('/(tabs)') },
+                        { icon: <ShoppingCart size={18} />, label: 'View Cart',   action: () => router.push('/cart') },
+                        { icon: <WebEmoji style={{ fontSize: 18 }}>✏️</WebEmoji>, label: 'Edit Profile', action: () => router.push('/edit-profile') },
+                        { icon: <LogOut size={18} />, label: 'Sign Out',    action: handleSignOut },
                       ].map(({ icon, label, action }) => (
                         <button key={label} onClick={action}
                           style={{ padding: '13px 10px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, transition: 'all 0.13s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = label === 'Sign Out' ? '#EF4444' : pri; (e.currentTarget as HTMLButtonElement).style.background = label === 'Sign Out' ? (isDark ? '#2D1515' : '#FFF0F0') : tint; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = bord; (e.currentTarget as HTMLButtonElement).style.background = bg; }}
                         >
-                          <span style={{ fontSize: 18 }}>{icon}</span>{label}
+                          <span style={{ fontSize: 18, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>{label}
                         </button>
                       ))}
                     </div>
@@ -912,10 +915,10 @@ export default function ProfileWeb() {
                   </div>
                   {orders.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                      <div style={{ fontSize: 44, marginBottom: 14 }}>📦</div>
+                      <div style={{ fontSize: 44, marginBottom: 14 }}><Package size={44} /></div>
                       <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No orders yet</p>
                       <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif', marginBottom: 20 }}>Start shopping to see your orders here.</p>
-                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '11px 22px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>Browse Products →</button>
+                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '11px 22px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>Browse Products <ArrowRight size={12} /></button>
                     </div>
                   ) : orders.map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
                 </div>

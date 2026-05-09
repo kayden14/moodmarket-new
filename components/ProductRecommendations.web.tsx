@@ -161,11 +161,9 @@ function RecommendationCard({ product, theme, isDark }: {
 export default function ProductRecommendations({
   currentProductId,
   moodTags,
-  category,
 }: {
   currentProductId: string;
   moodTags?: string[];
-  category?: string;
 }) {
   const { theme, isDark } = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
@@ -173,21 +171,8 @@ export default function ProductRecommendations({
 
   useEffect(() => {
     const fetchRecs = async () => {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .neq('id', currentProductId)
-        .limit(8);
-
-      // prefer same category first
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      const { data } = await query;
-
-      // if fewer than 4 results, also fetch by mood tags
-      if ((!data || data.length < 4) && moodTags && moodTags.length > 0) {
+      // Primary strategy: products with overlapping mood tags
+      if (moodTags && moodTags.length > 0) {
         const { data: tagData } = await supabase
           .from('products')
           .select('*')
@@ -195,19 +180,41 @@ export default function ProductRecommendations({
           .overlaps('mood_tags', moodTags)
           .limit(8);
 
-        const merged = [...(data ?? []), ...(tagData ?? [])];
+        if (tagData && tagData.length >= 4) {
+          setProducts(tagData.slice(0, 6));
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to top-rated products if mood overlap is sparse
+        const { data: ratedData } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', currentProductId)
+          .order('rating', { ascending: false })
+          .limit(8);
+
+        const merged = [...(tagData ?? []), ...(ratedData ?? [])];
         const unique = merged.filter(
           (p, i, arr) => arr.findIndex(x => x.id === p.id) === i
         );
         setProducts(unique.slice(0, 6));
       } else {
-        setProducts((data ?? []).slice(0, 6));
+        // No mood tags: fallback to top-rated
+        const { data: ratedData } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', currentProductId)
+          .order('rating', { ascending: false })
+          .limit(6);
+
+        setProducts(ratedData ?? []);
       }
       setLoading(false);
     };
 
     fetchRecs();
-  }, [currentProductId, moodTags, category]);
+  }, [currentProductId, moodTags]);
 
   if (loading) return (
     <div style={{
@@ -301,7 +308,7 @@ export default function ProductRecommendations({
             fontWeight: 500,
             letterSpacing: 0.3,
           }}>
-            Based on mood & category
+            Based on mood
           </span>
         </div>
 

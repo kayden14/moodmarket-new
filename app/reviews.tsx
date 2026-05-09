@@ -377,7 +377,7 @@ const s = StyleSheet.create({
   statLabel:   { fontSize: 10, fontWeight: '600', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
   statDivider: { width: 1, marginVertical: 10 },
 
-  list:      { padding: 16 },
+  list:      { padding: 16, paddingBottom: 60 },
   listLabel: { fontSize: 12, fontWeight: '500', marginBottom: 14, textAlign: 'center' },
 
   centered:   { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 36 },

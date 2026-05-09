@@ -343,7 +343,7 @@ const s = StyleSheet.create({
   headerEye:    { fontSize: 9, fontWeight: '800', letterSpacing: 3, marginBottom: 2 },
   headerTitle:  { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
 
-  scroll: { padding: 16 },
+  scroll: { padding: 16, paddingBottom: 60 },
 
   statusBanner: { borderRadius: 18, padding: 18, marginBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 14 },
   statusLabel:  { fontSize: 18, fontWeight: '900', letterSpacing: -0.3, marginBottom: 4 },

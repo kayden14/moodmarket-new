@@ -17,10 +17,12 @@ import { useTheme } from '@/contexts/ThemeContext';
 import {
   ArrowLeft, Star, ShoppingCart, Heart, Share2,
   Package, Tag, CheckCircle, MessageSquare,
-  Send, Pencil, Trash2, User,
+  Send, Pencil, Trash2, User, Minus,
 } from 'lucide-react-native';
+import EmojiText from '@/components/EmojiText';
 import { getProductImage } from '@/utils/images';
 import { notifyUser } from '@/services/notifyUser';
+import ProductRecommendations from '@/components/ProductRecommendations';
 
 const SUCCESS_GREEN = '#22C55E';
 
@@ -288,7 +290,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate }: {
         <ActivityIndicator size="small" color={theme.primary} style={{ marginTop: 16 }} />
       ) : reviews.length === 0 ? (
         <View style={rs.empty}>
-          <Text style={rs.emptyEmoji}>⭐</Text>
+          <EmojiText style={rs.emptyEmoji}>⭐</EmojiText>
           <Text style={[rs.emptyTitle, { color: theme.textPrimary }]}>No reviews yet</Text>
           <Text style={[rs.emptySub, { color: theme.textSecondary }]}>Be the first to share your thoughts!</Text>
         </View>
@@ -457,7 +459,7 @@ export default function ProductDetailScreen() {
             style={[s.qtyBtn, { backgroundColor: theme.card, borderColor: theme.border }, quantity <= 1 && s.qtyBtnDisabled]}
             onPress={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}
           >
-            <Text style={[s.qtyBtnText, { color: theme.textPrimary }]}>−</Text>
+            <Minus size={18} color={theme.textPrimary} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={[s.qtyValue, { color: theme.textPrimary }]}>{quantity}</Text>
           <TouchableOpacity
@@ -617,6 +619,16 @@ export default function ProductDetailScreen() {
                 />
               </View>
 
+              {/* Recommendations */}
+              {product.mood_tags && product.mood_tags.length > 0 && (
+                <View style={{ marginTop: 32 }}>
+                  <ProductRecommendations
+                    currentProductId={id as string}
+                    moodTags={product.mood_tags}
+                  />
+                </View>
+              )}
+
               <View style={{ height: 60 }} />
             </View>
           </View>
@@ -679,6 +691,16 @@ export default function ProductDetailScreen() {
           userProfile={profile}
           onAverageUpdate={(avg, count) => setLiveRating({ avg, count })}
         />
+
+        {/* ── Recommendations ── */}
+        {product.mood_tags && product.mood_tags.length > 0 && (
+          <View style={{ paddingHorizontal: 16, marginTop: 8 }}>
+            <ProductRecommendations
+              currentProductId={id as string}
+              moodTags={product.mood_tags}
+            />
+          </View>
+        )}
 
         <View style={{ height: 120 }} />
       </ScrollView>
@@ -765,7 +787,7 @@ const s = StyleSheet.create({
   headerActions: { flexDirection: 'row', gap: 8 },
   iconBtn:       { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cartBadge:     { position: 'absolute', top: -5, right: -5, minWidth: 15, height: 15, borderRadius: 8, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 2, borderWidth: 1.5, borderColor: '#fff' },
-  cartBadgeTxt:  { fontSize: 8, fontWeight: '800', color: '#fff' },
+  cartBadgeTxt:  { fontSize: 10, fontWeight: '800', color: '#fff' },
 
   // ── Mobile image + content card ──
   productImage:  { resizeMode: 'cover' },
@@ -773,7 +795,7 @@ const s = StyleSheet.create({
 
   // ── Shared detail styles ──
   nameRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, gap: 12 },
-  productName:   { flex: 1, fontSize: 22, fontWeight: '800', lineHeight: 28, letterSpacing: -0.3 },
+  productName:   { flex: 1, fontSize: 22, fontWeight: '700', lineHeight: 28, letterSpacing: -0.3 },
   productPrice:  { fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
 
   ratingRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },

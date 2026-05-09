@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { AuthLayoutWeb } from '@/components/AuthLayoutWeb';
 import * as Linking from 'expo-linking';
+import EmojiText from '@/components/EmojiText';
 
 // ── Web Reset Password ──────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ function ResetPasswordWeb() {
         subheading="Your password has been reset successfully."
       >
         <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+          <div style={{ fontSize: 48, marginBottom: 12 }}><span style={{ fontFamily: undefined }}>🎉</span></div>
           <p style={{ color: '#6B7280', fontSize: 15 }}>Redirecting you to login…</p>
         </div>
       </AuthLayoutWeb>
@@ -126,7 +127,7 @@ function ResetPasswordWeb() {
           <label className="auth-field-label">New password</label>
         </div>
         <div className="auth-input-wrap">
-          <span className="auth-input-icon">🔒</span>
+          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>🔒</span></span>
           <input
             type="password"
             placeholder="Min. 6 characters"

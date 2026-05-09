@@ -29,6 +29,7 @@ import {
   Sparkles, Star, Bell, Search, TrendingUp,
   Heart, ShoppingCart, ArrowRight, Flame, RefreshCw,
 } from 'lucide-react-native';
+import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
 import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
@@ -209,7 +210,7 @@ const snap = StyleSheet.create({
   arrowWrap:{ width: 28, height: 28, backgroundColor: '#fff', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
 });
 
-function SectionHeader({ icon, title, onSeeAll }: { icon: React.ReactNode; title: string; onSeeAll?: () => void }) {
+function SectionHeader({ icon, title, onSeeAll }: { icon: React.ReactNode; title: React.ReactNode; onSeeAll?: () => void }) {
   const { theme } = useTheme();
   return (
     <View style={s.sectionHeader}>
@@ -334,7 +335,7 @@ export default function HomeScreen() {
           <View style={[s.moodEmojiCircle, { backgroundColor: moodPalette.tint, borderColor: moodPalette.secondary }]}>
             {detecting
               ? <ActivityIndicator size="small" color={moodPalette.primary} />
-              : <Text style={s.moodEmojiLarge}>{selectedMood.emoji}</Text>
+              : <EmojiText style={s.moodEmojiLarge}>{selectedMood.emoji}</EmojiText>
             }
           </View>
           <View>
@@ -382,7 +383,7 @@ export default function HomeScreen() {
                 style={[s.moodChip, { backgroundColor: active ? palette.tint : theme.card, borderColor: active ? palette.secondary : theme.border }]}
                 activeOpacity={0.75}
               >
-                <Text style={s.moodChipEmoji}>{m.emoji}</Text>
+                <EmojiText style={s.moodChipEmoji}>{m.emoji}</EmojiText>
                 <Text style={[s.moodChipLabel, { color: active ? palette.primary : theme.textSecondary, fontWeight: active ? '700' : '500' }]}>{m.label}</Text>
               </TouchableOpacity>
             );
@@ -405,7 +406,7 @@ export default function HomeScreen() {
         <View style={s.recommendedSection}>
           <SectionHeader
             icon={<Sparkles size={16} color={theme.primary} strokeWidth={2} />}
-            title={`Recommended for ${selectedMood.label} ${selectedMood.emoji}`}
+            title={['Recommended for ', selectedMood.label, ' ', <EmojiText key="mood-emoji">{selectedMood.emoji}</EmojiText>]}
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recommendedScroll}>
             {recommended.map((item, idx) => (
@@ -425,7 +426,7 @@ export default function HomeScreen() {
             const active = selectedCategory === cat.id;
             return (
               <TouchableOpacity key={cat.id} style={[s.categoryChip, { backgroundColor: active ? theme.tint : theme.card, borderColor: active ? theme.secondary : theme.border }]} onPress={() => setSelectedCategory(cat.id)} activeOpacity={0.75}>
-                <Text style={s.categoryEmoji}>{cat.emoji}</Text>
+                <EmojiText style={s.categoryEmoji}>{cat.emoji}</EmojiText>
                 <Text style={[s.categoryLabel, { color: active ? theme.primary : theme.textSecondary, fontWeight: active ? '800' : '600' }]}>{cat.label}</Text>
               </TouchableOpacity>
             );
@@ -441,7 +442,7 @@ export default function HomeScreen() {
 
       {filteredProducts.length === 0 && (
         <View style={s.emptyCategory}>
-          <Text style={s.emptyCategoryEmoji}>🔍</Text>
+          <Search size={36} color={theme.inactive} strokeWidth={1.5} />
           <Text style={[s.emptyCategoryText, { color: theme.inactive }]}>No products in this category yet.</Text>
         </View>
       )}
@@ -457,7 +458,7 @@ export default function HomeScreen() {
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <View style={s.headerTop}>
           <View>
-            <Text style={[s.greeting, { color: theme.primary }]}>{greeting} 👋</Text>
+            <Text style={[s.greeting, { color: theme.primary }]}>{greeting} <EmojiText>👋</EmojiText></Text>
             <Text style={[s.userName, { color: theme.textPrimary }]}>{firstName ?? ''}</Text>
           </View>
           <View style={s.headerIcons}>
@@ -506,8 +507,8 @@ const s = StyleSheet.create({
   loadingText:  { fontSize: 14, fontWeight: '500' },
   header:        { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 18, paddingHorizontal: 20, borderBottomWidth: 1 },
   headerTop:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  greeting:      { fontSize: 10, fontWeight: '800', letterSpacing: 3, marginBottom: 2, textTransform: 'uppercase' },
-  userName:      { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  greeting:      { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
+  userName:      { fontSize: 28, fontWeight: '800', letterSpacing: -0.8 },
   headerIcons:   { flexDirection: 'row', gap: 8 },
   headerIconBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   notifDot:      { position: 'absolute', top: 9, right: 9, width: 7, height: 7, borderRadius: 3.5, borderWidth: 1.5 },
@@ -517,13 +518,13 @@ const s = StyleSheet.create({
   moodBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   moodEmojiCircle:{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
   moodEmojiLarge: { fontSize: 26 },
-  moodBannerLabel:{ fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
+  moodBannerLabel:{ fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
   moodBannerName: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
-  moodBannerHint: { fontSize: 10, fontWeight: '500', marginTop: 2, letterSpacing: 0.2 },
+  moodBannerHint: { fontSize: 11, fontWeight: '500', marginTop: 2, letterSpacing: 0.2, lineHeight: 14 },
   scanBtn:        { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
   scanBtnText:    { color: '#fff', fontSize: 13, fontWeight: '700' },
   moodSelectorSection: { marginTop: 16, marginBottom: 8 },
-  sectionLabel:        { fontSize: 10, fontWeight: '800', letterSpacing: 2, marginBottom: 10, paddingHorizontal: 16, textTransform: 'uppercase' },
+  sectionLabel:        { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10, paddingHorizontal: 16, textTransform: 'uppercase' },
   moodScroll:          { paddingHorizontal: 16, gap: 8 },
   moodChip:            { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5 },
   moodChipEmoji:       { fontSize: 16 },
@@ -533,9 +534,9 @@ const s = StyleSheet.create({
   trendingCard:    { width: TRENDING_CARD_WIDTH, borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
   trendingImage:   { width: '100%', height: 120 },
   trendingBadge:   { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1 },
-  trendingBadgeTxt:{ fontSize: 9, fontWeight: '800' },
+  trendingBadgeTxt:{ fontSize: 11, fontWeight: '800' },
   trendingInfo:    { padding: 10 },
-  trendingName:    { fontSize: 12, fontWeight: '700', lineHeight: 16, marginBottom: 6 },
+  trendingName:    { fontSize: 13, fontWeight: '600', lineHeight: 18, marginBottom: 6 },
   trendingBottom:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   trendingPrice:   { fontSize: 13, fontWeight: '900' },
   trendingAddBtn:  { width: 26, height: 26, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
@@ -548,7 +549,7 @@ const s = StyleSheet.create({
   categoryLabel:   { fontSize: 12 },
   sectionHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 20, marginBottom: 12 },
   sectionTitleRow:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
-  sectionTitle:   { fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+  sectionTitle:   { fontSize: 15, fontWeight: '700', letterSpacing: -0.2 },
   seeAll:         { fontSize: 13, fontWeight: '700' },
   emptyCategory:     { alignItems: 'center', paddingVertical: 32 },
   emptyCategoryEmoji:{ fontSize: 36, marginBottom: 8 },
@@ -559,12 +560,12 @@ const s = StyleSheet.create({
   heartBtn:      { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F0F0F0' },
   productInfo:   { padding: 10, gap: 4 },
   reasonBadge:   { flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 2 },
-  reasonText:    { fontSize: 9, fontWeight: '700', letterSpacing: 0.2 },
-  productName:   { fontSize: 13, fontWeight: '700', lineHeight: 18, minHeight: 36 },
+  reasonText:    { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
+  productName:   { fontSize: 13, fontWeight: '600', lineHeight: 18, minHeight: 36 },
   starsRow:      { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  ratingText:    { fontSize: 11, fontWeight: '600', marginLeft: 3 },
+  ratingText:    { fontSize: 11, fontWeight: '500', marginLeft: 3 },
   priceRow:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
-  productPrice:  { fontSize: 15, fontWeight: '900', letterSpacing: -0.3 },
+  productPrice:  { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
   addBtn:        { width: 28, height: 28, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
   addBtnActive:  { opacity: 0.6 },
 });

@@ -504,7 +504,7 @@ const s = StyleSheet.create({
   saveBtn:     { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, minWidth: 60, justifyContent: 'center' },
   saveTxt:     { fontSize: 13, fontWeight: '800', color: '#fff' },
 
-  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 60 },
 
   avatarSection:  { alignItems: 'center', paddingVertical: 28, marginBottom: 4 },
   avatar: {

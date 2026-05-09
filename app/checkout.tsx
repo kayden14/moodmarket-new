@@ -349,7 +349,7 @@ function OrderConfirmation({ order, onGoHome, onViewOrders }: {
   return (
     <ScrollView
       style={{ backgroundColor: theme.background }}
-      contentContainerStyle={{ padding: 24, paddingTop: 24 + statusBarHeight, paddingBottom: 60 }}
+      contentContainerStyle={{ padding: 24, paddingTop: 24 + statusBarHeight, paddingBottom: 80 }}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Success badge ── */}
@@ -927,7 +927,7 @@ const s = StyleSheet.create({
   },
   backBtn:     { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
-  scroll:      { padding: 20, paddingBottom: 48 },
+  scroll:      { padding: 20, paddingBottom: 80 },
   summaryStrip:{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 22, borderWidth: 1 },
   summaryTxt:  { fontSize: 13, fontWeight: '600' },
   summaryTotal:{ fontSize: 16, fontWeight: '900', letterSpacing: -0.4 },

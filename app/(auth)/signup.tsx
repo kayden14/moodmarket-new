@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthLayoutWeb } from '@/components/AuthLayoutWeb';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
+import EmojiText from '@/components/EmojiText';
 
 // ── Social Icon Components ──────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ function SignupScreenWeb() {
           <label className="auth-field-label">Full name</label>
         </div>
         <div className={`auth-input-wrap${focusedField === 'name' ? ' focused' : ''}`}>
-          <span className="auth-input-icon">👤</span>
+          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>👤</span></span>
           <input
             type="text"
             placeholder="Jane Doe"
@@ -122,7 +123,7 @@ function SignupScreenWeb() {
           <label className="auth-field-label">Email address</label>
         </div>
         <div className={`auth-input-wrap${focusedField === 'email' ? ' focused' : ''}`}>
-          <span className="auth-input-icon">✉️</span>
+          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>✉️</span></span>
           <input
             type="email"
             placeholder="you@example.com"
@@ -142,7 +143,7 @@ function SignupScreenWeb() {
           <label className="auth-field-label">Password</label>
         </div>
         <div className={`auth-input-wrap${focusedField === 'password' ? ' focused' : ''}`}>
-          <span className="auth-input-icon">🔒</span>
+          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>🔒</span></span>
           <input
             type={showPw ? 'text' : 'password'}
             placeholder="Min. 6 characters"
@@ -154,7 +155,7 @@ function SignupScreenWeb() {
             autoComplete="new-password"
           />
           <button className="auth-eye-btn" onClick={() => setShowPw(!showPw)}>
-            {showPw ? '🙈' : '👁️'}
+            {showPw ? <span style={{ fontFamily: undefined }}>🙈</span> : <span style={{ fontFamily: undefined }}>👁️</span>}
           </button>
         </div>
         {strength && (

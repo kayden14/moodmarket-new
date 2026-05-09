@@ -9,6 +9,9 @@ import { Image } from 'expo-image';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ShoppingCart, ShoppingBag, Zap, CheckCircle, ArrowRight, ArrowLeft, Trash2, Truck, PartyPopper, Lock, Sun, Moon, User } from 'lucide-react';
+
+const WebEmoji = ({ children, style }: any) => <span style={{ ...style, fontFamily: undefined }}>{children}</span>;
 
 // ─── Quantity Stepper ─────────────────────────────────────────────────────────
 
@@ -180,7 +183,7 @@ function CartItemRow({
           }}
           title="Remove item"
         >
-          🗑
+          <Trash2 size={14} color="#EF4444" />
         </button>
       </div>
     </div>
@@ -213,7 +216,7 @@ function DeliveryProgress({ subtotal, theme, isDark }: { subtotal: number; theme
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 13, flexShrink: 0,
         }}>
-          🚚
+          <Truck size={14} />
         </div>
         <p style={{
           margin: 0, flex: 1,
@@ -222,7 +225,7 @@ function DeliveryProgress({ subtotal, theme, isDark }: { subtotal: number; theme
           fontFamily: '"Sora", sans-serif',
         }}>
           {isFree
-            ? '🎉 Free delivery unlocked!'
+            ? <><PartyPopper size={12} /> Free delivery unlocked!</>
             : `GH₵ ${remaining} away from free delivery`}
         </p>
       </div>
@@ -308,7 +311,7 @@ function OrderSummary({
           borderRadius: 12,
           padding: '5px 10px',
         }}>
-          <span style={{ fontSize: 13 }}>🛒</span>
+          <span style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center' }}><ShoppingCart size={13} /></span>
           <span style={{
             fontSize: 13, fontWeight: 800,
             color: theme.textPrimary,
@@ -429,7 +432,7 @@ function OrderSummary({
             borderRadius: 10, padding: '9px 12px',
             marginBottom: 18,
           }}>
-            <span style={{ fontSize: 13 }}>✅</span>
+            <span style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center' }}><CheckCircle size={13} color="#22C55E" /></span>
             <span style={{
               fontSize: 11, fontWeight: 600, color: '#22C55E',
               fontFamily: '"Sora", sans-serif', flex: 1,
@@ -474,7 +477,7 @@ function OrderSummary({
             (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 24px ${theme.primary}44`;
           }}
         >
-          <span style={{ fontSize: 16 }}>⚡</span>
+          <span style={{ fontSize: 16, display: 'inline-flex', alignItems: 'center' }}><Zap size={16} /></span>
           Checkout Now
           <div style={{
             width: 28, height: 28,
@@ -482,7 +485,7 @@ function OrderSummary({
             background: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 12, color: theme.primary, fontWeight: 900 }}>→</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}><ArrowRight size={12} color={theme.primary} /></span>
           </div>
         </button>
 
@@ -491,7 +494,7 @@ function OrderSummary({
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           gap: 6, marginTop: 10,
         }}>
-          <span style={{ fontSize: 10 }}>🔒</span>
+          <span style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center' }}><Lock size={10} /></span>
           <span style={{
             fontSize: 10, color: theme.inactive,
             fontFamily: '"Sora", sans-serif',
@@ -522,7 +525,7 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 36, marginBottom: 24,
       }}>
-        🛍️
+        <ShoppingBag size={36} />
       </div>
       <h2 style={{
         margin: '0 0 10px',
@@ -556,7 +559,7 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
           boxShadow: `0 6px 20px ${theme.primary}44`,
         }}
       >
-        Start Shopping →
+        Start Shopping <ArrowRight size={14} />
       </button>
     </div>
   );
@@ -843,7 +846,7 @@ export default function CartWeb() {
         {/* ── TOP NAV ── */}
         <nav className="cart-topnav">
           <button className="cart-back" onClick={() => router.back()}>
-            ← <span>Back</span>
+            <ArrowLeft size={14} /> <span>Back</span>
           </button>
           <span className="cart-logo">Mood<span>Market</span></span>
           <button
@@ -857,7 +860,7 @@ export default function CartWeb() {
             onClick={toggleDark}
             title="Toggle theme"
           >
-            {isDark ? '☀️' : '🌙'}
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </nav>
 
@@ -873,7 +876,7 @@ export default function CartWeb() {
               border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 34,
-            }}>👤</div>
+            }}><User size={34} /></div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>
               Sign in first
             </h2>
@@ -890,7 +893,7 @@ export default function CartWeb() {
                 boxShadow: `0 6px 20px ${pri}44`,
               }}
             >
-              Sign In →
+              Sign In <ArrowRight size={14} />
             </button>
           </div>
         ) : loading ? (
@@ -951,7 +954,7 @@ export default function CartWeb() {
                   onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}
                   onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'}
                 >
-                  ← Continue Shopping
+                  <ArrowLeft size={12} /> Continue Shopping
                 </button>
 
                 {/* Inline summary shown on mobile/tablet instead of side panel */}
@@ -1007,7 +1010,7 @@ export default function CartWeb() {
                   flexShrink: 0,
                 }}
               >
-                ⚡ Checkout
+                <Zap size={14} /> Checkout
               </button>
             </div>
           </>
