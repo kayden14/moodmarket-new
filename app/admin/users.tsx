@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import {
-  Search, Shield, X, Calendar, Mail, Phone, Ban, CheckCircle,
+  Search, Shield, X, Calendar, Mail, Phone, Ban, CheckCircle, Store,
 } from 'lucide-react-native';
 import { useUsersData } from '@/hooks/useUsersData';
 import { AdminProfile } from '@/types/admin';
@@ -81,11 +81,27 @@ export default function AdminUsersScreen() {
 
   const handleToggleVendor = async (user: AdminProfile) => {
     setActioning(true);
-    const newRole = user.role === 'vendor' ? 'customer' : 'vendor';
+    const isVendor = user.role === 'vendor';
+    const newRole = isVendor ? 'customer' : 'vendor';
     try {
-      const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', user.id);
-      if (error) throw error;
-      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+      // 1. Update Profile Role
+      const { error: profileError } = await supabase.from('profiles').update({ role: newRole }).eq('id', user.id);
+      if (profileError) throw profileError;
+
+      // 2. Sync Vendors Table
+      if (newRole === 'vendor') {
+        const { error: vendorError } = await supabase.from('vendors').insert({
+          user_id: user.id,
+          store_name: `${user.name}'s Store`,
+          contact_email: user.email,
+        });
+        if (vendorError) throw vendorError;
+      } else {
+        const { error: vendorError } = await supabase.from('vendors').delete().eq('user_id', user.id);
+        if (vendorError) throw vendorError;
+      }
+
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: (newRole as any) } : u));
       if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, role: (newRole as any) } : null);
     } catch (err: any) { Alert.alert('Error', err.message); }
     finally { setActioning(false); setConfirmAction(null); }
@@ -236,6 +252,16 @@ export default function AdminUsersScreen() {
                   <Shield size={18} color={selected?.is_admin ? '#F87171' : '#60A5FA'} />
                   <Text style={{ color: selected?.is_admin ? '#F87171' : '#60A5FA', fontWeight: '700' }}>
                     {selected?.is_admin ? 'Remove Admin Access' : 'Grant Admin Access'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[s.actionBtn, { borderColor: border, backgroundColor: selected?.role === 'vendor' ? '#7F1D1D15' : '#05966915' }]}
+                  onPress={() => selected && setConfirmAction({ type: 'vendor', user: selected })}
+                >
+                  <Store size={18} color={selected?.role === 'vendor' ? '#F87171' : '#10B981'} />
+                  <Text style={{ color: selected?.role === 'vendor' ? '#F87171' : '#10B981', fontWeight: '700' }}>
+                    {selected?.role === 'vendor' ? 'Remove Vendor Status' : 'Make Vendor'}
                   </Text>
                 </TouchableOpacity>
 

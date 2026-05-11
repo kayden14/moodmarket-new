@@ -20,11 +20,17 @@ export default function AdminVendorsScreen() {
   const { vendors, apps, loading, fetchData } = useVendorsData();
   const [tab, setTab] = useState<'active' | 'pending'>('active');
   const [processing, setProcessing] = useState<string | null>(null);
+  
+  // Rejection Modal State
+  const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
+  const [rejectionAppId, setRejectionAppId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const card = isDark ? '#1E293B' : '#FFFFFF';
   const border = isDark ? '#334155' : '#E2E8F0';
   const text = isDark ? '#F1F5F9' : '#0F172A';
   const sub = isDark ? '#94A3B8' : '#64748B';
+  const inputBg = isDark ? '#0F172A' : '#F8FAFC';
 
   const handleApprove = async (app: any) => {
     setProcessing(app.id);
@@ -39,20 +45,31 @@ export default function AdminVendorsScreen() {
     }
   };
 
-  const handleReject = async (appId: string) => {
-    Alert.prompt('Reject Application', 'Enter reason for rejection:', async (reason) => {
-      if (!reason) return;
-      setProcessing(appId);
-      try {
-        await rejectVendorApplication(appId, reason);
-        Alert.alert('Success', 'Application rejected.');
-        fetchData();
-      } catch (e: any) {
-        Alert.alert('Error', e.message);
-      } finally {
-        setProcessing(null);
-      }
-    });
+  const openRejectionModal = (appId: string) => {
+    setRejectionAppId(appId);
+    setRejectionReason('');
+    setRejectionModalVisible(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectionReason.trim() || !rejectionAppId) {
+      Alert.alert('Error', 'Please provide a reason for rejection.');
+      return;
+    }
+    
+    setProcessing(rejectionAppId);
+    setRejectionModalVisible(false);
+    
+    try {
+      await rejectVendorApplication(rejectionAppId, rejectionReason.trim());
+      Alert.alert('Success', 'Application rejected.');
+      fetchData();
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setProcessing(null);
+      setRejectionAppId(null);
+    }
   };
 
   const handleSuspend = async (vendor: any) => {
@@ -61,7 +78,7 @@ export default function AdminVendorsScreen() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Confirm', onPress: async () => {
         try {
-          await suspendAccount(vendor.id, !vendor.is_suspended);
+          await suspendAccount(vendor.user_id, !vendor.is_suspended);
           fetchData();
         } catch (e: any) {
           Alert.alert('Error', e.message);
@@ -127,7 +144,7 @@ export default function AdminVendorsScreen() {
         </TouchableOpacity>
         <TouchableOpacity 
           style={[s.actionBtn, { borderColor: border, backgroundColor: '#7F1D1D15' }]}
-          onPress={() => handleReject(item.id)}
+          onPress={() => openRejectionModal(item.id)}
           disabled={!!processing}
         >
           <XCircle size={16} color="#F87171" />
@@ -178,6 +195,46 @@ export default function AdminVendorsScreen() {
           }
         />
       )}
+
+      {/* Rejection Modal */}
+      <Modal
+        visible={rejectionModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRejectionModalVisible(false)}
+      >
+        <View style={s.modalOverlay}>
+          <View style={[s.modalContent, { backgroundColor: card, borderColor: border }]}>
+            <Text style={[s.modalTitle, { color: text }]}>Reject Application</Text>
+            <Text style={[s.modalSub, { color: sub }]}>Please provide a reason for rejecting this vendor application. This will be sent to the applicant.</Text>
+            
+            <TextInput
+              style={[s.reasonInput, { backgroundColor: inputBg, color: text, borderColor: border }]}
+              placeholder="e.g. Incomplete store information, inappropriate content, etc."
+              placeholderTextColor={sub}
+              multiline
+              numberOfLines={4}
+              value={rejectionReason}
+              onChangeText={setRejectionReason}
+            />
+
+            <View style={s.modalActions}>
+              <TouchableOpacity 
+                style={[s.modalBtn, { borderColor: border }]} 
+                onPress={() => setRejectionModalVisible(false)}
+              >
+                <Text style={{ color: sub, fontWeight: '700' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[s.modalBtn, { backgroundColor: '#F87171', borderColor: '#F87171' }]} 
+                onPress={handleConfirmReject}
+              >
+                <Text style={{ color: '#fff', fontWeight: '800' }}>Reject Application</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -197,4 +254,12 @@ const s = StyleSheet.create({
   cardActions: { flexDirection: 'row', gap: 12 },
   actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxWidth: 400, borderRadius: 20, borderWidth: 1, padding: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '900', marginBottom: 8 },
+  modalSub: { fontSize: 14, lineHeight: 20, marginBottom: 20 },
+  reasonInput: { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 14, textAlignVertical: 'top', minHeight: 100, marginBottom: 24 },
+  modalActions: { flexDirection: 'row', gap: 12 },
+  modalBtn: { flex: 1, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
 });

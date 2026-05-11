@@ -65,7 +65,7 @@ function VendorApplyWeb() {
   const [form, setForm] = useState({
     storeName: '',
     storeDescription: '',
-    phone: '',
+    email: '',
   });
 
   useEffect(() => {
@@ -95,7 +95,7 @@ function VendorApplyWeb() {
         userId: user.id,
         storeName: form.storeName.trim(),
         storeDescription: form.storeDescription.trim() || undefined,
-        phone: form.phone.trim() || undefined,
+        email: form.email.trim() || undefined,
       });
       const app = await getMyApplication(user.id);
       setApplication(app);
@@ -691,7 +691,7 @@ function VendorApplyMobile() {
                 label: 'Email',
                 key: 'email',
                 placeholder: 'example@example.com',
-                keyboard: 'default' as const,
+                keyboard: 'email-address' as const,
               },
             ].map((f) => (
               <View key={f.key} style={{ marginBottom: 16 }}>

@@ -84,6 +84,7 @@ export interface VendorApplication {
   store_name: string;
   store_description: string | null;
   phone: string | null;
+  email: string | null;
   status: 'pending' | 'approved' | 'rejected';
   admin_note: string | null;
   created_at: string;
@@ -410,18 +411,26 @@ export async function approveVendorApplication(
     .eq('id', application.id);
   if (appError) throw appError;
 
-  // 2. Promote the user to vendor role and copy store info
+  // 2. Promote the user to vendor role in profiles
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
-      role: 'vendor',
-      store_name: application.store_name,
-      store_description: application.store_description,
-    })
+    .update({ role: 'vendor' })
     .eq('id', application.user_id);
   if (profileError) throw profileError;
 
-  // 3. Send a notification to the vendor
+  // 3. Create entry in vendors table
+  const { error: vendorError } = await supabase
+    .from('vendors')
+    .insert({
+      user_id: application.user_id,
+      store_name: application.store_name,
+      store_description: application.store_description,
+      contact_email: application.email || application.user_email,
+      contact_phone: application.phone,
+    });
+  if (vendorError) throw vendorError;
+
+  // 4. Send a notification to the vendor
   await supabase.from('vendor_notifications').insert({
     vendor_id: application.user_id,
     title: '🎉 Your store is approved!',
@@ -430,7 +439,7 @@ export async function approveVendorApplication(
     meta: { application_id: application.id },
   });
 
-  // 4. Trigger Edge Function to send email and reset password
+  // 5. Trigger Edge Function to send email and reset password
   if (application.user_email) {
     const { error: funcError } = await supabase.functions.invoke(
       'vendor-approval',
@@ -445,7 +454,6 @@ export async function approveVendorApplication(
     );
     if (funcError) {
       console.error('Failed to trigger vendor approval email:', funcError);
-      // We do not throw here, so the approval doesn't roll back just because the email failed.
     }
   }
 }
@@ -578,12 +586,15 @@ export async function getAllApplications(
 
 export async function getAllVendors(): Promise<any[]> {
   const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('role', 'vendor')
+    .from('vendors')
+    .select('*, profiles!user_id(name, email)')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map((v: any) => ({
+    ...v,
+    name: v.profiles?.name,
+    email: v.profiles?.email,
+  }));
 }
 
 export async function suspendAccount(
@@ -591,8 +602,14 @@ export async function suspendAccount(
   suspend: boolean,
 ): Promise<void> {
   const { error } = await supabase
+    .from('vendors')
+    .update({ is_suspended: suspend })
+    .eq('user_id', userId);
+  if (error) throw error;
+
+  // Also update profile for consistency
+  await supabase
     .from('profiles')
     .update({ is_suspended: suspend })
     .eq('id', userId);
-  if (error) throw error;
 }

@@ -39,6 +39,7 @@ import { CameraView } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTheme, MOOD_PALETTES, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/services/supabase';
 import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
@@ -102,56 +103,22 @@ type Phase =
   | 'manual';
 
 /* ─────────────────────────────────────────────────────────────────────────
-   AI PRODUCT RECOMMENDATIONS  (Gemini API — same free key as mood detection)
+   AI PRODUCT RECOMMENDATIONS  (Supabase Edge Function)
 ─────────────────────────────────────────────────────────────────────────── */
 
 async function fetchProductRecs(mood: string, moodEmoji: string): Promise<ProductRec[]> {
-  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
+  try {
+    const { data, error } = await supabase.functions.invoke('get-recommendations', {
+      body: { mood, moodEmoji }
+    });
 
-  if (!geminiKey) {
-    console.error('[fetchProductRecs] ❌ EXPO_PUBLIC_GEMINI_API_KEY is not set');
-    throw new Error('EXPO_PUBLIC_GEMINI_API_KEY is not set.');
+    if (error) throw error;
+    return data as ProductRec[];
+  } catch (err: any) {
+    console.error('[fetchProductRecs] ❌ failed:', err?.message);
+    // Return empty array to allow manual picker fallback
+    return [];
   }
-
-  const prompt = `A user's facial expression just detected their mood as: ${mood} ${moodEmoji}
-
-Generate exactly 4 product recommendations perfectly matched to this mood. Think about what someone feeling ${mood} would genuinely want to buy or experience right now.
-
-Return ONLY a JSON array, no markdown, no extra text:
-[
-  {
-    "name": "Product name (2-4 words)",
-    "category": "Category (e.g. Skincare, Music, Food, Fitness, Comfort, Style)",
-    "emoji": "single relevant emoji",
-    "reason": "One sentence: why this fits the ${mood} mood perfectly (max 12 words)",
-    "priceRange": "$X–$Y"
-  }
-]`;
-
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${geminiKey}`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 },
-    }),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    console.error(`[fetchProductRecs] ❌ Gemini API ${response.status}:`, body);
-    throw new Error(`Gemini API ${response.status}`);
-  }
-
-  const data  = await response.json();
-  const raw   = (data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
-  const clean = raw.replace(/```json|```/g, '').trim();
-
-  console.log('[fetchProductRecs] ✅ Gemini raw:', clean.slice(0, 120));
-  return JSON.parse(clean) as ProductRec[];
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

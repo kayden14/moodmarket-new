@@ -1,9 +1,6 @@
-// services/moodDetection.ts
-//
-// AI-powered mood detection via Gemini vision models.
-
 import * as ImageManipulator from 'expo-image-manipulator';
 import { MoodKey, MoodDetectionResult } from '@/types/mood';
+import { supabase } from '@/services/supabase';
 
 const MOOD_EMOJI_MAP: Record<MoodKey, string> = {
   happy: '😊',
@@ -18,11 +15,11 @@ const MOOD_EMOJI_MAP: Record<MoodKey, string> = {
 
 const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 
-// gemini-1.5-flash removed — model is deprecated and returns 404
+// Gemini fallback models
 const GEMINI_MODELS = [
-  'gemini-2.0-flash',       // stable, generous free quota
-  'gemini-2.5-flash',       // stable 2.5 release
-  'gemini-2.0-flash-lite',  // last resort — low free quota, hits 429 fast
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash-lite',
 ];
 
 const GEMINI_API_VERSION = 'v1beta';
@@ -34,24 +31,16 @@ const MOCK_MOOD_DETECTION = false;
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-/** Exponential backoff: attempt 0 → ~1 s, 1 → ~2 s, 2 → ~4 s (+ jitter) */
 const backoffMs = (attempt: number) =>
   2 ** attempt * 1000 + Math.random() * 400;
 
-/** Minimum gap between ANY Gemini request — keeps burst rate well under free-tier cap */
 const MIN_REQUEST_INTERVAL_MS = 1500;
-
 let _lastRequestTime = 0;
 
 async function throttledFetch(url: string, init: RequestInit): Promise<Response> {
   const now = Date.now();
   const wait = Math.max(0, _lastRequestTime + MIN_REQUEST_INTERVAL_MS - now);
-
-  if (wait > 0) {
-    console.log(`[MoodDetection] Throttle: waiting ${Math.round(wait)}ms before request`);
-    await sleep(wait);
-  }
-
+  if (wait > 0) await sleep(wait);
   _lastRequestTime = Date.now();
   return fetch(url, init);
 }
@@ -60,23 +49,15 @@ async function throttledFetch(url: string, init: RequestInit): Promise<Response>
 
 export const compressImageForDetection = async (uri: string): Promise<string> => {
   try {
-    console.log('[MoodDetection] Compressing image from URI…');
-
     const result = await ImageManipulator.manipulateAsync(
       uri,
       [{ resize: { width: 480 } }],
       {
-        compress: 0.75,
+        compress: 0.7,
         format: ImageManipulator.SaveFormat.JPEG,
         base64: true,
       }
     );
-
-    const len = result.base64?.length ?? 0;
-    console.log(
-      `[MoodDetection] Compressed base64 length: ${len} (~${Math.round((len * 0.75) / 1024)}KB)`
-    );
-
     return result.base64 ?? '';
   } catch (err) {
     console.warn('[MoodDetection] Compression failed:', err);
@@ -84,137 +65,70 @@ export const compressImageForDetection = async (uri: string): Promise<string> =>
   }
 };
 
-// ─── Single model call ────────────────────────────────────────────────────────
+// ─── Gemini Fallback Call ─────────────────────────────────────────────────────
 
-async function callModel(
+async function callGeminiModel(
   model: string,
   base64Image: string,
   geminiKey: string,
   attempt = 0
 ): Promise<any> {
-  const url =
-    `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}` +
-    `/models/${model}:generateContent?key=${geminiKey}`;
-
-  console.log(
-    `[MoodDetection] Trying model: ${model} | attempt ${attempt + 1} | image size: ${base64Image.length} chars`
-  );
-
+  const url = `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${model}:generateContent?key=${geminiKey}`;
+  
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20000);
 
-  let response: Response;
-
   try {
-    response = await throttledFetch(url, {
+    const response = await throttledFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                inline_data: {
-                  mime_type: 'image/jpeg',
-                  data: base64Image,
-                },
-              },
-              {
-                text: `This is a selfie photo of a person's face. Your job is to detect their emotional mood from their facial expression.
-
-IMPORTANT RULES:
-1. You MUST return one of these exact moods: ${VALID_MOODS.join(', ')}
-2. NEVER return "neutral" unless the person has a completely blank, expressionless face
-3. Look carefully at: corners of mouth, eyebrows, eyes, cheeks, forehead tension
-4. A relaxed or slightly pleasant face = calm or happy (NOT neutral)
-5. Any visible emotion, however subtle, should be named
-
-Respond with ONLY this JSON (no text before or after):
-{"mood":"INSERT_MOOD_HERE","confidence":0.85}
-
-Replace INSERT_MOOD_HERE with the detected mood word.`,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 256,
-        },
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: 'image/jpeg', data: base64Image } },
+            { text: `Detect emotional mood from this face. Return one of: ${VALID_MOODS.join(', ')}. Respond with ONLY JSON: {"mood":"MOOD","confidence":0.85}` }
+          ]
+        }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 256 },
       }),
     });
-  } catch (err: any) {
+
     clearTimeout(timeout);
-    if (err.name === 'AbortError') throw new Error('Request timed out.');
-    throw err;
-  }
 
-  clearTimeout(timeout);
-
-  // Retryable statuses
-  if (response.status === 429 || response.status === 503) {
-    const body = await response.text();
-    const label = response.status === 429 ? 'quota exceeded' : 'service unavailable';
-
-    if (attempt < 2) {
-      const delay = backoffMs(attempt);
-      console.warn(
-        `[MoodDetection] ${model} ${label} (${response.status}), retrying in ${Math.round(delay)}ms…`
-      );
-      await sleep(delay);
-      return callModel(model, base64Image, geminiKey, attempt + 1);
+    if (response.status === 429 && attempt < 2) {
+      await sleep(backoffMs(attempt));
+      return callGeminiModel(model, base64Image, geminiKey, attempt + 1);
     }
 
-    throw new Error(`${model} quota exceeded after ${attempt + 1} attempts: ${body}`);
+    if (!response.ok) throw new Error(`Gemini API ${response.status}`);
+    
+    const data = await response.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    return JSON.parse(rawText.trim().replace(/```json|```/g, ''));
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-
-  if (response.status === 404) {
-    const body = await response.text();
-    console.error(`[MoodDetection] ❌ ${model} not found (404) — skipping model:`, body);
-    throw new Error(`${model} not found (404): ${body}`);
-  }
-
-  if (!response.ok) {
-    const body = await response.text();
-    console.error(`[MoodDetection] ❌ ${model} HTTP ${response.status}:`, body);
-    throw new Error(`Gemini API ${response.status}: ${body}`);
-  }
-
-  const data = await response.json();
-  console.log(`[MoodDetection] ✅ Success with: ${model}`);
-
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  console.log(`[MoodDetection] Raw Gemini response: "${rawText}"`);
-
-  const finishReason = data?.candidates?.[0]?.finishReason ?? 'unknown';
-  console.log(`[MoodDetection] Finish reason: ${finishReason}`);
-
-  if (finishReason === 'SAFETY') {
-    console.warn('[MoodDetection] Image blocked by Gemini safety filters — defaulting to calm');
-    return { _safetyBlocked: true };
-  }
-
-  return data;
 }
 
-// ─── Gemini call with model fallback ─────────────────────────────────────────
-
-async function callGeminiWithFallback(base64Image: string, geminiKey: string): Promise<any> {
-  let lastError: Error | null = null;
+async function detectWithGeminiFallback(base64Image: string): Promise<MoodDetectionResult> {
+  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  if (!geminiKey) throw new Error('Gemini API key missing');
 
   for (const model of GEMINI_MODELS) {
     try {
-      return await callModel(model, base64Image, geminiKey);
-    } catch (err: any) {
-      console.warn(
-        `[MoodDetection] ${model} exhausted, trying next model… (${err.message})`
-      );
-      lastError = err;
+      const result = await callGeminiModel(model, base64Image, geminiKey);
+      return {
+        mood: result.mood.toLowerCase() as MoodKey,
+        emoji: MOOD_EMOJI_MAP[result.mood.toLowerCase() as MoodKey] ?? '😐',
+        confidence: result.confidence ?? 0.8
+      };
+    } catch (e) {
+      console.warn(`[MoodDetection] Gemini ${model} failed, trying next…`);
     }
   }
-
-  throw lastError ?? new Error('All Gemini models failed.');
+  throw new Error('All Gemini fallback models failed');
 }
 
 // ─── Core detection ───────────────────────────────────────────────────────────
@@ -224,93 +138,47 @@ export const detectMoodFromImage = async (
   imageUri?: string
 ): Promise<MoodDetectionResult> => {
   if (MOCK_MOOD_DETECTION) {
-    console.log('[MoodDetection] MOCK MODE');
-    await sleep(1000);
     const mood = VALID_MOODS[Math.floor(Math.random() * VALID_MOODS.length)];
-    return { mood, emoji: MOOD_EMOJI_MAP[mood], confidence: 0.88 };
-  }
-
-  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-
-  console.log('[MoodDetection] Key present:', !!geminiKey);
-  console.log('[MoodDetection] Key prefix:', geminiKey?.slice(0, 8));
-
-  if (!geminiKey) {
-    throw new Error('EXPO_PUBLIC_GEMINI_API_KEY is not set in your .env file.');
+    return { mood, emoji: MOOD_EMOJI_MAP[mood], confidence: 0.9 };
   }
 
   let imageToSend = base64Image;
-
   if (imageUri) {
     const compressed = await compressImageForDetection(imageUri);
-    if (compressed && compressed.length > 500) {
-      imageToSend = compressed;
-      console.log('[MoodDetection] Using compressed image');
-    } else {
-      console.warn('[MoodDetection] Compression failed, using original base64');
-    }
+    if (compressed) imageToSend = compressed;
   }
 
+  // 1. Try Supabase Edge Function (Primary)
   try {
-    const data = await callGeminiWithFallback(imageToSend, geminiKey);
+    console.log('[MoodDetection] Calling Edge Function (Anthropic)...');
+    const { data, error } = await supabase.functions.invoke('detect-mood', {
+      body: { image: imageToSend }
+    });
 
-    if (data._safetyBlocked) {
-      return { mood: 'calm', emoji: '😌', confidence: 0.5 };
+    if (error) throw error;
+    if (data && data.mood) {
+      const mood = data.mood.toLowerCase() as MoodKey;
+      console.log(`[MoodDetection] Edge Function Success: ${mood}`);
+      return {
+        mood,
+        emoji: MOOD_EMOJI_MAP[mood] ?? '😐',
+        confidence: data.confidence ?? 0.8
+      };
     }
-
-    const raw = (data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '')
-      .trim()
-      .replace(/```json|```/g, '')
-      .trim();
-
-    console.log('[MoodDetection] Parsing:', raw);
-    return parseMoodResponse(raw);
   } catch (err: any) {
-    console.error('[MoodDetection] ❌ Full error:', err);
-    if (err.message?.includes('quota exceeded') || err.message?.includes('429')) {
-      throw new Error('Daily AI limit reached. Please try again tomorrow.');
-    }
-    throw new Error(`Gemini request failed: ${err.message}`);
+    console.warn('[MoodDetection] Edge Function failed, falling back to Gemini:', err.message);
+  }
+
+  // 2. Fallback to Gemini Direct
+  try {
+    return await detectWithGeminiFallback(imageToSend);
+  } catch (err: any) {
+    console.error('[MoodDetection] ❌ All methods failed:', err.message);
+    return { mood: 'neutral', emoji: '😐', confidence: 0.5 };
   }
 };
 
-// ─── Parse response ───────────────────────────────────────────────────────────
-
-function parseMoodResponse(raw: string): MoodDetectionResult {
-  let mood: MoodKey = 'neutral';
-  let confidence = 0.75;
-
-  try {
-    const jsonMatch = raw.match(/\{[^}]+\}/);
-    const jsonStr = jsonMatch ? jsonMatch[0] : raw;
-    const parsed = JSON.parse(jsonStr);
-    const detectedMood = parsed.mood?.toLowerCase().trim();
-
-    console.log(`[MoodDetection] Detected mood from JSON: "${detectedMood}"`);
-
-    if (VALID_MOODS.includes(detectedMood as MoodKey)) {
-      mood = detectedMood as MoodKey;
-    } else {
-      console.warn(`[MoodDetection] "${detectedMood}" is not a valid mood`);
-      const found = VALID_MOODS.find((m) => raw.toLowerCase().includes(m));
-      if (found) mood = found;
-    }
-
-    if (typeof parsed.confidence === 'number') {
-      confidence = Math.min(1, Math.max(0, parsed.confidence));
-    }
-  } catch {
-    console.warn('[MoodDetection] JSON parse failed, scanning raw text…');
-    const found = VALID_MOODS.find((m) => raw.toLowerCase().includes(m));
-    if (found) mood = found;
-  }
-
-  console.log(`[MoodDetection] Final mood: ${mood} (${Math.round(confidence * 100)}%)`);
-  return { mood, emoji: MOOD_EMOJI_MAP[mood], confidence };
-}
-
 export const getMoodEmoji = (mood: MoodKey): string => MOOD_EMOJI_MAP[mood] ?? '😐';
-
 
 export async function pickImageFromGallery(): Promise<{ uri: string } | null> {
   console.warn('[pickImageFromGallery] Not implemented yet.');
