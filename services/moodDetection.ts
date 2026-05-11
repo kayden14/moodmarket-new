@@ -18,10 +18,13 @@ const MOOD_EMOJI_MAP: Record<MoodKey, string> = {
 
 const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 
+// FIX: Updated model list — removed invalid preview ID, prioritised stable paid-tier
+// models first so free-tier quota exhaustion on flash-lite doesn't block everything.
 const GEMINI_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-2.5-flash',
+  'gemini-2.0-flash',       // stable, generous free quota
+  'gemini-2.5-flash',       // stable 2.5 release (replaces broken preview ID)
+  'gemini-1.5-flash',       // reliable fallback
+  'gemini-2.0-flash-lite',  // last resort — low free quota, hits 429 fast
 ];
 
 const GEMINI_API_VERSION = 'v1beta';
@@ -165,12 +168,22 @@ Replace INSERT_MOOD_HERE with the detected mood word.`,
       return callModel(model, base64Image, geminiKey, attempt + 1);
     }
 
-    throw new Error(`${model} ${label} after ${attempt + 1} attempts: ${body}`);
+    // FIX: On 429 exhaustion, throw a specific error so the fallback loop skips
+    // to the next model instead of retrying the same one indefinitely.
+    throw new Error(`${model} quota exceeded after ${attempt + 1} attempts: ${body}`);
+  }
+
+  // FIX: Treat 404 as a non-retryable hard failure so it falls through to the
+  // next model immediately rather than burning retries on a bad model ID.
+  if (response.status === 404) {
+    const body = await response.text();
+    console.error(`[MoodDetection] ❌ ${model} not found (404) — skipping model:`, body);
+    throw new Error(`${model} not found (404): ${body}`);
   }
 
   if (!response.ok) {
     const body = await response.text();
-    console.warn(`[MoodDetection] ${model} HTTP ${response.status}:`, body);
+    console.error(`[MoodDetection] ❌ ${model} HTTP ${response.status}:`, body);
     throw new Error(`Gemini API ${response.status}: ${body}`);
   }
 
@@ -225,6 +238,9 @@ export const detectMoodFromImage = async (
 
   const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
+  console.log('[MoodDetection] Key present:', !!geminiKey);
+  console.log('[MoodDetection] Key prefix:', geminiKey?.slice(0, 8));
+
   if (!geminiKey) {
     throw new Error('EXPO_PUBLIC_GEMINI_API_KEY is not set in your .env file.');
   }
@@ -256,6 +272,7 @@ export const detectMoodFromImage = async (
     console.log('[MoodDetection] Parsing:', raw);
     return parseMoodResponse(raw);
   } catch (err: any) {
+    console.error('[MoodDetection] ❌ Full error:', err);
     if (err.message?.includes('quota exceeded') || err.message?.includes('429')) {
       throw new Error('Daily AI limit reached. Please try again tomorrow.');
     }

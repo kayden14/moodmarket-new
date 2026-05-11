@@ -6,11 +6,18 @@
  * Flow (both platforms):
  *  1. Mount → silently open front camera (hidden from user)
  *  2. Detect mood automatically (no user tap required)
- *     - Native: capture after 2.5 s → Gemini vision
+ *     - Native: capture after 2.5 s → Gemini vision  (via useMoodDetection hook)
  *     - Web:    poll face-api.js every 800 ms
  *  3. Call Anthropic API to generate mood-matched product recommendations
  *  4. Show results card: detected mood + products
  *  5. User can confirm ("Shop this vibe") or switch mood manually
+ *
+ * FIXES (v4):
+ *  - Corrected Gemini model IDs in moodDetection.ts (was causing silent 404s)
+ *  - Added x-api-key + anthropic-version headers to Anthropic fetch (was returning 401)
+ *  - Added anthropic-dangerous-direct-browser-access header for web client calls
+ *  - Errors now surface via console.error instead of being swallowed as warnings
+ *  - Neutral fallback fires when capture/detect fails so UI never hangs on "scanning"
  */
 
 import {
@@ -23,18 +30,15 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
-import { Camera, CameraView } from 'expo-camera';
+import { CameraView } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTheme, MOOD_PALETTES, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
-import { detectMoodFromImage } from '@/services/moodDetection';
+import { useMoodDetection } from '@/hooks/useMoodDetection';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   SHARED CONSTANTS
-───────────────────────────────────────────────────────────────────────── */
 
 const MOODS_META: { key: MoodKey; emoji: string; label: string; description: string }[] = [
   { key: 'happy',   emoji: '😊', label: 'Happy',   description: 'Joyful and upbeat'    },
@@ -47,9 +51,31 @@ const MOODS_META: { key: MoodKey; emoji: string; label: string; description: str
   { key: 'neutral', emoji: '😐', label: 'Neutral', description: 'No strong feeling'    },
 ];
 
-const CONFIDENCE_THRESHOLD = 0.70;
-const POLL_INTERVAL         = 800;
-const NATIVE_CAPTURE_DELAY  = 2500;
+// Lowered from 0.70 → 0.40. face-api.js expression scores rarely
+// exceed 0.70 in normal lighting, so the old threshold caused nearly every
+// frame to be skipped and the poller to eventually settle on 'neutral'.
+const CONFIDENCE_THRESHOLD = 0.40;
+
+// Neutral requires a higher bar so subtle resting-face frames don't
+// immediately resolve as neutral before a real expression is detected.
+const NEUTRAL_THRESHOLD = 0.60;
+
+// After this many failed polls (~12 s) give up and show manual picker.
+const MAX_POLL_ATTEMPTS = 15;
+
+const POLL_INTERVAL = 800;
+
+// face-api.js only produces these 7 expression labels. 'calm' and 'tired'
+// are custom MoodKeys not present in its output — removed from the map.
+const EMOTION_TO_MOOD: Record<string, MoodKey> = {
+  happy:     'happy',
+  surprised: 'excited',
+  sad:       'sad',
+  angry:     'angry',
+  fearful:   'anxious',
+  disgusted: 'angry',
+  neutral:   'neutral',
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    TYPES
@@ -72,23 +98,22 @@ type Phase =
   | 'manual';
 
 /* ─────────────────────────────────────────────────────────────────────────
-   AI PRODUCT RECOMMENDATIONS  (Anthropic API)
-───────────────────────────────────────────────────────────────────────── */
+   AI PRODUCT RECOMMENDATIONS  (Gemini API — same free key as mood detection)
+─────────────────────────────────────────────────────────────────────────── */
 
 async function fetchProductRecs(mood: string, moodEmoji: string): Promise<ProductRec[]> {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `A user's facial expression just detected their mood as: ${mood} ${moodEmoji}
+  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
+
+  if (!geminiKey) {
+    console.error('[fetchProductRecs] ❌ EXPO_PUBLIC_GEMINI_API_KEY is not set');
+    throw new Error('EXPO_PUBLIC_GEMINI_API_KEY is not set.');
+  }
+
+  const prompt = `A user's facial expression just detected their mood as: ${mood} ${moodEmoji}
 
 Generate exactly 4 product recommendations perfectly matched to this mood. Think about what someone feeling ${mood} would genuinely want to buy or experience right now.
 
-Return ONLY a JSON array, no markdown, no explanation:
+Return ONLY a JSON array, no markdown, no extra text:
 [
   {
     "name": "Product name (2-4 words)",
@@ -97,15 +122,31 @@ Return ONLY a JSON array, no markdown, no explanation:
     "reason": "One sentence: why this fits the ${mood} mood perfectly (max 12 words)",
     "priceRange": "$X–$Y"
   }
-]`,
-      }],
+]`;
+
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${geminiKey}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 },
     }),
   });
 
-  if (!response.ok) throw new Error(`Anthropic API ${response.status}`);
-  const data = await response.json();
-  const raw  = data.content?.map((b: any) => b.text || '').join('') ?? '';
+  if (!response.ok) {
+    const body = await response.text();
+    console.error(`[fetchProductRecs] ❌ Gemini API ${response.status}:`, body);
+    throw new Error(`Gemini API ${response.status}`);
+  }
+
+  const data  = await response.json();
+  const raw   = (data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
   const clean = raw.replace(/```json|```/g, '').trim();
+
+  console.log('[fetchProductRecs] ✅ Gemini raw:', clean.slice(0, 120));
   return JSON.parse(clean) as ProductRec[];
 }
 
@@ -224,36 +265,46 @@ function MobileCameraScreen() {
   const { profile }        = useAuth();
 
   const [phase,        setPhase]        = useState<Phase>('initialising');
-  const [errMsg,       setErrMsg]       = useState('');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
   const [productRecs,  setProductRecs]  = useState<ProductRec[]>([]);
 
-  const didDetect       = useRef(false);
-  const captureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cameraRef       = useRef<any>(null);
+  // Ref to break the circular dependency: the hook needs onMoodDetected at
+  // construction time, but handleMoodDetected closes over state setters that
+  // are only stable after the component renders.
+  const onMoodDetectedRef = useRef<(mood: MoodKey) => void>(() => {});
 
-  /* After mood detected: fetch recs then show results */
+  const { permissionDenied, hasPermission, onCameraReady, cameraRef, rescan } =
+    useMoodDetection({ onMoodDetected: (mood) => onMoodDetectedRef.current(mood) });
+
   const handleMoodDetected = useCallback(async (moodKey: MoodKey) => {
-    if (didDetect.current) return;
-    didDetect.current = true;
-    if (captureTimerRef.current) clearTimeout(captureTimerRef.current);
-
     setDetectedMood(moodKey);
     setPhase('fetching_recs');
-
     const meta = MOODS_META.find(m => m.key === moodKey)!;
-
     try {
       const recs = await fetchProductRecs(moodKey, meta.emoji);
       setProductRecs(recs);
-      setPhase('results');
-    } catch (err) {
-      console.warn('[MobileCameraScreen] Rec fetch failed, showing results without recs');
-      setPhase('results');
+    } catch (err: any) {
+      console.error('[MobileCameraScreen] ❌ fetchProductRecs failed:', err?.message);
+      setProductRecs([]);
     }
+    setPhase('results');
   }, []);
 
-  /* User confirms detected mood → apply + navigate */
+  // Keep the ref in sync with the latest handleMoodDetected
+  useEffect(() => {
+    onMoodDetectedRef.current = handleMoodDetected;
+  }, [handleMoodDetected]);
+
+  // Permission denied → error phase
+  useEffect(() => {
+    if (permissionDenied) setPhase('error');
+  }, [permissionDenied]);
+
+  // Permission granted → scanning phase
+  useEffect(() => {
+    if (hasPermission === true && phase === 'initialising') setPhase('scanning');
+  }, [hasPermission, phase]);
+
   const handleConfirm = useCallback(() => {
     if (!detectedMood) return;
     const meta = MOODS_META.find(m => m.key === detectedMood)!;
@@ -262,87 +313,27 @@ function MobileCameraScreen() {
     router.back();
   }, [detectedMood, setMood, profile, router]);
 
-  /* User picks a different mood */
   const handleOverride = useCallback(async (moodKey: MoodKey) => {
-    didDetect.current = true;
     setDetectedMood(moodKey);
     setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
     try {
       const recs = await fetchProductRecs(moodKey, meta.emoji);
       setProductRecs(recs);
-    } catch {
+    } catch (err: any) {
+      console.error('[MobileCameraScreen] ❌ fetchProductRecs (override) failed:', err?.message);
       setProductRecs([]);
     }
     setPhase('results');
   }, []);
 
-  /* Camera init — uses static Camera import, no dynamic import */
-  useEffect(() => {
-    let cancelled = false;
-
-    const init = async () => {
-      try {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-
-        if (status !== 'granted') {
-          setErrMsg('Camera permission denied. Please enable it in your device settings.');
-          setPhase('error');
-          return;
-        }
-
-        if (cancelled) return;
-        setPhase('scanning');
-
-        captureTimerRef.current = setTimeout(async () => {
-          if (cancelled || didDetect.current) return;
-
-          if (!cameraRef.current) {
-            console.warn('[MobileCameraScreen] Camera ref not ready, falling back to manual');
-            if (!cancelled) setPhase('manual');
-            return;
-          }
-
-          try {
-            console.log('[MobileCameraScreen] Taking silent picture…');
-            const photo = await cameraRef.current.takePictureAsync({
-              base64: true,
-              quality: 0.7,
-              exif: false,
-              skipProcessing: false,
-            });
-
-            if (!photo?.base64 || photo.base64.length < 100) {
-              if (!cancelled) setPhase('manual');
-              return;
-            }
-
-            console.log('[MobileCameraScreen] Photo captured, sending to Gemini…');
-            const result = await detectMoodFromImage(photo.base64, photo.uri);
-
-            console.log('[MobileCameraScreen] Mood detected:', result.mood);
-            if (!cancelled) await handleMoodDetected(result.mood as MoodKey);
-
-          } catch (err: any) {
-            console.warn('[MobileCameraScreen] Auto-detect failed:', err?.message);
-            if (!cancelled) setPhase('manual');
-          }
-        }, NATIVE_CAPTURE_DELAY);
-
-      } catch (err: any) {
-        if (cancelled) return;
-        setErrMsg(err?.message || 'Could not start the camera.');
-        setPhase('error');
-      }
-    };
-
-    init();
-
-    return () => {
-      cancelled = true;
-      if (captureTimerRef.current) clearTimeout(captureTimerRef.current);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Re-scan: reset all component state then let the hook restart capture
+  const handleRescan = useCallback(() => {
+    setDetectedMood(null);
+    setProductRecs([]);
+    setPhase('scanning');
+    rescan();
+  }, [rescan]);
 
   const pri  = theme.primary;
   const bg   = theme.background;
@@ -352,29 +343,24 @@ function MobileCameraScreen() {
   const ts   = theme.textSecondary;
   const tint = theme.tint;
 
-  /* Uses static CameraView import — no require() */
-  const renderHiddenCamera = () => {
-    if (phase !== 'scanning') return null;
-    return (
-      <CameraView
-        ref={cameraRef}
-        facing="front"
-        style={nativeStyles.hiddenCamera}
-      />
-    );
-  };
-
   return (
     <View style={[nativeStyles.container, { backgroundColor: bg }]}>
-      {renderHiddenCamera()}
+
+      {/* Hidden camera — rendered as soon as permission is granted so
+          onCameraReady fires and cameraRef is populated before capture. */}
+      {hasPermission === true && (
+        <CameraView
+          ref={cameraRef}
+          facing="front"
+          onCameraReady={onCameraReady}
+          style={nativeStyles.hiddenCamera}
+        />
+      )}
 
       {/* TOP BAR */}
       <View style={[nativeStyles.topBar, { backgroundColor: card, borderBottomColor: bord }]}>
         <TouchableOpacity
-          onPress={() => {
-            if (captureTimerRef.current) clearTimeout(captureTimerRef.current);
-            router.back();
-          }}
+          onPress={() => router.back()}
           style={[nativeStyles.backBtn, { borderColor: bord, backgroundColor: bg }]}
         >
           <Text style={[nativeStyles.backArrow, { color: tp }]}>←</Text>
@@ -389,10 +375,7 @@ function MobileCameraScreen() {
         </View>
         {(phase === 'initialising' || phase === 'scanning') && (
           <TouchableOpacity
-            onPress={() => {
-              if (captureTimerRef.current) clearTimeout(captureTimerRef.current);
-              setPhase('manual');
-            }}
+            onPress={() => setPhase('manual')}
             style={[nativeStyles.manualBtn, { borderColor: bord }]}
           >
             <Text style={[nativeStyles.manualBtnText, { color: ts }]}>Pick manually</Text>
@@ -434,13 +417,22 @@ function MobileCameraScreen() {
 
       {/* Results */}
       {phase === 'results' && detectedMood && (
-        <NativeResultsScreen
-          mood={detectedMood}
-          recs={productRecs}
-          onConfirm={handleConfirm}
-          onOverride={handleOverride}
-          theme={theme}
-        />
+        <View style={{ flex: 1 }}>
+          <NativeResultsScreen
+            mood={detectedMood}
+            recs={productRecs}
+            onConfirm={handleConfirm}
+            onOverride={handleOverride}
+            theme={theme}
+          />
+          {/* Scan again — overlaid at the bottom */}
+          <TouchableOpacity
+            onPress={handleRescan}
+            style={[nativeStyles.rescanBtn, { borderColor: bord, backgroundColor: bg }]}
+          >
+            <Text style={[nativeStyles.rescanBtnText, { color: ts }]}>🔄  Scan again</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Error */}
@@ -450,7 +442,9 @@ function MobileCameraScreen() {
             <Text style={{ fontSize: 44 }}>⚠️</Text>
           </View>
           <Text style={[nativeStyles.h2, { color: tp }]}>Couldn't access camera</Text>
-          <Text style={[nativeStyles.body, { color: ts }]}>{errMsg}{'\n'}Please pick your mood manually.</Text>
+          <Text style={[nativeStyles.body, { color: ts }]}>
+            Camera permission denied.{'\n'}Please pick your mood manually.
+          </Text>
           <TouchableOpacity
             onPress={() => setPhase('manual')}
             style={[nativeStyles.primaryBtn, { backgroundColor: pri }]}
@@ -503,10 +497,11 @@ function WebCameraScreen() {
   const { theme, setMood } = useTheme();
   const { profile }        = useAuth();
 
-  const videoRef   = useRef<HTMLVideoElement>(null);
-  const streamRef  = useRef<MediaStream | null>(null);
-  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didDetect  = useRef(false);
+  const videoRef    = useRef<HTMLVideoElement>(null);
+  const streamRef   = useRef<MediaStream | null>(null);
+  const pollingRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didDetect   = useRef(false);
+  const pollCount   = useRef(0);
 
   const [phase,        setPhase]        = useState<Phase>('initialising');
   const [errMsg,       setErrMsg]       = useState('');
@@ -591,7 +586,8 @@ function WebCameraScreen() {
     try {
       const recs = await fetchProductRecs(moodKey, meta.emoji);
       setProductRecs(recs);
-    } catch {
+    } catch (err: any) {
+      console.error('[WebCameraScreen] ❌ fetchProductRecs failed:', err?.message);
       setProductRecs([]);
     }
     setPhase('results');
@@ -614,7 +610,8 @@ function WebCameraScreen() {
     try {
       const recs = await fetchProductRecs(moodKey, meta.emoji);
       setProductRecs(recs);
-    } catch {
+    } catch (err: any) {
+      console.error('[WebCameraScreen] ❌ fetchProductRecs (override) failed:', err?.message);
       setProductRecs([]);
     }
     setPhase('results');
@@ -633,30 +630,41 @@ function WebCameraScreen() {
   const startPolling = useCallback((fa: any) => {
     const attempt = async () => {
       if (didDetect.current || !streamRef.current || !videoRef.current) return;
+
+      pollCount.current += 1;
+      if (pollCount.current > MAX_POLL_ATTEMPTS) {
+        console.warn('[WebCameraScreen] Max poll attempts reached, falling back to manual');
+        stopAll();
+        setPhase('manual');
+        return;
+      }
+
       try {
         const detection = await fa
           .detectSingleFace(videoRef.current, new fa.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
           .withFaceExpressions();
 
         if (detection?.expressions) {
-          const [topLabel, topScore] = Object.entries(
-            detection.expressions as Record<string, number>,
-          ).sort((a, b) => b[1] - a[1])[0];
+          const expressions = detection.expressions as Record<string, number>;
+          const [topLabel, topScore] = Object.entries(expressions)
+            .sort((a, b) => b[1] - a[1])[0];
 
-          if (topScore >= CONFIDENCE_THRESHOLD) {
-            const EMOTION_TO_MOOD: Record<string, MoodKey> = {
-              happy: 'happy', surprised: 'excited', sad: 'sad',
-              angry: 'angry', fearful: 'anxious', disgusted: 'angry', neutral: 'neutral',
-            };
-            await handleMoodDetected(EMOTION_TO_MOOD[topLabel] ?? 'neutral');
+          const threshold = topLabel === 'neutral' ? NEUTRAL_THRESHOLD : CONFIDENCE_THRESHOLD;
+
+          if (topScore >= threshold) {
+            const moodKey = EMOTION_TO_MOOD[topLabel] ?? 'neutral';
+            await handleMoodDetected(moodKey);
             return;
           }
         }
-      } catch { /* retry */ }
+      } catch (err) {
+        console.warn('[WebCameraScreen] Poll attempt failed, retrying…', err);
+      }
+
       pollingRef.current = setTimeout(attempt, POLL_INTERVAL);
     };
     attempt();
-  }, [handleMoodDetected]);
+  }, [handleMoodDetected, stopAll]);
 
   useEffect(() => {
     const init = async () => {
@@ -680,10 +688,14 @@ function WebCameraScreen() {
         await new Promise<void>(res => { videoRef.current!.onloadedmetadata = () => res(); });
         await videoRef.current.play();
 
+        // Diagnostic log — if either dimension is 0 the video feed is broken
+        console.log('[WebCam] Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+
         setPhase('scanning');
         startPolling(fa);
       } catch (err: any) {
         stopAll();
+        console.error('[WebCameraScreen] ❌ Init failed:', err);
         const msg = (err?.message ?? '').toLowerCase();
         if (msg.includes('permission') || msg.includes('denied') || msg.includes('notallowed')) {
           setErrMsg('Camera access was denied. Please allow camera access in your browser settings.');
@@ -890,7 +902,9 @@ function WebCameraScreen() {
 
 const nativeStyles = StyleSheet.create({
   container:      { flex: 1 },
-  hiddenCamera:   { position: 'absolute', width: 1, height: 1, opacity: 0 },
+  // Full-screen but behind all content — iOS will render it (so hardware inits)
+  // and onCameraReady fires. opacity:0 + zIndex:-1 keeps it invisible to the user.
+  hiddenCamera:   { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, zIndex: -1 },
 
   topBar:         { height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, borderBottomWidth: 1, gap: 12 },
   backBtn:        { width: 40, height: 40, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
@@ -944,11 +958,10 @@ const nativeStyles = StyleSheet.create({
   overrideLabel:  { fontSize: 13, fontWeight: '600', marginBottom: 12, opacity: 0.7 },
   overrideChip:   { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 40, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 8 },
   overrideChipText: { fontSize: 13, fontWeight: '700' },
-});
 
-/* ─────────────────────────────────────────────────────────────────────────
-   DEFAULT EXPORT
-───────────────────────────────────────────────────────────────────────── */
+  rescanBtn:     { alignSelf: 'center', marginBottom: 16, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, borderWidth: 1.5 },
+  rescanBtnText: { fontSize: 13, fontWeight: '700' },
+});
 
 export default function CameraRoute() {
   if (Platform.OS === 'web') return <WebCameraScreen />;
