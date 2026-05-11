@@ -18,12 +18,10 @@ const MOOD_EMOJI_MAP: Record<MoodKey, string> = {
 
 const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 
-// FIX: Updated model list — removed invalid preview ID, prioritised stable paid-tier
-// models first so free-tier quota exhaustion on flash-lite doesn't block everything.
+// gemini-1.5-flash removed — model is deprecated and returns 404
 const GEMINI_MODELS = [
   'gemini-2.0-flash',       // stable, generous free quota
-  'gemini-2.5-flash',       // stable 2.5 release (replaces broken preview ID)
-  'gemini-1.5-flash',       // reliable fallback
+  'gemini-2.5-flash',       // stable 2.5 release
   'gemini-2.0-flash-lite',  // last resort — low free quota, hits 429 fast
 ];
 
@@ -168,13 +166,9 @@ Replace INSERT_MOOD_HERE with the detected mood word.`,
       return callModel(model, base64Image, geminiKey, attempt + 1);
     }
 
-    // FIX: On 429 exhaustion, throw a specific error so the fallback loop skips
-    // to the next model instead of retrying the same one indefinitely.
     throw new Error(`${model} quota exceeded after ${attempt + 1} attempts: ${body}`);
   }
 
-  // FIX: Treat 404 as a non-retryable hard failure so it falls through to the
-  // next model immediately rather than burning retries on a bad model ID.
   if (response.status === 404) {
     const body = await response.text();
     console.error(`[MoodDetection] ❌ ${model} not found (404) — skipping model:`, body);
@@ -317,7 +311,6 @@ function parseMoodResponse(raw: string): MoodDetectionResult {
 
 export const getMoodEmoji = (mood: MoodKey): string => MOOD_EMOJI_MAP[mood] ?? '😐';
 
-// ─── Gallery picker stub (pre-existing missing implementation) ───────────────
 
 export async function pickImageFromGallery(): Promise<{ uri: string } | null> {
   console.warn('[pickImageFromGallery] Not implemented yet.');
