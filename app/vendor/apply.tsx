@@ -16,18 +16,20 @@ import {
   Platform,
   KeyboardAvoidingView,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyToBeVendor, getMyApplication } from '@/services/vendorService';
 import type { VendorApplication } from '@/services/vendorService';
+import { Store, Mail, FileText, ChevronLeft } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';
-const BG = '#0B0F1A';
-const CARD = '#1A2236';
-const BORDER = '#1F2D42';
+const BG = '#0F172A';
+const CARD = '#1E293B';
+const BORDER = '#334155';
 const TEXT = '#F1F5F9';
-const SUB = '#64748B';
+const SUB = '#94A3B8';
 
 const STATUS_CONFIG = {
   pending: {
@@ -55,7 +57,7 @@ const STATUS_CONFIG = {
 ───────────────────────────────────────────────────────────────────────── */
 
 function VendorApplyWeb() {
-  const { user, profile, isVendor } = useAuth();
+  const { user, isVendor } = useAuth();
   const router = useRouter();
   const [application, setApplication] = useState<VendorApplication | null>(
     null,
@@ -67,6 +69,7 @@ function VendorApplyWeb() {
     storeDescription: '',
     email: '',
   });
+  const [focused, setFocused] = useState<string | null>(null);
 
   useEffect(() => {
     if (isVendor) {
@@ -88,7 +91,10 @@ function VendorApplyWeb() {
       alert('Please enter your store name.');
       return;
     }
-    if (!user?.id) return;
+    if (!user?.id) {
+      alert('You must be signed in to apply.');
+      return;
+    }
     setSubmitting(true);
     try {
       await applyToBeVendor({
@@ -107,17 +113,65 @@ function VendorApplyWeb() {
   };
 
   const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: ${BG}; }
-    @keyframes va-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes va-spin { to { transform: rotate(360deg); } }
-    .va-input { width: 100%; background: ${BG}; border: 1.5px solid ${BORDER}; border-radius: 12px; padding: 13px 16px; font-size: 14px; color: ${TEXT}; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; transition: border-color .18s; }
-    .va-input:focus { border-color: ${PRIMARY}; }
-    .va-input::placeholder { color: #334155; }
-    .va-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; transition: all .15s; }
-    .va-btn:hover { opacity: .88; transform: translateY(-2px); }
-    .va-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; }
+    @keyframes va-fadein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes va-spin   { to { transform: rotate(360deg); } }
+    @keyframes va-float  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .va-root { display: flex; min-height: 100vh; }
+    .va-left {
+      width: 44%; background: linear-gradient(160deg, #0A0F1E 0%, #0F1829 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 60px 48px; position: relative; overflow: hidden;
+    }
+    .va-right {
+      flex: 1; background: ${BG}; display: flex; align-items: center; justify-content: center;
+      padding: 48px 60px;
+    }
+    .va-form-wrap { width: 100%; max-width: 460px; animation: va-fadein .4s ease both; }
+    .va-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,122,138,.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,122,138,.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .va-glow { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+    .va-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: ${PRIMARY}; margin-bottom: 10px; }
+    .va-heading { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 900; color: ${TEXT}; letter-spacing: -.7px; margin-bottom: 6px; }
+    .va-sub { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 28px; }
+    .va-field { margin-bottom: 16px; }
+    .va-label { font-size: 11px; font-weight: 700; color: #64748B; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 7px; display: block; }
+    .va-input-wrap {
+      display: flex; align-items: center; gap: 10px;
+      background: ${CARD}; border: 1.5px solid ${BORDER};
+      border-radius: 13px; padding: 0 16px; min-height: 50px;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .va-input-wrap.focused { border-color: ${PRIMARY}; box-shadow: 0 0 0 3px ${PRIMARY}22; }
+    .va-input-wrap input, .va-input-wrap textarea {
+      flex: 1; background: none; border: none; outline: none;
+      font-size: 15px; color: ${TEXT}; font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 12px 0;
+    }
+    .va-input-wrap input::placeholder, .va-input-wrap textarea::placeholder { color: ${BORDER}; }
+    .va-btn {
+      width: 100%; height: 52px; background: ${PRIMARY}; color: #fff; border: none;
+      border-radius: 13px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 4px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      box-shadow: 0 8px 24px ${PRIMARY}44;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform .15s ease, opacity .15s;
+    }
+    .va-btn:hover:not(:disabled) { transform: translateY(-2px); opacity: .92; }
+    .va-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .va-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: va-spin .7s linear infinite; }
+    .va-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid ${BORDER}; border-radius: 20px; padding: 6px 14px; color: #64748B; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 24px; transition: border-color .15s, color .15s; }
+    .va-back:hover { border-color: #475569; color: #94A3B8; }
+    .va-status-card {
+      background: ${CARD}; border: 1px solid ${BORDER}; border-radius: 20px; padding: 32px; text-align: center;
+    }
+    @media (max-width: 768px) { .va-left { display: none; } .va-right { padding: 40px 24px; } }
   `;
 
   if (loading)
@@ -131,314 +185,274 @@ function VendorApplyWeb() {
           justifyContent: 'center',
         }}
       >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            border: `3px solid ${BORDER}`,
-            borderTopColor: PRIMARY,
-            borderRadius: '50%',
-            animation: 'va-spin .8s linear infinite',
-          }}
-        />
+        <div className="va-spinner" style={{ width: 36, height: 36 }} />
       </div>
     );
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div
-        style={{
-          minHeight: '100vh',
-          background: BG,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px 16px',
-          fontFamily: '"Plus Jakarta Sans", sans-serif',
-        }}
-      >
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 560,
-            animation: 'va-in .4s ease both',
-          }}
-        >
-          {/* Logo / header */}
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🏪</div>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: 3,
-                color: PRIMARY,
-                textTransform: 'uppercase',
-                marginBottom: 8,
-              }}
-            >
-              MoodMarket Vendor
-            </p>
-            <h1
-              style={{
-                fontFamily: '"Fraunces", serif',
-                fontSize: 32,
-                fontWeight: 900,
-                color: TEXT,
-                letterSpacing: -0.8,
-              }}
-            >
-              Sell on MoodMarket
-            </h1>
-            <p
-              style={{
-                fontSize: 14,
-                color: SUB,
-                marginTop: 10,
-                lineHeight: 1.6,
-              }}
-            >
-              Join hundreds of vendors reaching customers through mood-based
-              discovery.
-            </p>
-          </div>
+      <div className="va-root">
+        {/* LEFT — brand panel */}
+        <div className="va-left">
+          <div className="va-grid" />
+          <div
+            className="va-glow"
+            style={{
+              width: 340,
+              height: 340,
+              background: `${PRIMARY}14`,
+              top: -120,
+              right: -80,
+            }}
+          />
 
-          {/* Status card if application exists */}
-          {application &&
-            (() => {
-              const cfg = STATUS_CONFIG[application.status];
-              return (
-                <div
-                  style={{
-                    background: CARD,
-                    border: `1px solid ${cfg.color}44`,
-                    borderRadius: 20,
-                    padding: 32,
-                    textAlign: 'center',
-                    marginBottom: 24,
-                  }}
-                >
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>
-                    {cfg.icon}
-                  </div>
-                  <h2
-                    style={{
-                      fontFamily: '"Fraunces", serif',
-                      fontSize: 22,
-                      fontWeight: 900,
-                      color: cfg.color,
-                      marginBottom: 10,
-                    }}
-                  >
-                    {cfg.title}
-                  </h2>
-                  <p style={{ fontSize: 14, color: SUB, lineHeight: 1.7 }}>
-                    {cfg.body}
-                  </p>
-                  {application.admin_note && (
-                    <div
-                      style={{
-                        marginTop: 16,
-                        background: `${cfg.color}12`,
-                        border: `1px solid ${cfg.color}33`,
-                        borderRadius: 12,
-                        padding: '12px 16px',
-                        fontSize: 13,
-                        color: TEXT,
-                        textAlign: 'left',
-                      }}
-                    >
-                      <strong style={{ color: cfg.color }}>
-                        Note from admin:{' '}
-                      </strong>
-                      {application.admin_note}
-                    </div>
-                  )}
-                  {application.status === 'approved' && (
-                    <button
-                      className="va-btn"
-                      onClick={() => router.replace('/vendor' as any)}
-                      style={{
-                        marginTop: 24,
-                        background: PRIMARY,
-                        color: '#fff',
-                        padding: '14px 32px',
-                        width: '100%',
-                        boxShadow: `0 6px 20px ${PRIMARY}44`,
-                      }}
-                    >
-                      Go to Dashboard →
-                    </button>
-                  )}
-                  {application.status === 'rejected' && (
-                    <button
-                      className="va-btn"
-                      onClick={() => setApplication(null)}
-                      style={{
-                        marginTop: 24,
-                        background: `${PRIMARY}22`,
-                        border: `1px solid ${PRIMARY}55`,
-                        color: PRIMARY,
-                        padding: '14px 32px',
-                        width: '100%',
-                      }}
-                    >
-                      Apply Again
-                    </button>
-                  )}
-                </div>
-              );
-            })()}
-
-          {/* Application form */}
-          {!application && (
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              width: '100%',
+              maxWidth: 320,
+            }}
+          >
             <div
               style={{
-                background: CARD,
-                border: `1px solid ${BORDER}`,
-                borderRadius: 20,
-                padding: 32,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 48,
               }}
             >
-              <h2
+              <div
                 style={{
-                  fontFamily: '"Fraunces", serif',
-                  fontSize: 20,
-                  fontWeight: 900,
-                  color: TEXT,
-                  marginBottom: 24,
+                  width: 52,
+                  height: 52,
+                  borderRadius: 16,
+                  background: PRIMARY,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 26,
+                  boxShadow: `0 8px 24px ${PRIMARY}55`,
+                  animation: 'va-float 4s ease-in-out infinite',
                 }}
               >
-                Store Information
-              </h2>
-
-              {[
-                {
-                  label: 'Store Name *',
-                  key: 'storeName',
-                  placeholder: "e.g. Afia's Wellness Corner",
-                  type: 'text',
-                },
-                {
-                  label: 'Email',
-                  key: 'email',
-                  placeholder: 'example@example.com',
-                  type: 'email',
-                },
-              ].map((f) => (
-                <div key={f.key} style={{ marginBottom: 18 }}>
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: 0.8,
-                      textTransform: 'uppercase',
-                      color: SUB,
-                      display: 'block',
-                      marginBottom: 7,
-                    }}
-                  >
-                    {f.label}
-                  </label>
-                  <input
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    value={(form as any)[f.key]}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, [f.key]: e.target.value }))
-                    }
-                    className="va-input"
-                  />
-                </div>
-              ))}
-
-              <div style={{ marginBottom: 28 }}>
-                <label
+                🏪
+              </div>
+              <div>
+                <div
                   style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 0.8,
-                    textTransform: 'uppercase',
-                    color: SUB,
-                    display: 'block',
-                    marginBottom: 7,
+                    fontFamily: '"Fraunces", serif',
+                    fontSize: 22,
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: -0.4,
                   }}
                 >
-                  Tell us about your store
-                </label>
-                <textarea
-                  placeholder="What do you sell? What makes your store special? (optional)"
-                  value={form.storeDescription}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      storeDescription: e.target.value,
-                    }))
-                  }
-                  className="va-input"
-                  style={{ height: 100, resize: 'vertical', lineHeight: 1.6 }}
-                />
+                  MoodMarket
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: PRIMARY,
+                    fontWeight: 700,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Vendor Portal
+                </div>
               </div>
-
-              <button
-                className="va-btn"
-                onClick={handleSubmit}
-                disabled={submitting}
-                style={{
-                  width: '100%',
-                  background: PRIMARY,
-                  color: '#fff',
-                  padding: '15px',
-                  boxShadow: `0 6px 20px ${PRIMARY}44`,
-                }}
-              >
-                {submitting ? (
-                  <div
-                    style={{
-                      width: 18,
-                      height: 18,
-                      border: '2px solid rgba(255,255,255,.3)',
-                      borderTopColor: '#fff',
-                      borderRadius: '50%',
-                      animation: 'va-spin .7s linear infinite',
-                    }}
-                  />
-                ) : (
-                  '🚀 Submit Application'
-                )}
-              </button>
-
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontSize: 12,
-                  color: SUB,
-                  marginTop: 16,
-                  lineHeight: 1.5,
-                }}
-              >
-                By submitting, you agree to the MoodMarket Vendor Terms.
-                Applications are reviewed within 1–2 business days.
-              </p>
             </div>
-          )}
 
-          <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <button
-              onClick={() => router.replace('/(tabs)' as any)}
+            <div
               style={{
-                background: 'none',
-                border: 'none',
-                color: SUB,
-                fontSize: 13,
-                cursor: 'pointer',
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
-                fontWeight: 600,
+                fontFamily: '"Fraunces", serif',
+                fontSize: 28,
+                fontWeight: 900,
+                color: TEXT,
+                letterSpacing: -0.6,
+                marginBottom: 12,
+                lineHeight: 1.2,
               }}
             >
-              ← Back to store
+              Start Selling,
+              <br />
+              <span style={{ color: PRIMARY, fontStyle: 'italic' }}>
+                Start Growing.
+              </span>
+            </div>
+            <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.65 }}>
+              Join hundreds of vendors reaching customers through mood-based
+              discovery. Apply today and get approved in 24 hours.
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT — form */}
+        <div className="va-right">
+          <div className="va-form-wrap">
+            <button
+              className="va-back"
+              onClick={() => router.push('/vendor/login' as any)}
+            >
+              ← Back to Login
             </button>
+
+            {application ? (
+              <div className="va-status-card">
+                <div style={{ fontSize: 48, marginBottom: 16 }}>
+                  {STATUS_CONFIG[application.status].icon}
+                </div>
+                <h2
+                  style={{
+                    fontFamily: '"Fraunces", serif',
+                    fontSize: 22,
+                    fontWeight: 900,
+                    color: STATUS_CONFIG[application.status].color,
+                    marginBottom: 10,
+                  }}
+                >
+                  {STATUS_CONFIG[application.status].title}
+                </h2>
+                <p style={{ fontSize: 14, color: SUB, lineHeight: 1.7 }}>
+                  {STATUS_CONFIG[application.status].body}
+                </p>
+                {application.admin_note && (
+                  <div
+                    style={{
+                      marginTop: 20,
+                      background: 'rgba(255,255,255,.03)',
+                      borderRadius: 12,
+                      padding: 16,
+                      fontSize: 13,
+                      color: TEXT,
+                      textAlign: 'left',
+                      borderLeft: `3px solid ${STATUS_CONFIG[application.status].color}`,
+                    }}
+                  >
+                    <strong>Admin Note:</strong> {application.admin_note}
+                  </div>
+                )}
+                {application.status === 'approved' && (
+                  <button
+                    className="va-btn"
+                    onClick={() => router.replace('/vendor' as any)}
+                    style={{ marginTop: 24 }}
+                  >
+                    Go to Dashboard →
+                  </button>
+                )}
+                {application.status === 'rejected' && (
+                  <button
+                    className="va-btn"
+                    onClick={() => setApplication(null)}
+                    style={{
+                      marginTop: 24,
+                      background: 'none',
+                      border: `1.5px solid ${BORDER}`,
+                    }}
+                  >
+                    Apply Again
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="va-eyebrow">✨ New Vendor Application</div>
+                <h1 className="va-heading">Apply to Sell</h1>
+                <p className="va-sub">
+                  Tell us about your store. We'll review your application and
+                  get back to you shortly.
+                </p>
+
+                <div className="va-field">
+                  <label className="va-label">Store Name *</label>
+                  <div
+                    className={`va-input-wrap${focused === 'name' ? ' focused' : ''}`}
+                  >
+                    <input
+                      placeholder="e.g. Afia's Wellness Corner"
+                      value={form.storeName}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          storeName: e.target.value,
+                        }))
+                      }
+                      onFocus={() => setFocused('name')}
+                      onBlur={() => setFocused(null)}
+                    />
+                  </div>
+                </div>
+
+                <div className="va-field">
+                  <label className="va-label">Contact Email Address</label>
+                  <div
+                    className={`va-input-wrap${focused === 'email' ? ' focused' : ''}`}
+                  >
+                    <input
+                      type="email"
+                      placeholder="you@yourstore.com"
+                      value={form.email}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                      onFocus={() => setFocused('email')}
+                      onBlur={() => setFocused(null)}
+                    />
+                  </div>
+                </div>
+
+                <div className="va-field">
+                  <label className="va-label">About Your Store</label>
+                  <div
+                    className={`va-input-wrap${focused === 'desc' ? ' focused' : ''}`}
+                  >
+                    <textarea
+                      placeholder="What do you sell? (optional)"
+                      rows={3}
+                      value={form.storeDescription}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          storeDescription: e.target.value,
+                        }))
+                      }
+                      onFocus={() => setFocused('desc')}
+                      onBlur={() => setFocused(null)}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className="va-btn"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <div className="va-spinner" />
+                  ) : (
+                    '🚀 Submit Vendor Application'
+                  )}
+                </button>
+
+                <p
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 11,
+                    color: BORDER,
+                    marginTop: 20,
+                    fontFamily: 'JetBrains Mono, monospace',
+                  }}
+                >
+                  Secure Vendor Onboarding · MoodMarket
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -484,7 +498,10 @@ function VendorApplyMobile() {
       Alert.alert('Error', 'Please enter your store name.');
       return;
     }
-    if (!user?.id) return;
+    if (!user?.id) {
+      Alert.alert('Error', 'You must be signed in to apply.');
+      return;
+    }
     setSubmitting(true);
     try {
       await applyToBeVendor({
@@ -504,262 +521,161 @@ function VendorApplyMobile() {
 
   if (loading)
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: BG,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View style={s.center}>
         <ActivityIndicator color={PRIMARY} size="large" />
       </View>
     );
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: BG }}
+      style={s.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <StatusBar barStyle="light-content" />
       <ScrollView
-        contentContainerStyle={{
-          padding: 24,
-          paddingTop: Platform.OS === 'ios' ? 60 : 44,
-        }}
+        contentContainerStyle={s.scroll}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={{ alignItems: 'center', marginBottom: 36 }}>
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>🏪</Text>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: '800',
-              letterSpacing: 3,
-              color: PRIMARY,
-              marginBottom: 8,
-            }}
+        <View style={s.header}>
+          <TouchableOpacity
+            style={s.backBtn}
+            onPress={() => router.push('/vendor/login' as any)}
           >
-            MOODMARKET VENDOR
-          </Text>
-          <Text
-            style={{
-              fontSize: 28,
-              fontWeight: '900',
-              color: TEXT,
-              letterSpacing: -0.6,
-              textAlign: 'center',
-            }}
-          >
-            Sell on MoodMarket
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: SUB,
-              marginTop: 8,
-              textAlign: 'center',
-              lineHeight: 20,
-            }}
-          >
-            Join vendors reaching customers through mood-based discovery.
+            <ChevronLeft size={20} color={SUB} />
+            <Text style={s.backBtnTxt}>Back to Login</Text>
+          </TouchableOpacity>
+
+          <View style={s.logoCircle}>
+            <Store size={32} color="#fff" />
+          </View>
+          <Text style={s.title}>Become a Vendor</Text>
+          <Text style={s.subtitle}>
+            Reach more customers with mood-based discovery.
           </Text>
         </View>
 
-        {/* Status card */}
-        {application &&
-          (() => {
-            const cfg = STATUS_CONFIG[application.status];
-            return (
-              <View
-                style={{
-                  backgroundColor: CARD,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: cfg.color + '44',
-                  padding: 24,
-                  alignItems: 'center',
-                  marginBottom: 24,
-                }}
-              >
-                <Text style={{ fontSize: 40, marginBottom: 12 }}>
-                  {cfg.icon}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: '900',
-                    color: cfg.color,
-                    marginBottom: 8,
-                  }}
-                >
-                  {cfg.title}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: SUB,
-                    textAlign: 'center',
-                    lineHeight: 22,
-                  }}
-                >
-                  {cfg.body}
-                </Text>
-                {application.admin_note && (
-                  <View
-                    style={{
-                      marginTop: 14,
-                      backgroundColor: cfg.color + '15',
-                      borderRadius: 10,
-                      padding: 12,
-                      width: '100%',
-                    }}
-                  >
-                    <Text style={{ fontSize: 12, color: TEXT, lineHeight: 18 }}>
-                      <Text style={{ fontWeight: '700', color: cfg.color }}>
-                        Note:{' '}
-                      </Text>
-                      {application.admin_note}
-                    </Text>
-                  </View>
-                )}
-                {application.status === 'approved' && (
-                  <TouchableOpacity
-                    style={[
-                      ms.btn,
-                      { marginTop: 20, backgroundColor: PRIMARY },
-                    ]}
-                    onPress={() => router.replace('/vendor' as any)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={ms.btnTxt}>Go to Dashboard →</Text>
-                  </TouchableOpacity>
-                )}
-                {application.status === 'rejected' && (
-                  <TouchableOpacity
-                    style={[
-                      ms.btn,
-                      {
-                        marginTop: 20,
-                        backgroundColor: PRIMARY + '22',
-                        borderWidth: 1,
-                        borderColor: PRIMARY + '55',
-                      },
-                    ]}
-                    onPress={() => setApplication(null)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[ms.btnTxt, { color: PRIMARY }]}>
-                      Apply Again
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            );
-          })()}
-
-        {/* Form */}
-        {!application && (
-          <View
-            style={{
-              backgroundColor: CARD,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: BORDER,
-              padding: 24,
-            }}
-          >
+        {application ? (
+          <View style={s.statusCard}>
+            <Text style={{ fontSize: 48, marginBottom: 16 }}>
+              {STATUS_CONFIG[application.status].icon}
+            </Text>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: '900',
-                color: TEXT,
-                marginBottom: 24,
-              }}
+              style={[
+                s.statusTitle,
+                { color: STATUS_CONFIG[application.status].color },
+              ]}
             >
-              Store Information
+              {STATUS_CONFIG[application.status].title}
+            </Text>
+            <Text style={s.statusBody}>
+              {STATUS_CONFIG[application.status].body}
             </Text>
 
-            {[
-              {
-                label: 'Store Name *',
-                key: 'storeName',
-                placeholder: "e.g. Afia's Wellness Corner",
-                keyboard: 'default' as const,
-              },
-              {
-                label: 'Email',
-                key: 'email',
-                placeholder: 'example@example.com',
-                keyboard: 'email-address' as const,
-              },
-            ].map((f) => (
-              <View key={f.key} style={{ marginBottom: 16 }}>
-                <Text style={ms.label}>{f.label}</Text>
+            {application.admin_note && (
+              <View style={s.adminNote}>
+                <Text style={s.adminNoteTitle}>Admin Note:</Text>
+                <Text style={s.adminNoteText}>{application.admin_note}</Text>
+              </View>
+            )}
+
+            {application.status === 'approved' && (
+              <TouchableOpacity
+                style={s.primaryBtn}
+                onPress={() => router.replace('/vendor' as any)}
+              >
+                <Text style={s.primaryBtnTxt}>Go to Dashboard →</Text>
+              </TouchableOpacity>
+            )}
+
+            {application.status === 'rejected' && (
+              <TouchableOpacity
+                style={s.secondaryBtn}
+                onPress={() => setApplication(null)}
+              >
+                <Text style={s.secondaryBtnTxt}>Apply Again</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <View style={s.formCard}>
+            {/* Store Name */}
+            <View style={s.field}>
+              <Text style={s.label}>Store Name *</Text>
+              <View style={s.inputRow}>
+                <Store size={16} color={SUB} style={{ marginRight: 10 }} />
                 <TextInput
-                  style={ms.input}
-                  placeholder={f.placeholder}
+                  style={s.input}
+                  placeholder="e.g. Afia's Wellness Corner"
                   placeholderTextColor={SUB}
-                  value={(form as any)[f.key]}
+                  value={form.storeName}
                   onChangeText={(v) =>
-                    setForm((prev) => ({ ...prev, [f.key]: v }))
+                    setForm((prev) => ({ ...prev, storeName: v }))
                   }
-                  keyboardType={f.keyboard}
                 />
               </View>
-            ))}
+            </View>
 
-            <View style={{ marginBottom: 28 }}>
-              <Text style={ms.label}>About Your Store</Text>
-              <TextInput
-                style={[ms.input, { height: 90, textAlignVertical: 'top' }]}
-                placeholder="What do you sell? What makes your store special? (optional)"
-                placeholderTextColor={SUB}
-                value={form.storeDescription}
-                multiline
-                onChangeText={(v) =>
-                  setForm((prev) => ({ ...prev, storeDescription: v }))
-                }
-              />
+            {/* Email */}
+            <View style={s.field}>
+              <Text style={s.label}>Contact Email</Text>
+              <View style={s.inputRow}>
+                <Mail size={16} color={SUB} style={{ marginRight: 10 }} />
+                <TextInput
+                  style={s.input}
+                  placeholder="you@yourstore.com"
+                  placeholderTextColor={SUB}
+                  value={form.email}
+                  onChangeText={(v) =>
+                    setForm((prev) => ({ ...prev, email: v }))
+                  }
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            {/* Description */}
+            <View style={s.field}>
+              <Text style={s.label}>About Your Store</Text>
+              <View style={[s.inputRow, { height: 100, alignItems: 'flex-start', paddingTop: 12 }]}>
+                <FileText size={16} color={SUB} style={{ marginRight: 10, marginTop: 2 }} />
+                <TextInput
+                  style={[s.input, { height: '100%' }]}
+                  placeholder="What do you sell?"
+                  placeholderTextColor={SUB}
+                  value={form.storeDescription}
+                  onChangeText={(v) =>
+                    setForm((prev) => ({ ...prev, storeDescription: v }))
+                  }
+                  multiline
+                />
+              </View>
             </View>
 
             <TouchableOpacity
-              style={[
-                ms.btn,
-                { backgroundColor: PRIMARY, opacity: submitting ? 0.6 : 1 },
-              ]}
+              style={[s.primaryBtn, submitting && { opacity: 0.6 }]}
               onPress={handleSubmit}
               disabled={submitting}
-              activeOpacity={0.8}
             >
               {submitting ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={ms.btnTxt}>🚀 Submit Application</Text>
+                <Text style={s.primaryBtnTxt}>🚀 Submit Application</Text>
               )}
             </TouchableOpacity>
 
-            <Text
-              style={{
-                textAlign: 'center',
-                fontSize: 11,
-                color: SUB,
-                marginTop: 14,
-                lineHeight: 18,
-              }}
-            >
-              Applications are reviewed within 1–2 business days.
+            <Text style={s.disclaimer}>
+              Applications are usually reviewed within 24 hours.
             </Text>
           </View>
         )}
 
         <TouchableOpacity
-          style={{ alignItems: 'center', marginTop: 28, paddingBottom: 40 }}
+          style={s.footerLink}
           onPress={() => router.replace('/(tabs)' as any)}
         >
-          <Text style={{ color: SUB, fontSize: 13, fontWeight: '600' }}>
-            ← Back to store
-          </Text>
+          <Text style={s.footerLinkTxt}>← Back to Consumer Store</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -771,32 +687,86 @@ export default function VendorApplyScreen() {
   return <VendorApplyMobile />;
 }
 
-const ms = StyleSheet.create({
-  label: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    color: SUB,
-    marginBottom: 7,
-    textTransform: 'uppercase',
-  },
-  input: {
-    backgroundColor: BG,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 14,
-    color: TEXT,
-    borderWidth: 1.5,
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: BG },
+  scroll: { padding: 24, paddingBottom: 60 },
+  header: { alignItems: 'center', marginBottom: 32, marginTop: Platform.OS === 'ios' ? 20 : 0 },
+  backBtn: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    backgroundColor: CARD,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
     borderColor: BORDER,
   },
-  btn: {
+  backBtnTxt: { color: SUB, fontSize: 12, fontWeight: '600', marginLeft: 4 },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: PRIMARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  title: { fontSize: 26, fontWeight: '900', color: TEXT, letterSpacing: -0.6 },
+  subtitle: { fontSize: 14, color: SUB, marginTop: 6, textAlign: 'center', lineHeight: 20 },
+  formCard: { backgroundColor: CARD, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: BORDER },
+  statusCard: { backgroundColor: CARD, borderRadius: 24, padding: 32, borderWidth: 1, borderColor: BORDER, alignItems: 'center' },
+  statusTitle: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
+  statusBody: { fontSize: 14, color: SUB, textAlign: 'center', lineHeight: 22 },
+  adminNote: { backgroundColor: BG, padding: 16, borderRadius: 16, width: '100%', marginTop: 24, borderLeftWidth: 3, borderLeftColor: PRIMARY },
+  adminNoteTitle: { fontSize: 12, fontWeight: '800', color: PRIMARY, marginBottom: 4 },
+  adminNoteText: { fontSize: 13, color: TEXT, lineHeight: 18 },
+  field: { marginBottom: 16 },
+  label: { fontSize: 12, fontWeight: '700', color: SUB, marginBottom: 8, letterSpacing: 0.5 },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BG,
     borderRadius: 14,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    height: 54,
+  },
+  input: { flex: 1, fontSize: 15, color: TEXT },
+  primaryBtn: {
+    backgroundColor: PRIMARY,
+    borderRadius: 14,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
+    marginTop: 12,
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  btnTxt: { fontSize: 15, fontWeight: '800', color: '#fff' },
+  primaryBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  secondaryBtn: {
+    marginTop: 16,
+    height: 50,
+    width: '100%',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryBtnTxt: { color: SUB, fontSize: 14, fontWeight: '700' },
+  disclaimer: { textAlign: 'center', color: BORDER, fontSize: 11, marginTop: 16, fontWeight: '600' },
+  footerLink: { marginTop: 32, alignItems: 'center' },
+  footerLinkTxt: { color: SUB, fontSize: 13, fontWeight: '600' },
 });
