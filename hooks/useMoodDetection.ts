@@ -6,14 +6,19 @@
 //   const { detecting, permissionDenied, hasPermission, onCameraReady, rescan, cameraRef }
 //     = useMoodDetection({ onMoodDetected: (mood) => console.log(mood) });
 //
-// IMPORTANT: You MUST:
+// IMPORTANT (Native only — Android / iOS):
 //  1. Render a hidden <CameraView ref={cameraRef} facing="front" onCameraReady={onCameraReady} />
 //     in your component as soon as hasPermission === true.
 //  2. Pass onCameraReady to the CameraView — this is what triggers the actual capture.
 //     Without it the hook waits forever and never takes a photo.
 //
-// Example:
-//   {hasPermission === true && (
+// On Web:
+//  - CameraView is NOT used. The hook captures via the browser getUserMedia API directly.
+//  - You do NOT need to render <CameraView> on web.
+//  - hasPermission will be set to true and capture starts automatically.
+//
+// Example (Native):
+//   {hasPermission === true && Platform.OS !== 'web' && (
 //     <CameraView
 //       ref={cameraRef}
 //       facing="front"
@@ -23,9 +28,11 @@
 //   )}
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Camera } from 'expo-camera';
 import { MoodKey } from '@/types/mood';
 import { detectMoodFromImage } from '@/services/moodDetection';
+import { captureFromWebCamera } from '@/utils/webCapture';
 
 // Small settling delay AFTER onCameraReady fires — gives auto-exposure time to settle
 const SETTLE_DELAY_MS = 1200;
@@ -51,16 +58,17 @@ type UseMoodDetectionReturn = {
   /**
    * Tri-state permission flag:
    *  null  = not yet asked
-   *  true  = granted — render <CameraView ref={cameraRef} onCameraReady={onCameraReady} />
+   *  true  = granted — render <CameraView ref={cameraRef} onCameraReady={onCameraReady} /> (native only)
    *  false = denied  — show manual mood picker
    */
   hasPermission: boolean | null;
 
   /**
-   * Pass this to <CameraView onCameraReady={onCameraReady} />.
-   * This is what actually triggers the capture — the hook waits for this
+   * Pass this to <CameraView onCameraReady={onCameraReady} /> (native only).
+   * This is what actually triggers the capture on native — the hook waits for this
    * signal instead of using a blind timer, so the camera is guaranteed
    * to be mounted and warmed up before takePictureAsync is called.
+   * On web this is a no-op.
    */
   onCameraReady: () => void;
 
@@ -72,7 +80,7 @@ type UseMoodDetectionReturn = {
   rescan: () => void;
 
   /**
-   * Attach this ref to your <CameraView />.
+   * Attach this ref to your <CameraView /> (native only).
    */
   cameraRef: React.MutableRefObject<any>;
 };
@@ -100,32 +108,42 @@ export function useMoodDetection({
     setDetecting(true);
 
     try {
-      // Small settle delay so auto-exposure stabilises after onCameraReady
-      await sleep(SETTLE_DELAY_MS);
+      let base64: string | null = null;
 
-      if (!cameraRef.current) {
-        console.warn(
-          '[useMoodDetection] cameraRef.current is null after onCameraReady.\n' +
-          'Ensure <CameraView ref={cameraRef} onCameraReady={onCameraReady} /> ' +
-          'is rendered while hasPermission === true.'
-        );
-        if (!hasDetected.current) {
-          hasDetected.current = true;
-          onMoodDetected('neutral');
+      if (Platform.OS === 'web') {
+        // ── Web path: use getUserMedia directly, CameraView ref is not used ──
+        console.log('[useMoodDetection] Web platform — capturing via getUserMedia…');
+        base64 = await captureFromWebCamera();
+      } else {
+        // ── Native path: use CameraView ref (Android / iOS) ──────────────────
+        await sleep(SETTLE_DELAY_MS);
+
+        if (!cameraRef.current) {
+          console.warn(
+            '[useMoodDetection] cameraRef.current is null after onCameraReady.\n' +
+            'Ensure <CameraView ref={cameraRef} onCameraReady={onCameraReady} /> ' +
+            'is rendered while hasPermission === true.'
+          );
+          if (!hasDetected.current) {
+            hasDetected.current = true;
+            onMoodDetected('neutral');
+          }
+          return;
         }
-        return;
+
+        console.log('[useMoodDetection] Taking silent picture…');
+
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+          quality: 0.7,
+          exif: false,
+          skipProcessing: false,
+        });
+
+        base64 = photo?.base64 ?? null;
       }
 
-      console.log('[useMoodDetection] Taking silent picture…');
-
-      const photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-        quality: 0.7,
-        exif: false,
-        skipProcessing: false,
-      });
-
-      if (!photo?.base64 || photo.base64.length < 100) {
+      if (!base64 || base64.length < 100) {
         console.warn('[useMoodDetection] Photo capture returned empty or invalid data');
         if (!hasDetected.current) {
           hasDetected.current = true;
@@ -136,7 +154,7 @@ export function useMoodDetection({
 
       console.log('[useMoodDetection] Sending to Gemini…');
 
-      const result = await detectMoodFromImage(photo.base64, photo.uri);
+      const result = await detectMoodFromImage(base64, undefined);
 
       console.log(
         `[useMoodDetection] Detected: ${result.mood} (${Math.round(result.confidence * 100)}%)`
@@ -159,8 +177,10 @@ export function useMoodDetection({
     }
   }, [onMoodDetected]);
 
-  // ── onCameraReady: fired by CameraView when hardware is ready ──────────────
+  // ── onCameraReady: fired by CameraView when hardware is ready (native only) ─
   const onCameraReady = useCallback(() => {
+    if (Platform.OS === 'web') return; // no-op on web
+
     console.log('[useMoodDetection] Camera ready — starting capture');
     cameraReadyRef.current = true;
     if (cameraReadyTimerRef.current) {
@@ -180,6 +200,16 @@ export function useMoodDetection({
 
     const requestPermission = async () => {
       try {
+        if (Platform.OS === 'web') {
+          // On web, permission is handled by the browser inside getUserMedia.
+          // We set hasPermission true and fire capture directly — no CameraView needed.
+          if (cancelled) return;
+          setHasPermission(true);
+          capture();
+          return;
+        }
+
+        // ── Native permission flow (Android / iOS) ──────────────────────────
         const { status } = await Camera.requestCameraPermissionsAsync();
 
         if (cancelled) return;
@@ -246,7 +276,7 @@ export function useMoodDetection({
     // Reset guards so capture() is allowed to run again
     hasDetected.current    = false;
     isCapturing.current    = false;
-    // cameraReadyRef stays true — the camera is still mounted and ready
+    // cameraReadyRef stays true — the camera is still mounted and ready (native)
 
     console.log('[useMoodDetection] 🔄 Re-scan triggered — capturing again');
     capture();

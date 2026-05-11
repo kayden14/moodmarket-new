@@ -18,6 +18,11 @@
  *  - Added anthropic-dangerous-direct-browser-access header for web client calls
  *  - Errors now surface via console.error instead of being swallowed as warnings
  *  - Neutral fallback fires when capture/detect fails so UI never hangs on "scanning"
+ *
+ * FIXES (v5):
+ *  - Lowered CONFIDENCE_THRESHOLD 0.40 → 0.15 and NEUTRAL_THRESHOLD 0.60 → 0.30
+ *    so face-api.js expression scores are accepted in normal lighting conditions
+ *  - Added [faceapi] debug log so real scores are visible in the console
  */
 
 import {
@@ -51,14 +56,13 @@ const MOODS_META: { key: MoodKey; emoji: string; label: string; description: str
   { key: 'neutral', emoji: '😐', label: 'Neutral', description: 'No strong feeling'    },
 ];
 
-// Lowered from 0.70 → 0.40. face-api.js expression scores rarely
-// exceed 0.70 in normal lighting, so the old threshold caused nearly every
-// frame to be skipped and the poller to eventually settle on 'neutral'.
-const CONFIDENCE_THRESHOLD = 0.40;
+// Lowered 0.40 → 0.15 so face-api.js expression scores are accepted in
+// normal/indoor lighting where scores rarely exceed 0.40.
+const CONFIDENCE_THRESHOLD = 0.15;
 
-// Neutral requires a higher bar so subtle resting-face frames don't
-// immediately resolve as neutral before a real expression is detected.
-const NEUTRAL_THRESHOLD = 0.60;
+// Lowered 0.60 → 0.30 for neutral — still requires a higher bar than other
+// expressions so subtle resting-face frames don't resolve too eagerly.
+const NEUTRAL_THRESHOLD = 0.30;
 
 // After this many failed polls (~12 s) give up and show manual picker.
 const MAX_POLL_ATTEMPTS = 15;
@@ -648,6 +652,9 @@ function WebCameraScreen() {
           const expressions = detection.expressions as Record<string, number>;
           const [topLabel, topScore] = Object.entries(expressions)
             .sort((a, b) => b[1] - a[1])[0];
+
+          // Debug: shows real scores in the console so thresholds can be tuned
+          console.log('[faceapi] top:', topLabel, topScore, JSON.stringify(expressions));
 
           const threshold = topLabel === 'neutral' ? NEUTRAL_THRESHOLD : CONFIDENCE_THRESHOLD;
 
