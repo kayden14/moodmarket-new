@@ -1,6 +1,6 @@
 # 🛍️ MoodMarket
 
-A mood-aware shopping experience built with **Expo (React Native)**. MoodMarket detects or receives your current mood and surfaces products that match how you feel — powered by Supabase on the backend.
+A mood-aware shopping experience built with **Expo (React Native)** and Supabase. MoodMarket detects or receives your current mood and surfaces products that match how you feel.
 
 ---
 
