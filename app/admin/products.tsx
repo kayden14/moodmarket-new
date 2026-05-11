@@ -26,8 +26,10 @@ const TEXT = '#F1F5F9'; const SUBTEXT = '#94A3B8';
 interface Product {
   id: string; name: string; description: string;
   price: number; image: string; mood_tags: string[]; rating: number;
+  vendor_id?: string | null;
+  vendor_name?: string | null; // resolved from profiles join
 }
-const EMPTY: Omit<Product, 'id'> = { name: '', description: '', price: 0, image: '', mood_tags: [], rating: 4.5 };
+const EMPTY: Omit<Product, 'id'> = { name: '', description: '', price: 0, image: '', mood_tags: [], rating: 4.5, vendor_id: null, vendor_name: null };
 
 /* ─── Upload image to Supabase Storage ─── */
 async function uploadImageToSupabase(uri: string, isBase64Web?: boolean, base64Data?: string): Promise<string> {
@@ -60,9 +62,15 @@ function useProductsData() {
   const [loading,  setLoading]  = useState(true);
 
   const fetchProducts = useCallback(async () => {
-    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, profiles!vendor_id(name, store_name)')
+      .order('created_at', { ascending: false });
     if (error) console.error('[Admin Products]', error.message);
-    if (data) setProducts(data);
+    if (data) setProducts(data.map((p: any) => ({
+      ...p,
+      vendor_name: p.profiles?.store_name || p.profiles?.name || null,
+    })));
     setLoading(false);
   }, []);
 
@@ -260,9 +268,10 @@ function AdminProductsWeb() {
               { icon: '🏠', label: 'Dashboard', path: '/admin'           },
               { icon: '📦', label: 'Products',  path: '/admin/products', active: true },
               { icon: '🛒', label: 'Orders',    path: '/admin/orders'   },
+              { icon: '🏪', label: 'Vendors',   path: '/admin/vendors'  },
               { icon: '👥', label: 'Users',     path: '/admin/users'    },
             ].map(item => (
-              <button key={item.path} className={`ap-nav-item${item.active ? ' active' : ''}`} onClick={() => router.push(item.path as any)}>
+              <button key={item.path} className={`ap-nav-item${(item as any).active ? ' active' : ''}`} onClick={() => router.push(item.path as any)}>
                 <span style={{ fontSize: 16 }}>{item.icon}</span>{item.label}
               </button>
             ))}
@@ -326,7 +335,10 @@ function AdminProductsWeb() {
                     </div>
                     <div style={{ padding: '12px 14px' }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: text, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</div>
-                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 600, color: PRIMARY, marginBottom: 8 }}>GH₵{Number(product.price).toFixed(2)}</div>
+                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 600, color: PRIMARY, marginBottom: 6 }}>GH₵{Number(product.price).toFixed(2)}</div>
+                      {product.vendor_name && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#38BDF818', border: '1px solid #38BDF833', borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 700, color: '#38BDF8', marginBottom: 6 }}>🏪 {product.vendor_name}</div>
+                      )}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                         {product.mood_tags.slice(0, 3).map(tag => <span key={tag} className="ap-tag">{tag}</span>)}
                         {product.mood_tags.length > 3 && <span className="ap-tag">+{product.mood_tags.length - 3}</span>}

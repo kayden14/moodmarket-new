@@ -1,18 +1,35 @@
 // contexts/AuthContext.tsx
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from 'react';
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
 import type { User, Session } from '@supabase/supabase-js';
 
-interface Profile {
+export type UserRole = 'customer' | 'vendor' | 'admin';
+
+export interface Profile {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   mood_history: any[];
-  push_token?: string;
+  push_token?: string | null;
+  // Role system
+  role: UserRole;
+  is_admin: boolean;          // legacy boolean kept for compat
+  is_suspended: boolean;
+  // Vendor store info
+  store_name?: string | null;
+  store_description?: string | null;
+  store_logo?: string | null;
 }
 
 interface AuthContextValue {
@@ -20,6 +37,11 @@ interface AuthContextValue {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  // Role helpers
+  isAdmin: boolean;
+  isVendor: boolean;
+  isSuspended: boolean;
+  // Actions
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
@@ -40,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      console.log("Fetching profile...");
+      console.log('Fetching profile...');
 
       const { data } = await supabase
         .from('profiles')
@@ -67,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .upsert(
             { id: userId, email: userData.user.email, name, mood_history: [] },
-            { onConflict: 'id' }
+            { onConflict: 'id' },
           )
           .select()
           .single();
@@ -78,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (e) {
-      console.log("Profile fetch failed:", e);
+      console.log('Profile fetch failed:', e);
     }
 
     return null;
@@ -91,22 +113,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    console.log("INIT AUTH...");
-
     // Safety timeout (DO NOT clear too early)
     const timeout = setTimeout(() => {
       if (mounted) {
-        console.log("Auth timeout fallback");
+        console.log('Auth timeout fallback');
         setLoading(false);
       }
     }, 5000);
 
     // Initial session
-    supabase.auth.getSession()
+    supabase.auth
+      .getSession()
       .then(({ data: { session } }) => {
         if (!mounted) return;
-
-        console.log("SESSION:", session);
 
         setSession(session);
         setUser(session?.user ?? null);
@@ -126,62 +145,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((e) => {
-        console.log("Session error:", e);
+        console.log('Session error:', e);
         if (mounted) setLoading(false);
         clearTimeout(timeout);
       });
 
     // Auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
 
-        console.log("AUTH EVENT:", event);
+      setSession(session);
+      setUser(session?.user ?? null);
 
-        setSession(session);
-        setUser(session?.user ?? null);
+      if (session?.user) {
+        try {
+          const fetchedProfile = await fetchProfile(session.user.id);
 
-        if (session?.user) {
-          try {
-            const fetchedProfile = await fetchProfile(session.user.id);
+          const firstName =
+            fetchedProfile?.name?.split(' ')[0] ||
+            session.user.user_metadata?.name?.split(' ')[0] ||
+            'there';
 
-            const firstName =
-              fetchedProfile?.name?.split(' ')[0] ||
-              session.user.user_metadata?.name?.split(' ')[0] ||
-              'there';
-
-            if (isNewSignup.current) {
-              setTimeout(() => {
-                NotificationService.send(
-                  `🎉 Welcome to MoodMarket, ${firstName}!`,
-                  'Start by scanning your mood.'
-                );
-                isNewSignup.current = false;
-              }, 1500);
-            } else if (
-              event === 'SIGNED_IN' &&
-              lastUserId.current !== session.user.id
-            ) {
-              setTimeout(() => {
-                NotificationService.send(
-                  `👋 Welcome back, ${firstName}!`,
-                  'Your picks are ready.'
-                );
-              }, 1000);
-            }
-
-            lastUserId.current = session.user.id;
-          } catch (e) {
-            console.log("Auth change profile error:", e);
+          if (isNewSignup.current) {
+            setTimeout(() => {
+              NotificationService.send(
+                `🎉 Welcome to MoodMarket, ${firstName}!`,
+                'Start by scanning your mood.',
+              );
+              isNewSignup.current = false;
+            }, 1500);
+          } else if (
+            event === 'SIGNED_IN' &&
+            lastUserId.current !== session.user.id
+          ) {
+            setTimeout(() => {
+              NotificationService.send(
+                `👋 Welcome back, ${firstName}!`,
+                'Your picks are ready.',
+              );
+            }, 1000);
           }
-        } else {
-          setProfile(null);
-          lastUserId.current = null;
-        }
 
-        if (mounted) setLoading(false);
+          lastUserId.current = session.user.id;
+        } catch (e) {
+          console.log('Auth change profile error:', e);
+        }
+      } else {
+        setProfile(null);
+        lastUserId.current = null;
       }
-    );
+
+      if (mounted) setLoading(false);
+    });
 
     return () => {
       mounted = false;
@@ -200,12 +217,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
 
     if (data.user) {
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: email.trim(),
-        name: name.trim(),
-        mood_history: [],
-      }, { onConflict: 'id' });
+      await supabase.from('profiles').upsert(
+        {
+          id: data.user.id,
+          email: email.trim(),
+          name: name.trim(),
+          mood_history: [],
+        },
+        { onConflict: 'id' },
+      );
 
       isNewSignup.current = true;
     }
@@ -224,9 +244,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
-    const redirectTo = Platform.OS === 'web'
-      ? `${window.location.origin}/(tabs)`
-      : 'moodmarket://(tabs)';
+    const redirectTo =
+      Platform.OS === 'web'
+        ? `${window.location.origin}/(tabs)`
+        : 'moodmarket://(tabs)';
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -251,11 +272,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastUserId.current = null;
   };
 
+  const isAdmin     = profile?.role === 'admin' || profile?.is_admin === true;
+  const isVendor    = profile?.role === 'vendor';
+  const isSuspended = profile?.is_suspended === true;
+
   return (
-    <AuthContext.Provider value={{
-      user, session, profile, loading,
-      signOut, signUp, signIn, signInWithOAuth, refreshProfile,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        isAdmin,
+        isVendor,
+        isSuspended,
+        signOut,
+        signUp,
+        signIn,
+        signInWithOAuth,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

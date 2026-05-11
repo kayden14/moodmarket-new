@@ -28,6 +28,9 @@ interface Profile {
   email:        string;
   phone:        string | null;
   is_admin:     boolean;
+  role:         'customer' | 'vendor' | 'admin';
+  is_suspended: boolean;
+  store_name:   string | null;
   created_at:   string;
   mood_history: any[];
   push_token:   string | null;
@@ -73,8 +76,8 @@ function AdminUsersWeb() {
   const [selected,      setSelected]      = useState<Profile | null>(null);
   const [userOrders,    setUserOrders]    = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
-  const [filterRole,    setFilterRole]    = useState<'all' | 'admin' | 'user'>('all');
-  const [confirmAction, setConfirmAction] = useState<{ type: 'admin' | 'delete'; user: Profile } | null>(null);
+  const [filterRole,    setFilterRole]    = useState<'all' | 'admin' | 'vendor' | 'user'>('all');
+  const [confirmAction, setConfirmAction] = useState<{ type: 'admin' | 'vendor' | 'suspend' | 'delete'; user: Profile } | null>(null);
   const [actioning,     setActioning]     = useState(false);
 
   const bg      = isDark ? '#0B0F1A' : '#F1F5F9';
@@ -88,7 +91,11 @@ function AdminUsersWeb() {
     const matchSearch = !search.trim() ||
       u.name?.toLowerCase().includes(search.toLowerCase()) ||
       u.email?.toLowerCase().includes(search.toLowerCase());
-    const matchRole = filterRole === 'all' || (filterRole === 'admin' ? u.is_admin : !u.is_admin);
+    const matchRole =
+      filterRole === 'all'    ? true :
+      filterRole === 'admin'  ? (u.role === 'admin'  || u.is_admin) :
+      filterRole === 'vendor' ? u.role === 'vendor' :
+                                (u.role === 'customer' || (!u.is_admin && u.role !== 'vendor'));
     return matchSearch && matchRole;
   });
 
@@ -107,6 +114,30 @@ function AdminUsersWeb() {
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_admin: !u.is_admin } : u));
       if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_admin: !prev.is_admin } : null);
+    } catch (err: any) { alert(err.message); }
+    finally { setActioning(false); setConfirmAction(null); }
+  };
+
+  const handleToggleVendor = async (user: Profile) => {
+    setActioning(true);
+    const newRole = user.role === 'vendor' ? 'customer' : 'vendor';
+    try {
+      const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', user.id);
+      if (error) throw error;
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+      if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, role: newRole } : null);
+    } catch (err: any) { alert(err.message); }
+    finally { setActioning(false); setConfirmAction(null); }
+  };
+
+  const handleToggleSuspend = async (user: Profile) => {
+    setActioning(true);
+    const newSuspended = !user.is_suspended;
+    try {
+      const { error } = await supabase.from('profiles').update({ is_suspended: newSuspended }).eq('id', user.id);
+      if (error) throw error;
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_suspended: newSuspended } : u));
+      if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_suspended: newSuspended } : null);
     } catch (err: any) { alert(err.message); }
     finally { setActioning(false); setConfirmAction(null); }
   };
@@ -192,6 +223,7 @@ function AdminUsersWeb() {
               { icon: '🏠', label: 'Dashboard', path: '/admin'          },
               { icon: '📦', label: 'Products',  path: '/admin/products' },
               { icon: '🛒', label: 'Orders',    path: '/admin/orders'   },
+              { icon: '🏪', label: 'Vendors',   path: '/admin/vendors'  },
               { icon: '👥', label: 'Users',     path: '/admin/users',   active: true },
             ].map(item => (
               <button key={item.path} className={`au-nav-item${(item as any).active ? ' active' : ''}`} onClick={() => router.push(item.path as any)}>
@@ -222,9 +254,12 @@ function AdminUsersWeb() {
 
           {/* filter + search bar */}
           <div style={{ padding: '12px 20px', borderBottom: `1px solid ${border}`, background: card, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 0 }}>
-            {(['all', 'admin', 'user'] as const).map(role => (
-              <button key={role} className={`au-filter-tab${filterRole === role ? ' active' : ''}`} onClick={() => setFilterRole(role)}>
-                {role === 'all' ? `All  ${users.length}` : role === 'admin' ? `🛡️ Admins  ${users.filter(u => u.is_admin).length}` : `👤 Users  ${users.filter(u => !u.is_admin).length}`}
+            {(['all', 'admin', 'vendor', 'user'] as const).map(role => (
+              <button key={role} className={`au-filter-tab${filterRole === role ? ' active' : ''}`} onClick={() => setFilterRole(role as any)}>
+                {role === 'all'    ? `All  ${users.length}` :
+                 role === 'admin'  ? `🛡️ Admins  ${users.filter(u => u.is_admin || u.role === 'admin').length}` :
+                 role === 'vendor' ? `🏪 Vendors  ${users.filter(u => u.role === 'vendor').length}` :
+                                    `👤 Customers  ${users.filter(u => !u.is_admin && u.role !== 'vendor').length}`}
               </button>
             ))}
             <div style={{ marginLeft: 'auto', position: 'relative' }}>
@@ -271,10 +306,12 @@ function AdminUsersWeb() {
 
                     {/* role badge */}
                     <div>
-                      {user.is_admin ? (
+                      {user.role === 'admin' || user.is_admin ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: `${PRIMARY}18`, border: `1px solid ${PRIMARY}44`, borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: PRIMARY }}>🛡️ Admin</span>
+                      ) : user.role === 'vendor' ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#38BDF818', border: '1px solid #38BDF844', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#38BDF8' }}>🏪 Vendor{user.is_suspended ? ' 🚫' : ''}</span>
                       ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.06)', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 600, color: sub }}>👤 User</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.06)', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 600, color: sub }}>👤 Customer</span>
                       )}
                     </div>
 
@@ -302,9 +339,11 @@ function AdminUsersWeb() {
               <div style={{ padding: '18px 20px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', gap: 12, background: isDark ? '#111827' : '#F8FAFC', position: 'sticky', top: 0, zIndex: 10 }}>
                 <button onClick={() => setSelected(null)} style={{ background: 'none', border: `1px solid ${border}`, borderRadius: 9, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: sub, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                 <div style={{ fontFamily: '"Fraunces", serif', fontSize: 16, fontWeight: 700, color: text }}>User Profile</div>
-                {selected.is_admin && (
+                {selected.role === 'admin' || selected.is_admin ? (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: `${PRIMARY}18`, border: `1px solid ${PRIMARY}44`, borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: PRIMARY, marginLeft: 'auto' }}>🛡️ Admin</span>
-                )}
+                ) : selected.role === 'vendor' ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#38BDF818', border: '1px solid #38BDF844', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#38BDF8', marginLeft: 'auto' }}>🏪 Vendor</span>
+                ) : null}
               </div>
 
               <div style={{ padding: 24 }}>
@@ -385,6 +424,20 @@ function AdminUsersWeb() {
                     {selected.is_admin ? 'Remove Admin Access' : 'Grant Admin Access'}
                   </button>
                   <button className="au-action-btn"
+                    style={{ background: selected.role === 'vendor' ? '#7F1D1D18' : '#0F766E18', borderColor: selected.role === 'vendor' ? '#7F1D1D' : '#0F766E', color: selected.role === 'vendor' ? '#F87171' : '#2DD4BF' }}
+                    onClick={() => setConfirmAction({ type: 'vendor', user: selected })}
+                  >
+                    <span style={{ fontSize: 18 }}>{selected.role === 'vendor' ? '📦' : '🏪'}</span>
+                    {selected.role === 'vendor' ? 'Remove Vendor Status' : 'Make Vendor'}
+                  </button>
+                  <button className="au-action-btn"
+                    style={{ background: selected.is_suspended ? '#0F766E18' : '#92400E18', borderColor: selected.is_suspended ? '#0F766E' : '#92400E', color: selected.is_suspended ? '#2DD4BF' : '#F59E0B' }}
+                    onClick={() => setConfirmAction({ type: 'suspend', user: selected })}
+                  >
+                    <span style={{ fontSize: 18 }}>{selected.is_suspended ? '✅' : '🚫'}</span>
+                    {selected.is_suspended ? 'Unsuspend Account' : 'Suspend Account'}
+                  </button>
+                  <button className="au-action-btn"
                     style={{ background: '#7F1D1D18', borderColor: '#7F1D1D', color: '#F87171' }}
                     onClick={() => setConfirmAction({ type: 'delete', user: selected })}
                   >
@@ -401,16 +454,28 @@ function AdminUsersWeb() {
         {confirmAction && (
           <div className="au-confirm-modal">
             <div className="au-confirm-box">
-              <div style={{ fontSize: 44, marginBottom: 14 }}>{confirmAction.type === 'delete' ? '🗑️' : confirmAction.user.is_admin ? '🚫' : '🛡️'}</div>
+              <div style={{ fontSize: 44, marginBottom: 14 }}>
+                {confirmAction.type === 'delete'   ? '🗑️' :
+                 confirmAction.type === 'vendor'   ? (confirmAction.user.role === 'vendor' ? '📦' : '🏪') :
+                 confirmAction.type === 'suspend'  ? (confirmAction.user.is_suspended ? '✅' : '🚫') :
+                 confirmAction.user.is_admin ? '🚫' : '🛡️'}
+              </div>
               <div style={{ fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 900, color: text, marginBottom: 8 }}>
-                {confirmAction.type === 'delete' ? 'Delete User?' : confirmAction.user.is_admin ? 'Remove Admin?' : 'Grant Admin?'}
+                {confirmAction.type === 'delete'  ? 'Delete User?' :
+                 confirmAction.type === 'vendor'  ? (confirmAction.user.role === 'vendor' ? 'Remove Vendor?' : 'Make Vendor?') :
+                 confirmAction.type === 'suspend' ? (confirmAction.user.is_suspended ? 'Unsuspend Account?' : 'Suspend Account?') :
+                 confirmAction.user.is_admin ? 'Remove Admin?' : 'Grant Admin?'}
               </div>
               <div style={{ fontSize: 14, color: sub, lineHeight: 1.65, marginBottom: 26 }}>
                 {confirmAction.type === 'delete'
-                  ? <>This will permanently delete <strong style={{ color: text }}>{confirmAction.user.name}</strong>'s profile and all associated data. This cannot be undone.</>
+                  ? <>This will permanently delete <strong style={{ color: text }}>{confirmAction.user.name}</strong>'s profile. Cannot be undone.</>
+                  : confirmAction.type === 'vendor'
+                  ? <>{confirmAction.user.role === 'vendor' ? 'Remove vendor status from' : 'Grant vendor access to'} <strong style={{ color: text }}>{confirmAction.user.name}</strong>?</>
+                  : confirmAction.type === 'suspend'
+                  ? <>{confirmAction.user.is_suspended ? 'Unsuspend' : 'Suspend'} <strong style={{ color: text }}>{confirmAction.user.name}</strong>'s account?</>
                   : confirmAction.user.is_admin
-                  ? <>Remove admin privileges from <strong style={{ color: text }}>{confirmAction.user.name}</strong>? They will lose access to the admin portal.</>
-                  : <>Grant admin access to <strong style={{ color: text }}>{confirmAction.user.name}</strong>? They will be able to manage products, orders, and users.</>
+                  ? <>Remove admin privileges from <strong style={{ color: text }}>{confirmAction.user.name}</strong>?</>
+                  : <>Grant admin access to <strong style={{ color: text }}>{confirmAction.user.name}</strong>?</>
                 }
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -419,7 +484,12 @@ function AdminUsersWeb() {
                 </button>
                 <button
                   className="au-btn"
-                  onClick={() => confirmAction.type === 'delete' ? handleDeleteUser(confirmAction.user) : handleToggleAdmin(confirmAction.user)}
+                  onClick={() =>
+                  confirmAction.type === 'delete'  ? handleDeleteUser(confirmAction.user)  :
+                  confirmAction.type === 'vendor'  ? handleToggleVendor(confirmAction.user) :
+                  confirmAction.type === 'suspend' ? handleToggleSuspend(confirmAction.user) :
+                                                    handleToggleAdmin(confirmAction.user)
+                }
                   disabled={actioning}
                   style={{
                     flex: 1, padding: '12px',

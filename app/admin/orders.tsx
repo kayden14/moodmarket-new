@@ -73,12 +73,19 @@ function useOrdersData() {
 
   const fetchOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
-    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, profiles!vendor_id(name, store_name)')
+      .order('created_at', { ascending: false });
     if (error) console.error('[Admin Orders]', error.message);
     else if (data) {
-      setOrders(data);
+      const mapped = data.map((o: any) => ({
+        ...o,
+        vendor_name: o.profiles?.store_name || o.profiles?.name || null,
+      }));
+      setOrders(mapped);
       if (selectedRef.current) {
-        const fresh = data.find((o: any) => o.id === selectedRef.current.id);
+        const fresh = mapped.find((o: any) => o.id === selectedRef.current.id);
         if (fresh) selectedRef.current = fresh;
       }
     }
@@ -195,9 +202,10 @@ function AdminOrdersWeb() {
               { icon: '🏠', label: 'Dashboard', path: '/admin'          },
               { icon: '📦', label: 'Products',  path: '/admin/products' },
               { icon: '🛒', label: 'Orders',    path: '/admin/orders',  active: true },
+              { icon: '🏪', label: 'Vendors',   path: '/admin/vendors'  },
               { icon: '👥', label: 'Users',     path: '/admin/users'   },
             ].map(item => (
-              <button key={item.path} className={`ao-nav-item${item.active ? ' active' : ''}`} onClick={() => router.push(item.path as any)}>
+              <button key={item.path} className={`ao-nav-item${(item as any).active ? ' active' : ''}`} onClick={() => router.push(item.path as any)}>
                 <span style={{ fontSize: 16 }}>{item.icon}</span>{item.label}
               </button>
             ))}
@@ -318,6 +326,7 @@ function AdminOrdersWeb() {
                   {[
                     { label: 'Total',    value: `GH₵${Number(selected.total_price).toFixed(2)}`, highlight: true },
                     { label: 'Payment',  value: selected.payment_method === 'card' ? 'Bank Card' : 'Mobile Money' },
+                    selected.vendor_name && { label: 'Vendor', value: `🏪 ${selected.vendor_name}` },
                     selected.payment_reference && { label: 'Reference', value: selected.payment_reference, mono: true },
                   ].filter(Boolean).map((row: any, i, arr) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: i > 0 ? '10px 0 0' : '0', marginTop: i > 0 ? 10 : 0, borderTop: i > 0 ? `1px solid ${border}` : 'none' }}>
@@ -508,6 +517,7 @@ function AdminOrdersMobile() {
               <View style={[mm.card, { backgroundColor: t.card, borderColor: t.border }]}>
                 <View style={mm.infoRow}><Text style={[mm.infoLabel, { color: t.subtext }]}>Date</Text><Text style={[mm.infoValue, { color: t.text }]}>{new Date(selected.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text></View>
                 <View style={[mm.infoRow, { borderTopWidth: 1, borderTopColor: t.border, paddingTop: 10, marginTop: 6 }]}><Text style={[mm.infoLabel, { color: t.subtext }]}>Total</Text><Text style={[mm.infoValue, { color: PRIMARY, fontSize: 18, fontWeight: '900' }]}>GH₵ {Number(selected.total_price).toFixed(2)}</Text></View>
+                {selected.vendor_name && <View style={[mm.infoRow, { borderTopWidth: 1, borderTopColor: t.border, paddingTop: 10, marginTop: 6 }]}><Text style={[mm.infoLabel, { color: t.subtext }]}>Vendor</Text><Text style={[mm.infoValue, { color: '#38BDF8' }]}>🏪 {selected.vendor_name}</Text></View>}
               </View>
               {(selected.products ?? []).length > 0 && (<>
                 <Text style={[mm.sectionLabel, { color: t.subtext }]}>ITEMS ORDERED</Text>

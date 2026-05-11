@@ -16,7 +16,7 @@ import { Order } from '@/types/database';
 import {
   User, LogOut, Package, Calendar, ChevronRight,
   ShoppingBag, Clock, CheckCircle, Truck, XCircle,
-  ArrowRight, Settings, Bell, Shield, Edit3,
+  ArrowRight, Settings, Bell, Shield, Edit3, Store,
 } from 'lucide-react-native';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ const sp = StyleSheet.create({
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isVendor, isAdmin } = useAuth();
   const { theme, isDark } = useTheme();
   const [orders,  setOrders]  = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,6 +228,42 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* ── Vendor Dashboard Entry ── */}
+        {isVendor && (
+          <TouchableOpacity
+            style={[s.vendorBanner, { backgroundColor: '#FF7A8A18', borderColor: '#FF7A8A44' }]}
+            onPress={() => router.push('/vendor' as any)}
+            activeOpacity={0.82}
+          >
+            <View style={[s.vendorBannerIcon, { backgroundColor: '#FF7A8A22' }]}>
+              <Store size={22} color="#FF7A8A" strokeWidth={2} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary }]}>Vendor Dashboard</Text>
+              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary }]}>Manage your products, orders & earnings</Text>
+            </View>
+            <ChevronRight size={16} color="#FF7A8A" strokeWidth={2.5} />
+          </TouchableOpacity>
+        )}
+
+        {/* ── Become a Vendor (for customers) ── */}
+        {!isVendor && !isAdmin && (
+          <TouchableOpacity
+            style={[s.vendorBanner, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: theme.border }]}
+            onPress={() => router.push('/vendor/apply' as any)}
+            activeOpacity={0.82}
+          >
+            <View style={[s.vendorBannerIcon, { backgroundColor: isDark ? '#334155' : '#F1F5F9' }]}>
+              <Store size={22} color={theme.textSecondary} strokeWidth={1.8} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary }]}>Sell on MoodMarket</Text>
+              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary }]}>Apply to become a vendor and reach more customers</Text>
+            </View>
+            <ChevronRight size={16} color={theme.inactive} strokeWidth={2} />
+          </TouchableOpacity>
+        )}
 
         {/* ── Stats ── */}
         <View style={[s.statsRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -385,4 +421,8 @@ const s = StyleSheet.create({
   logoutTxt:  { fontSize: 15, fontWeight: '700', color: '#E53E3E' },
   hiddenAdminBtn: { alignItems: 'center', paddingVertical: 12 },
   hiddenAdminTxt: { fontSize: 8, color: 'transparent' },
+  vendorBanner:     { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 14, marginBottom: 14, borderWidth: 1, gap: 14 },
+  vendorBannerIcon: { width: 44, height: 44, borderRadius: 13, justifyContent: 'center', alignItems: 'center' },
+  vendorBannerTitle:{ fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  vendorBannerSub:  { fontSize: 12, lineHeight: 17 },
 });

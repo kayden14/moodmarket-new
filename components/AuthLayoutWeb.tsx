@@ -190,7 +190,14 @@ interface AuthLayoutWebProps {
   footer?: React.ReactNode;
 }
 
-export function AuthLayoutWeb({ eyebrow, heading, subheading, error, children, footer }: AuthLayoutWebProps) {
+export function AuthLayoutWeb({
+  eyebrow,
+  heading,
+  subheading,
+  error,
+  children,
+  footer,
+}: AuthLayoutWebProps) {
   const router = useRouter();
 
   return (
@@ -199,8 +206,26 @@ export function AuthLayoutWeb({ eyebrow, heading, subheading, error, children, f
       <div className="auth-root">
         {/* ── Left panel ── */}
         <div className="auth-left">
-          <div className="auth-left-blob" style={{ width: 320, height: 320, background: 'rgba(255,122,138,0.14)', top: -100, right: -80 }} />
-          <div className="auth-left-blob" style={{ width: 220, height: 220, background: 'rgba(255,180,190,0.18)', bottom: 60, left: -50 }} />
+          <div
+            className="auth-left-blob"
+            style={{
+              width: 320,
+              height: 320,
+              background: 'rgba(255,122,138,0.14)',
+              top: -100,
+              right: -80,
+            }}
+          />
+          <div
+            className="auth-left-blob"
+            style={{
+              width: 220,
+              height: 220,
+              background: 'rgba(255,180,190,0.18)',
+              bottom: 60,
+              left: -50,
+            }}
+          />
 
           <div className="auth-brand">
             <div
@@ -216,8 +241,16 @@ export function AuthLayoutWeb({ eyebrow, heading, subheading, error, children, f
 
           <div className="auth-testimonials">
             {[
-              { text: '"Finally a shopping app that gets me. It knew I needed comfort food before I even did."', name: 'Ama A.', stars: '★★★★★' },
-              { text: '"The mood scanner is scary accurate. Opened it stressed, it recommended a candle — instant calm."', name: 'Kofi M.', stars: '★★★★★' },
+              {
+                text: '"Finally a shopping app that gets me. It knew I needed comfort food before I even did."',
+                name: 'Ama A.',
+                stars: '★★★★★',
+              },
+              {
+                text: '"The mood scanner is scary accurate. Opened it stressed, it recommended a candle — instant calm."',
+                name: 'Kofi M.',
+                stars: '★★★★★',
+              },
             ].map((t, i) => (
               <div key={i} className="auth-testimonial">
                 <div className="auth-testimonial-text">{t.text}</div>
@@ -245,8 +278,6 @@ export function AuthLayoutWeb({ eyebrow, heading, subheading, error, children, f
             {children}
 
             {footer && <div className="auth-footer">{footer}</div>}
-
-            <div className="auth-secure">🔒 Secured by Supabase · 256-bit SSL</div>
           </div>
         </div>
       </div>
