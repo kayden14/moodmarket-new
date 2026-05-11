@@ -34,21 +34,11 @@ import { NotificationService } from '@/services/notifications';
 import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
+import { MOODS } from '@/constants/moods';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH          = (width - 48) / 2;
 const TRENDING_CARD_WIDTH = width * 0.44;
-
-const MOODS: { key: MoodKey; emoji: string; label: string }[] = [
-  { key: 'happy',   emoji: '😊', label: 'Happy'   },
-  { key: 'calm',    emoji: '😌', label: 'Calm'     },
-  { key: 'excited', emoji: '🤩', label: 'Excited'  },
-  { key: 'sad',     emoji: '😢', label: 'Sad'      },
-  { key: 'angry',   emoji: '😠', label: 'Angry'    },
-  { key: 'tired',   emoji: '😴', label: 'Tired'    },
-  { key: 'anxious', emoji: '😰', label: 'Anxious'  },
-  { key: 'neutral', emoji: '😐', label: 'Neutral'  },
-];
 
 const CATEGORIES = [
   { id: 'all',         label: 'All',         emoji: '🏠', keywords: [] as string[] },

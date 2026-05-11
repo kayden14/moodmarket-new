@@ -1,45 +1,34 @@
 /**
  * app/vendor/products.tsx
- * Vendor product management — CRUD scoped to vendor's own products.
+ * Vendor product management — content only (Layout provided by _layout.tsx).
  */
-import { useState, useEffect, useCallback } from 'react';
+
+import { useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  TextInput, Modal, ScrollView, ActivityIndicator, Alert, Platform, StatusBar,
+  TextInput, Modal, ScrollView, ActivityIndicator, Alert, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
 import {
-  getVendorProducts, upsertVendorProduct, deleteVendorProduct,
-  toggleProductActive, updateStockCount,
+  upsertVendorProduct, deleteVendorProduct,
+  toggleProductActive,
 } from '@/services/vendorService';
-import type { VendorProduct } from '@/services/vendorService';
-import { supabase } from '@/services/supabase';
+import { useVendorProductsData } from '@/hooks/useVendorProductsData';
+import { VendorProduct } from '@/types/vendor';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import { decode } from 'base64-arraybuffer';
+import { uploadImage } from '@/services/storageService';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Plus, Search, Edit3, Trash2, Eye, EyeOff, Save, X, ImageIcon } from 'lucide-react-native';
 
-const P = '#FF7A8A';
-const BG = '#0F172A', CARD = '#1E293B', BORDER = '#334155', TEXT = '#F1F5F9', SUB = '#94A3B8';
-
+const PRIMARY = '#FF7A8A';
 type ProductForm = Omit<VendorProduct, 'id' | 'vendor_id' | 'created_at'>;
 const EMPTY: ProductForm = { name: '', description: '', price: 0, image: '', mood_tags: [], rating: 4.5, stock_count: 0, is_active: true, category: null };
 
-async function uploadImage(uri: string): Promise<string> {
-  const path = `products/vendor_${Date.now()}.jpg`;
-  const b64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-  const { error } = await supabase.storage.from('product-images').upload(path, decode(b64), { contentType: 'image/jpeg', upsert: true });
-  if (error) throw error;
-  return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
-}
-
 export default function VendorProducts() {
   const { profile } = useAuth();
-  const router = useRouter();
-  const [products, setProducts] = useState<VendorProduct[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const { isDark } = useTheme();
+  const { products, loading, fetchProducts } = useVendorProductsData();
   const [search, setSearch]     = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving]     = useState(false);
@@ -48,22 +37,10 @@ export default function VendorProducts() {
   const [tagsInput, setTagsInput] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!profile?.id) return;
-    const data = await getVendorProducts(profile.id);
-    setProducts(data);
-    setLoading(false);
-  }, [profile?.id]);
-
-  useEffect(() => { load(); }, [load]);
-
-  useRealtimeChannel({
-    channelName: `vendor-products-${profile?.id}`,
-    table: 'products',
-    filter: profile?.id ? `vendor_id=eq.${profile.id}` : undefined,
-    onEvent: load,
-    enabled: !!profile?.id,
-  });
+  const card = isDark ? '#1E293B' : '#FFFFFF';
+  const border = isDark ? '#334155' : '#E2E8F0';
+  const text = isDark ? '#F1F5F9' : '#0F172A';
+  const sub = isDark ? '#94A3B8' : '#64748B';
 
   const openAdd = () => { setEditId(null); setForm(EMPTY); setTagsInput(''); setModalOpen(true); };
   const openEdit = (p: VendorProduct) => {
@@ -75,7 +52,7 @@ export default function VendorProducts() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permission required'); return; }
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.85 });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8 });
     if (!r.canceled && r.assets[0]) {
       setUploading(true);
       try { const url = await uploadImage(r.assets[0].uri); setForm(f => ({ ...f, image: url })); }
@@ -85,129 +62,152 @@ export default function VendorProducts() {
   };
 
   const save = async () => {
-    if (!form.name.trim() || !form.description.trim() || form.price <= 0) { Alert.alert('Error', 'Name, description and price are required.'); return; }
+    if (!form.name.trim() || !form.description.trim() || form.price <= 0) { Alert.alert('Error', 'Required fields missing.'); return; }
     setSaving(true);
     try {
       await upsertVendorProduct(profile!.id, { ...form, mood_tags: tagsInput.split(',').map(t => t.trim()).filter(Boolean) }, editId ?? undefined);
-      setModalOpen(false); load();
+      setModalOpen(false); fetchProducts();
     } catch (e: any) { Alert.alert('Error', e.message); }
     finally { setSaving(false); }
   };
 
   const remove = (p: VendorProduct) => Alert.alert('Delete', `Delete "${p.name}"?`, [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Delete', style: 'destructive', onPress: async () => { await deleteVendorProduct(profile!.id, p.id); load(); } },
+    { text: 'Delete', style: 'destructive', onPress: async () => { await deleteVendorProduct(profile!.id, p.id); fetchProducts(); } },
   ]);
 
   const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
   const renderItem = ({ item }: { item: VendorProduct }) => (
-    <View style={[s.card, { backgroundColor: CARD, borderColor: BORDER }]}>
-      <Image source={{ uri: item.image }} style={s.thumb} contentFit="cover" />
-      <View style={{ flex: 1 }}>
-        <Text style={[s.name, { color: TEXT }]} numberOfLines={1}>{item.name}</Text>
-        <Text style={[s.price, { color: P }]}>GH₵ {Number(item.price).toFixed(2)}</Text>
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-          <View style={{ backgroundColor: item.is_active ? '#4ADE8022' : '#F8717122', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-            <Text style={{ fontSize: 10, fontWeight: '700', color: item.is_active ? '#4ADE80' : '#F87171' }}>{item.is_active ? 'Active' : 'Hidden'}</Text>
+    <View style={[s.productCard, { backgroundColor: card, borderColor: border }]}>
+      <Image source={{ uri: item.image }} style={s.productImg} contentFit="cover" transition={200} />
+      <View style={s.productInfo}>
+        <Text style={[s.productName, { color: text }]} numberOfLines={1}>{item.name}</Text>
+        <Text style={[s.productPrice, { color: PRIMARY }]}>GH₵ {Number(item.price).toFixed(2)}</Text>
+        <View style={s.badgeRow}>
+          <View style={[s.statusBadge, { backgroundColor: item.is_active ? '#4ADE8015' : '#F8717115' }]}>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: item.is_active ? '#4ADE80' : '#F87171' }}>
+              {item.is_active ? 'ACTIVE' : 'HIDDEN'}
+            </Text>
           </View>
-          <Text style={{ fontSize: 11, color: SUB }}>Stock: {item.stock_count}</Text>
+          <Text style={{ fontSize: 11, color: sub }}>Stock: {item.stock_count}</Text>
         </View>
       </View>
-      <View style={{ gap: 6 }}>
-        <TouchableOpacity style={[s.btn, { backgroundColor: '#1D4ED822' }]} onPress={() => openEdit(item)}>
-          <Text style={{ color: '#60A5FA', fontSize: 13 }}>✏️</Text>
+      <View style={s.productActions}>
+        <TouchableOpacity style={[s.actionBtn, { backgroundColor: `${PRIMARY}15` }]} onPress={() => openEdit(item)}>
+          <Edit3 size={18} color={PRIMARY} />
         </TouchableOpacity>
-        <TouchableOpacity style={[s.btn, { backgroundColor: '#7F1D1D22' }]} onPress={() => remove(item)}>
-          <Text style={{ color: '#F87171', fontSize: 13 }}>🗑️</Text>
+        <TouchableOpacity 
+          style={[s.actionBtn, { backgroundColor: item.is_active ? '#F8717115' : '#4ADE8015' }]} 
+          onPress={() => toggleProductActive(profile!.id, item.id, !item.is_active).then(fetchProducts)}
+        >
+          {item.is_active ? <EyeOff size={18} color="#F87171" /> : <Eye size={18} color="#4ADE80" />}
         </TouchableOpacity>
-        <TouchableOpacity style={[s.btn, { backgroundColor: item.is_active ? '#F8717122' : '#4ADE8022' }]}
-          onPress={() => toggleProductActive(profile!.id, item.id, !item.is_active).then(load)}>
-          <Text style={{ fontSize: 13 }}>{item.is_active ? '👁️' : '🙈'}</Text>
+        <TouchableOpacity style={[s.actionBtn, { backgroundColor: '#F8717115' }]} onPress={() => remove(item)}>
+          <Trash2 size={18} color="#F87171" />
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="light-content" />
-      <View style={[s.header, { backgroundColor: CARD, borderBottomColor: BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
-          <Text style={{ color: TEXT, fontSize: 22 }}>←</Text>
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 10, fontWeight: '800', color: P, letterSpacing: 3 }}>VENDOR</Text>
-          <Text style={{ fontSize: 20, fontWeight: '900', color: TEXT }}>My Products</Text>
+    <View style={{ flex: 1 }}>
+      <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
+        <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>
+          <Search size={18} color={sub} />
+          <TextInput
+            style={[s.searchInput, { color: text }]}
+            placeholder="Search my products..."
+            placeholderTextColor={sub}
+            value={search}
+            onChangeText={setSearch}
+          />
         </View>
-        <TouchableOpacity style={{ backgroundColor: P, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 5 }} onPress={openAdd}>
-          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>+ Add</Text>
+        <TouchableOpacity style={s.addBtn} onPress={openAdd}>
+          <Plus size={20} color="#fff" />
+          <Text style={s.addBtnText}>Add New</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, margin: 14, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: BORDER, height: 42 }}>
-        <Text style={{ color: SUB, marginRight: 8 }}>🔍</Text>
-        <TextInput style={{ flex: 1, fontSize: 14, color: TEXT }} placeholder="Search products…" placeholderTextColor={SUB} value={search} onChangeText={setSearch} />
-      </View>
+      {loading ? (
+        <View style={s.center}>
+          <ActivityIndicator size="large" color={PRIMARY} />
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={{ padding: 16 }}
+          numColumns={Platform.OS === 'web' ? 2 : 1}
+          key={Platform.OS === 'web' ? 'web' : 'mobile'}
+        />
+      )}
 
-      {loading
-        ? <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={P} size="large" /></View>
-        : <FlatList data={filtered} keyExtractor={i => i.id} renderItem={renderItem} contentContainerStyle={{ padding: 14, paddingTop: 0 }} ListEmptyComponent={<View style={{ alignItems: 'center', padding: 40 }}><Text style={{ fontSize: 40, marginBottom: 12 }}>📦</Text><Text style={{ color: SUB }}>No products yet. Add your first one!</Text></View>} />
-      }
+      {/* MODAL */}
+      <Modal visible={modalOpen} animationType="slide" transparent={true}>
+        <View style={s.modalOverlay}>
+          <View style={[s.modalContent, { backgroundColor: card, borderColor: border }]}>
+            <View style={[s.modalHeader, { borderBottomColor: border }]}>
+              <Text style={[s.modalTitle, { color: text }]}>{editId ? 'Edit Product' : 'Add Product'}</Text>
+              <TouchableOpacity onPress={() => setModalOpen(false)}>
+                <X size={24} color={sub} />
+              </TouchableOpacity>
+            </View>
 
-      {/* Add / Edit Modal */}
-      <Modal visible={modalOpen} animationType="slide" presentationStyle="pageSheet">
-        <View style={{ flex: 1, backgroundColor: BG }}>
-          <View style={[s.modalHeader, { backgroundColor: CARD, borderBottomColor: BORDER }]}>
-            <TouchableOpacity onPress={() => setModalOpen(false)}><Text style={{ color: TEXT, fontSize: 22 }}>✕</Text></TouchableOpacity>
-            <Text style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '800', color: TEXT }}>{editId ? 'Edit Product' : 'Add Product'}</Text>
-            <TouchableOpacity style={{ backgroundColor: P, borderRadius: 9, paddingHorizontal: 14, paddingVertical: 7, opacity: saving ? 0.6 : 1 }} onPress={save} disabled={saving}>
-              {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Save</Text>}
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
-            {/* Image picker */}
-            <TouchableOpacity style={{ width: '100%', aspectRatio: 1.6, borderRadius: 14, backgroundColor: CARD, borderWidth: 1.5, borderColor: BORDER, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 18 }} onPress={pickImage}>
-              {form.image
-                ? <Image source={{ uri: form.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
-                : <View style={{ alignItems: 'center', gap: 6 }}>
-                    {uploading ? <ActivityIndicator color={P} /> : <><Text style={{ fontSize: 32 }}>📷</Text><Text style={{ color: SUB, fontSize: 13 }}>Tap to upload image</Text></>}
+            <ScrollView style={s.modalBody}>
+              <TouchableOpacity style={[s.imageUpload, { borderColor: border, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]} onPress={pickImage}>
+                {uploading ? <ActivityIndicator color={PRIMARY} /> : form.image ? (
+                  <Image source={{ uri: form.image }} style={s.uploadPreview} />
+                ) : (
+                  <View style={{ alignItems: 'center' }}>
+                    <ImageIcon size={32} color={sub} />
+                    <Text style={{ color: sub, marginTop: 8, fontSize: 13, fontWeight: '600' }}>Tap to upload image</Text>
                   </View>
-              }
-            </TouchableOpacity>
+                )}
+              </TouchableOpacity>
 
-            {[
-              { label: 'Product Name *', key: 'name',        type: 'default' as const, placeholder: 'e.g. Rose Quartz Roller' },
-              { label: 'Price (GH₵) *', key: 'price',       type: 'numeric' as const,  placeholder: '0.00' },
-              { label: 'Stock Count',   key: 'stock_count',  type: 'numeric' as const,  placeholder: '0' },
-              { label: 'Rating (0–5)',  key: 'rating',       type: 'numeric' as const,  placeholder: '4.5' },
-              { label: 'Category',     key: 'category',     type: 'default' as const, placeholder: 'e.g. Skincare' },
-            ].map(f => (
-              <View key={f.key} style={{ marginBottom: 14 }}>
-                <Text style={s.label}>{f.label}</Text>
-                <TextInput style={s.input} placeholder={f.placeholder} placeholderTextColor={SUB}
-                  keyboardType={f.type} value={String((form as any)[f.key] === 0 ? '' : ((form as any)[f.key] ?? ''))}
-                  onChangeText={v => setForm(prev => ({ ...prev, [f.key]: f.type === 'numeric' ? parseFloat(v) || 0 : v }))} />
+              <View style={s.field}>
+                <Text style={[s.label, { color: sub }]}>NAME *</Text>
+                <TextInput style={[s.input, { color: text, borderColor: border }]} value={form.name} onChangeText={v => setForm(f => ({ ...f, name: v }))} />
               </View>
-            ))}
 
-            <View style={{ marginBottom: 14 }}>
-              <Text style={s.label}>Description *</Text>
-              <TextInput style={[s.input, { height: 80, textAlignVertical: 'top' }]} placeholder="Describe your product…" placeholderTextColor={SUB} value={form.description} multiline onChangeText={v => setForm(f => ({ ...f, description: v }))} />
+              <View style={s.fieldRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.label, { color: sub }]}>PRICE (GH₵) *</Text>
+                  <TextInput style={[s.input, { color: text, borderColor: border }]} value={String(form.price)} onChangeText={v => setForm(f => ({ ...f, price: parseFloat(v) || 0 }))} keyboardType="numeric" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                  <Text style={[s.label, { color: sub }]}>STOCK</Text>
+                  <TextInput style={[s.input, { color: text, borderColor: border }]} value={String(form.stock_count)} onChangeText={v => setForm(f => ({ ...f, stock_count: parseInt(v) || 0 }))} keyboardType="numeric" />
+                </View>
+              </View>
+
+              <View style={s.field}>
+                <Text style={[s.label, { color: sub }]}>DESCRIPTION *</Text>
+                <TextInput style={[s.input, { color: text, borderColor: border, height: 80 }]} value={form.description} onChangeText={v => setForm(f => ({ ...f, description: v }))} multiline />
+              </View>
+
+              <View style={s.field}>
+                <Text style={[s.label, { color: sub }]}>MOOD TAGS</Text>
+                <TextInput style={[s.input, { color: text, borderColor: border }]} value={tagsInput} onChangeText={setTagsInput} placeholder="e.g. calm, happy" />
+              </View>
+            </ScrollView>
+
+            <View style={[s.modalFooter, { borderTopColor: border }]}>
+              <TouchableOpacity style={[s.cancelBtn, { borderColor: border }]} onPress={() => setModalOpen(false)}>
+                <Text style={{ color: text, fontWeight: '700' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.saveBtn} onPress={save} disabled={saving}>
+                {saving ? <ActivityIndicator color="#fff" /> : (
+                  <>
+                    <Save size={18} color="#fff" />
+                    <Text style={s.saveBtnText}>Save</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             </View>
-
-            <View style={{ marginBottom: 14 }}>
-              <Text style={s.label}>Mood Tags (comma separated)</Text>
-              <TextInput style={s.input} placeholder="happy, calm, excited…" placeholderTextColor={SUB} value={tagsInput} onChangeText={setTagsInput} />
-            </View>
-
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: form.is_active ? '#4ADE8018' : '#F8717118', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: form.is_active ? '#4ADE8044' : '#F8717144', marginBottom: 40 }}
-              onPress={() => setForm(f => ({ ...f, is_active: !f.is_active }))}>
-              <Text style={{ fontSize: 18 }}>{form.is_active ? '👁️' : '🙈'}</Text>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: form.is_active ? '#4ADE80' : '#F87171' }}>{form.is_active ? 'Visible in store' : 'Hidden from store'}</Text>
-            </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
       </Modal>
     </View>
@@ -215,13 +215,34 @@ export default function VendorProducts() {
 }
 
 const s = StyleSheet.create({
-  header:      { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'flex-end', borderBottomWidth: 1 },
-  card:        { flexDirection: 'row', borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, gap: 12, alignItems: 'center' },
-  thumb:       { width: 64, height: 64, borderRadius: 10 },
-  name:        { fontSize: 13, fontWeight: '700', marginBottom: 3 },
-  price:       { fontSize: 13, fontWeight: '800' },
-  btn:         { width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 20, paddingBottom: 16, borderBottomWidth: 1 },
-  label:       { fontSize: 11, fontWeight: '700', color: SUB, marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase' },
-  input:       { backgroundColor: CARD, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  toolBar: { padding: 16, borderBottomWidth: 1, flexDirection: 'row', gap: 12, alignItems: 'center' },
+  searchBox: { flex: 1, height: 44, borderRadius: 12, borderWidth: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, gap: 8 },
+  searchInput: { flex: 1, fontSize: 14 },
+  addBtn: { backgroundColor: PRIMARY, height: 44, borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 8 },
+  addBtnText: { color: '#fff', fontWeight: '800', fontSize: 13, display: Platform.OS === 'web' ? 'flex' : 'none' },
+  productCard: { flex: 1, margin: 8, borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  productImg: { width: 64, height: 64, borderRadius: 12 },
+  productInfo: { flex: 1 },
+  productName: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
+  productPrice: { fontSize: 14, fontWeight: '800' },
+  badgeRow: { flexDirection: 'row', gap: 8, marginTop: 4, alignItems: 'center' },
+  statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  productActions: { flexDirection: 'row', gap: 6 },
+  actionBtn: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxWidth: 500, borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  modalHeader: { padding: 20, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: '900' },
+  modalBody: { padding: 20, maxHeight: 500 },
+  imageUpload: { height: 140, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', marginBottom: 20, overflow: 'hidden' },
+  uploadPreview: { width: '100%', height: '100%' },
+  field: { marginBottom: 16 },
+  fieldRow: { flexDirection: 'row', marginBottom: 16 },
+  label: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
+  input: { borderWidth: 1, borderRadius: 12, padding: 10, fontSize: 14 },
+  modalFooter: { padding: 20, borderTopWidth: 1, flexDirection: 'row', gap: 12 },
+  cancelBtn: { height: 44, borderRadius: 12, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  saveBtn: { flex: 1, height: 44, borderRadius: 12, backgroundColor: PRIMARY, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  saveBtnText: { color: '#fff', fontWeight: '800' },
 });

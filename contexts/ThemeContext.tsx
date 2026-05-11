@@ -16,75 +16,13 @@ import React, {
   useCallback,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MoodKey, MoodPalette } from '@/types/mood';
+import { MoodKey, MoodPalette, MOOD_PALETTES } from '@/constants/moods';
 import { BaseTheme, AppTheme } from '@/types/theme';
 
 // Re-export types for backward compatibility
-export type { MoodKey, MoodPalette } from '@/types/mood';
+export type { MoodKey, MoodPalette } from '@/constants/moods';
+export { MOOD_PALETTES } from '@/constants/moods';
 export type { BaseTheme, AppTheme } from '@/types/theme';
-
-// ─── Mood palettes ────────────────────────────────────────────────────────────
-// Each mood has a primary accent, a soft background tint, and a card tint.
-// These blend with the base light/dark colours.
-
-export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
-  happy: {
-    primary:   '#F59E0B',
-    secondary: '#FDE68A',
-    tint:      '#FFFBEB',
-    label:     'Happy',
-    emoji:     '😊',
-  },
-  calm: {
-    primary:   '#3B82F6',
-    secondary: '#BFDBFE',
-    tint:      '#EFF6FF',
-    label:     'Calm',
-    emoji:     '😌',
-  },
-  excited: {
-    primary:   '#EF4444',
-    secondary: '#FECACA',
-    tint:      '#FFF1F1',
-    label:     'Excited',
-    emoji:     '🤩',
-  },
-  sad: {
-    primary:   '#6366F1',
-    secondary: '#C7D2FE',
-    tint:      '#EEF2FF',
-    label:     'Sad',
-    emoji:     '😢',
-  },
-  angry: {
-    primary:   '#DC2626',
-    secondary: '#FCA5A5',
-    tint:      '#FEF2F2',
-    label:     'Angry',
-    emoji:     '😠',
-  },
-  tired: {
-    primary:   '#8B5CF6',
-    secondary: '#DDD6FE',
-    tint:      '#F5F3FF',
-    label:     'Tired',
-    emoji:     '😴',
-  },
-  anxious: {
-    primary:   '#10B981',
-    secondary: '#A7F3D0',
-    tint:      '#ECFDF5',
-    label:     'Anxious',
-    emoji:     '😰',
-  },
-  neutral: {
-    primary:   '#FF7A8A',
-    secondary: '#FFD6DE',
-    tint:      '#FFF0F2',
-    label:     'Neutral',
-    emoji:     '😐',
-  },
-};
 
 // ─── Base theme (light / dark) ────────────────────────────────────────────────
 

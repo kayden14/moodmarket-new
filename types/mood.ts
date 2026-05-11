@@ -15,3 +15,11 @@ export type MoodDetectionResult = {
   emoji: string;
   confidence: number;
 };
+
+export interface MoodEntry {
+  mood: string;
+  mood_key?: string;
+  label?: string;
+  date: string;
+  note?: string;
+}
