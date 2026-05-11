@@ -1,39 +1,37 @@
-/**
- * app/vendor/login.tsx
- * Vendor login — both platforms in one file.
- *  - Mobile: dark KeyboardAvoidingView card layout
- *  - Web:    split-panel design (left brand stats + right form)
- *
- * Auth flow:
- *  1. Sign in with email + password via Supabase Auth
- *  2. Fetch profile — check role === 'vendor' (or application status === 'approved')
- *  3. Check is_suspended — block suspended accounts
- *  4. Redirect to /vendor on success
- */
-
 import { useState } from 'react';
 import {
-  View, Text, TextInput, StyleSheet, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ActivityIndicator, StatusBar,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { Store, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';
-const BG      = '#0F172A';
-const CARD    = '#1E293B';
-const BORDER  = '#334155';
-const TEXT    = '#F1F5F9';
-const SUB     = '#94A3B8';
+const BG = '#0F172A';
+const CARD = '#1E293B';
+const BORDER = '#334155';
+const TEXT = '#F1F5F9';
+const SUB = '#94A3B8';
 
 /* ─── shared auth logic ─── */
-async function attemptVendorLogin(email: string, password: string): Promise<string | null> {
+async function attemptVendorLogin(
+  email: string,
+  password: string,
+): Promise<string | null> {
   // Returns null on success, error string on failure
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
-    password,
-  });
+  const { data: authData, error: authError } =
+    await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
   if (authError) return authError.message;
 
   const { data: profile, error: profileError } = await supabase
@@ -60,18 +58,26 @@ async function attemptVendorLogin(email: string, password: string): Promise<stri
 
 function VendorLoginWeb() {
   const router = useRouter();
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [showPw,   setShowPw]   = useState(false);
-  const [error,    setError]    = useState('');
-  const [focused,  setFocused]  = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState('');
+  const [focused, setFocused] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    if (!email || !password) { setError('Please fill in all fields.'); return; }
-    setLoading(true); setError('');
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    setLoading(true);
+    setError('');
     const err = await attemptVendorLogin(email, password);
-    if (err) { setError(err); setLoading(false); return; }
+    if (err) {
+      setError(err);
+      setLoading(false);
+      return;
+    }
     router.replace('/vendor' as any);
   };
 
@@ -153,43 +159,155 @@ function VendorLoginWeb() {
   `;
 
   const PERKS = [
-    { icon: '📦', label: 'Products published', val: 'Live',  color: '#38BDF822', delay: '0ms'   },
-    { icon: '💰', label: 'Paystack payouts',   val: 'GHS',   color: '#4ADE8022', delay: '80ms'  },
-    { icon: '📊', label: 'Real-time analytics',val: 'Live',  color: `${PRIMARY}22`, delay: '160ms' },
+    {
+      icon: '📦',
+      label: 'Products published',
+      val: 'Live',
+      color: '#38BDF822',
+      delay: '0ms',
+    },
+    {
+      icon: '💰',
+      label: 'Paystack payouts',
+      val: 'GHS',
+      color: '#4ADE8022',
+      delay: '80ms',
+    },
+    {
+      icon: '📊',
+      label: 'Real-time analytics',
+      val: 'Live',
+      color: `${PRIMARY}22`,
+      delay: '160ms',
+    },
   ];
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="vl-root">
-
         {/* LEFT — brand panel */}
         <div className="vl-left">
           <div className="vl-grid" />
-          <div className="vl-glow" style={{ width: 340, height: 340, background: `${PRIMARY}14`, top: -120, right: -80 }} />
-          <div className="vl-glow" style={{ width: 220, height: 220, background: 'rgba(56,189,248,.08)', bottom: 40, left: -60 }} />
+          <div
+            className="vl-glow"
+            style={{
+              width: 340,
+              height: 340,
+              background: `${PRIMARY}14`,
+              top: -120,
+              right: -80,
+            }}
+          />
+          <div
+            className="vl-glow"
+            style={{
+              width: 220,
+              height: 220,
+              background: 'rgba(56,189,248,.08)',
+              bottom: 40,
+              left: -60,
+            }}
+          />
 
-          <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 320 }}>
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              width: '100%',
+              maxWidth: 320,
+            }}
+          >
             {/* logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 48 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 16, background: PRIMARY, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, boxShadow: `0 8px 24px ${PRIMARY}55`, animation: 'vl-float 4s ease-in-out infinite' }}>🏪</div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 48,
+              }}
+            >
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 16,
+                  background: PRIMARY,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 26,
+                  boxShadow: `0 8px 24px ${PRIMARY}55`,
+                  animation: 'vl-float 4s ease-in-out infinite',
+                }}
+              >
+                🏪
+              </div>
               <div>
-                <div style={{ fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: -.4 }}>MoodMarket</div>
-                <div style={{ fontSize: 11, color: PRIMARY, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>Vendor Portal</div>
+                <div
+                  style={{
+                    fontFamily: '"Fraunces", serif',
+                    fontSize: 22,
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: -0.4,
+                  }}
+                >
+                  MoodMarket
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: PRIMARY,
+                    fontWeight: 700,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Vendor Portal
+                </div>
               </div>
             </div>
 
-            <div style={{ fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 900, color: TEXT, letterSpacing: -.6, marginBottom: 8, lineHeight: 1.2 }}>
-              Your Store,<br /><span style={{ color: PRIMARY, fontStyle: 'italic' }}>Your Rules.</span>
+            <div
+              style={{
+                fontFamily: '"Fraunces", serif',
+                fontSize: 28,
+                fontWeight: 900,
+                color: TEXT,
+                letterSpacing: -0.6,
+                marginBottom: 8,
+                lineHeight: 1.2,
+              }}
+            >
+              Your Store,
+              <br />
+              <span style={{ color: PRIMARY, fontStyle: 'italic' }}>
+                Your Rules.
+              </span>
             </div>
-            <div style={{ fontSize: 14, color: '#475569', lineHeight: 1.65, marginBottom: 36 }}>
-              Manage products, track orders, and receive instant payouts — all from one dashboard.
+            <div
+              style={{
+                fontSize: 14,
+                color: '#475569',
+                lineHeight: 1.65,
+                marginBottom: 36,
+              }}
+            >
+              Manage products, track orders, and receive instant payouts — all
+              from one dashboard.
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {PERKS.map((p, i) => (
-                <div key={i} className="vl-card" style={{ animationDelay: p.delay }}>
-                  <div className="vl-card-icon" style={{ background: p.color }}>{p.icon}</div>
+                <div
+                  key={i}
+                  className="vl-card"
+                  style={{ animationDelay: p.delay }}
+                >
+                  <div className="vl-card-icon" style={{ background: p.color }}>
+                    {p.icon}
+                  </div>
                   <div>
                     <div className="vl-card-val">{p.val}</div>
                     <div className="vl-card-lbl">{p.label}</div>
@@ -203,23 +321,35 @@ function VendorLoginWeb() {
         {/* RIGHT — form */}
         <div className="vl-right">
           <div className="vl-form-wrap">
-            <button className="vl-back" onClick={() => router.push('/(tabs)' as any)}>← Back to store</button>
+            <button
+              className="vl-back"
+              onClick={() => router.push('/(tabs)' as any)}
+            >
+              ← Back to store
+            </button>
 
             <div className="vl-eyebrow">🏪 Vendor Access</div>
             <h1 className="vl-heading">Vendor Sign In</h1>
-            <p className="vl-sub">Sign in with your approved vendor account to access the dashboard.</p>
+            <p className="vl-sub">
+              Sign in with your approved vendor account to access the dashboard.
+            </p>
 
             {error && <div className="vl-error">{error}</div>}
 
             <div className="vl-field">
               <label className="vl-label">Email Address</label>
-              <div className={`vl-input-wrap${focused === 'email' ? ' focused' : ''}`}>
+              <div
+                className={`vl-input-wrap${focused === 'email' ? ' focused' : ''}`}
+              >
                 <span className="vl-input-icon">✉️</span>
                 <input
-                  type="email" placeholder="you@yourstore.com" value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
-                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  type="email"
+                  placeholder="you@yourstore.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocused('email')}
+                  onBlur={() => setFocused(null)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   autoComplete="email"
                 />
               </div>
@@ -227,34 +357,50 @@ function VendorLoginWeb() {
 
             <div className="vl-field">
               <label className="vl-label">Password</label>
-              <div className={`vl-input-wrap${focused === 'pw' ? ' focused' : ''}`}>
+              <div
+                className={`vl-input-wrap${focused === 'pw' ? ' focused' : ''}`}
+              >
                 <span className="vl-input-icon">🔐</span>
                 <input
-                  type={showPw ? 'text' : 'password'} placeholder="••••••••" value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  onFocus={() => setFocused('pw')} onBlur={() => setFocused(null)}
-                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocused('pw')}
+                  onBlur={() => setFocused(null)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   autoComplete="current-password"
                 />
-                <button className="vl-eye" onClick={() => setShowPw(!showPw)}>{showPw ? '🙈' : '👁️'}</button>
+                <button className="vl-eye" onClick={() => setShowPw(!showPw)}>
+                  {showPw ? '🙈' : '👁️'}
+                </button>
               </div>
             </div>
 
             <button className="vl-btn" onClick={handleLogin} disabled={loading}>
-              {loading ? <div className="vl-spinner" /> : '🏪 Sign In to Vendor Portal'}
+              {loading ? (
+                <div className="vl-spinner" />
+              ) : (
+                '🏪 Sign In to Vendor Portal'
+              )}
             </button>
 
             <div className="vl-divider">
               <div className="vl-divider-line" />
-              <span className="vl-divider-txt">don't have an account?</span>
+              <span className="vl-divider-txt">Don't have an account?</span>
               <div className="vl-divider-line" />
             </div>
 
-            <button className="vl-apply-btn" onClick={() => router.push('/vendor/apply' as any)}>
+            <button
+              className="vl-apply-btn"
+              onClick={() => router.push('/vendor/apply' as any)}
+            >
               ✨ Apply to become a vendor
             </button>
 
-            <div className="vl-footer">MoodMarket Vendor Portal · Approved vendors only</div>
+            <div className="vl-footer">
+              MoodMarket Vendor Portal · Approved vendors only
+            </div>
           </div>
         </div>
       </div>
@@ -268,25 +414,35 @@ function VendorLoginWeb() {
 
 function VendorLoginMobile() {
   const router = useRouter();
-  const [email,        setEmail]        = useState('');
-  const [password,     setPassword]     = useState('');
-  const [loading,      setLoading]      = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error,        setError]        = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) { setError('Please fill in all fields.'); return; }
-    setLoading(true); setError('');
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    setLoading(true);
+    setError('');
     const err = await attemptVendorLogin(email, password);
-    if (err) { setError(err); setLoading(false); return; }
+    if (err) {
+      setError(err);
+      setLoading(false);
+      return;
+    }
     router.replace('/vendor' as any);
   };
 
   return (
-    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView
+      style={s.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <StatusBar barStyle="light-content" />
       <View style={s.inner}>
-
         {/* Logo */}
         <View style={s.logoWrap}>
           <View style={s.logoCircle}>
@@ -299,9 +455,15 @@ function VendorLoginMobile() {
         {/* Card */}
         <View style={s.card}>
           <Text style={s.cardTitle}>Vendor Sign In</Text>
-          <Text style={s.cardSub}>Sign in with your approved vendor account.</Text>
+          <Text style={s.cardSub}>
+            Sign in with your approved vendor account.
+          </Text>
 
-          {error ? <View style={s.errorBox}><Text style={s.errorTxt}>{error}</Text></View> : null}
+          {error ? (
+            <View style={s.errorBox}>
+              <Text style={s.errorTxt}>{error}</Text>
+            </View>
+          ) : null}
 
           {/* Email */}
           <View style={s.fieldWrap}>
@@ -309,9 +471,13 @@ function VendorLoginMobile() {
             <View style={s.inputRow}>
               <Mail size={16} color={SUB} style={{ marginRight: 10 }} />
               <TextInput
-                style={s.input} placeholder="you@yourstore.com" placeholderTextColor={SUB}
-                value={email} onChangeText={setEmail}
-                keyboardType="email-address" autoCapitalize="none"
+                style={s.input}
+                placeholder="you@yourstore.com"
+                placeholderTextColor={SUB}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
           </View>
@@ -322,12 +488,19 @@ function VendorLoginMobile() {
             <View style={s.inputRow}>
               <Lock size={16} color={SUB} style={{ marginRight: 10 }} />
               <TextInput
-                style={s.input} placeholder="••••••••" placeholderTextColor={SUB}
-                value={password} onChangeText={setPassword}
+                style={s.input}
+                placeholder="••••••••"
+                placeholderTextColor={SUB}
+                value={password}
+                onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                {showPassword ? <EyeOff size={16} color={SUB} /> : <Eye size={16} color={SUB} />}
+                {showPassword ? (
+                  <EyeOff size={16} color={SUB} />
+                ) : (
+                  <Eye size={16} color={SUB} />
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -335,19 +508,28 @@ function VendorLoginMobile() {
           {/* Submit */}
           <TouchableOpacity
             style={[s.btn, loading && { opacity: 0.6 }]}
-            onPress={handleLogin} disabled={loading} activeOpacity={0.85}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.85}
           >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={s.btnTxt}>Sign In to Vendor Portal</Text>
-            }
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={s.btnTxt}>Sign In to Vendor Portal</Text>
+            )}
           </TouchableOpacity>
         </View>
 
         {/* Apply link */}
-        <TouchableOpacity style={s.applyLink} onPress={() => router.push('/vendor/apply' as any)} activeOpacity={0.75}>
+        <TouchableOpacity
+          style={s.applyLink}
+          onPress={() => router.push('/vendor/apply' as any)}
+          activeOpacity={0.75}
+        >
           <Text style={s.applyLinkTxt}>Not a vendor yet? </Text>
-          <Text style={[s.applyLinkTxt, { color: PRIMARY, fontWeight: '700' }]}>Apply here →</Text>
+          <Text style={[s.applyLinkTxt, { color: PRIMARY, fontWeight: '700' }]}>
+            Apply here →
+          </Text>
         </TouchableOpacity>
 
         <Text style={s.footer}>Approved vendors only · MoodMarket</Text>
@@ -362,24 +544,92 @@ export default function VendorLoginScreen() {
 }
 
 const s = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: BG },
-  inner:      { flex: 1, justifyContent: 'center', padding: 24 },
-  logoWrap:   { alignItems: 'center', marginBottom: 32 },
-  logoCircle: { width: 72, height: 72, borderRadius: 20, backgroundColor: PRIMARY, justifyContent: 'center', alignItems: 'center', marginBottom: 14, shadowColor: PRIMARY, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 10 },
-  logoTitle:  { fontSize: 28, fontWeight: '900', color: TEXT, letterSpacing: -0.8 },
-  logoSub:    { fontSize: 13, color: SUB, fontWeight: '600', marginTop: 4, letterSpacing: 1 },
-  card:       { backgroundColor: CARD, borderRadius: 20, padding: 24, borderWidth: 1, borderColor: BORDER },
-  cardTitle:  { fontSize: 20, fontWeight: '800', color: TEXT, marginBottom: 6 },
-  cardSub:    { fontSize: 13, color: SUB, marginBottom: 20, lineHeight: 19 },
-  errorBox:   { backgroundColor: '#450A0A', borderWidth: 1, borderColor: '#7F1D1D', borderRadius: 10, padding: 12, marginBottom: 16 },
-  errorTxt:   { color: '#FCA5A5', fontSize: 13, fontWeight: '500', lineHeight: 19 },
-  fieldWrap:  { marginBottom: 14 },
-  label:      { fontSize: 12, fontWeight: '700', color: SUB, marginBottom: 6, letterSpacing: 0.5 },
-  inputRow:   { flexDirection: 'row', alignItems: 'center', backgroundColor: BG, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: BORDER, height: 50 },
-  input:      { flex: 1, fontSize: 14, color: TEXT },
-  btn:        { backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 8, shadowColor: PRIMARY, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
-  btnTxt:     { color: '#fff', fontSize: 15, fontWeight: '800' },
-  applyLink:  { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
-  applyLinkTxt:{ fontSize: 14, color: SUB },
-  footer:     { textAlign: 'center', color: BORDER, fontSize: 11, marginTop: 16 },
+  container: { flex: 1, backgroundColor: BG },
+  inner: { flex: 1, justifyContent: 'center', padding: 24 },
+  logoWrap: { alignItems: 'center', marginBottom: 32 },
+  logoCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: PRIMARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  logoTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: TEXT,
+    letterSpacing: -0.8,
+  },
+  logoSub: {
+    fontSize: 13,
+    color: SUB,
+    fontWeight: '600',
+    marginTop: 4,
+    letterSpacing: 1,
+  },
+  card: {
+    backgroundColor: CARD,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+  cardTitle: { fontSize: 20, fontWeight: '800', color: TEXT, marginBottom: 6 },
+  cardSub: { fontSize: 13, color: SUB, marginBottom: 20, lineHeight: 19 },
+  errorBox: {
+    backgroundColor: '#450A0A',
+    borderWidth: 1,
+    borderColor: '#7F1D1D',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorTxt: {
+    color: '#FCA5A5',
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 19,
+  },
+  fieldWrap: { marginBottom: 14 },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: SUB,
+    marginBottom: 6,
+    letterSpacing: 0.5,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BG,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: BORDER,
+    height: 50,
+  },
+  input: { flex: 1, fontSize: 14, color: TEXT },
+  btn: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 8,
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  btnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  applyLink: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
+  applyLinkTxt: { fontSize: 14, color: SUB },
+  footer: { textAlign: 'center', color: BORDER, fontSize: 11, marginTop: 16 },
 });

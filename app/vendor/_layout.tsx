@@ -17,17 +17,17 @@ export default function VendorLayout() {
     const onApply = seg.includes('apply');
     const publicScreen = onLogin || onApply;
 
-    if (!profile) {
-      // Not signed in at all
-      if (onApply) {
-        // If they want to apply but aren't signed in, they need a normal customer account first
-        router.replace('/login' as any);
-      } else if (!onLogin) {
-        // Otherwise send to vendor login
-        router.replace('/vendor/login' as any);
-      }
-      return;
-    }
+    // if (!profile) {
+    //   // Not signed in at all
+    //   if (onApply) {
+    //     // If they want to apply but aren't signed in, they need a normal customer account first
+    //     router.replace('/vendor/login' as any);
+    //   } else if (!onLogin) {
+    //     // Otherwise send to vendor login
+    //     router.replace('/vendor/login' as any);
+    //   }
+    //   return;
+    // }
 
     // Signed in but not a vendor: allow apply screen, block everything else
     if (!isVendor && !publicScreen) {
