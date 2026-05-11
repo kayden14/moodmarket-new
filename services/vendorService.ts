@@ -94,7 +94,11 @@ export interface VendorApplication {
 
 export async function getVendorStats(vendorId: string): Promise<VendorStats> {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const monthStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+  ).toISOString();
 
   const [
     { count: totalProducts },
@@ -104,17 +108,42 @@ export async function getVendorStats(vendorId: string): Promise<VendorStats> {
     { count: lowStock },
     { count: unread },
   ] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', vendorId),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', vendorId).eq('is_active', true),
-    supabase.from('orders').select('total_price, status').eq('vendor_id', vendorId),
-    supabase.from('orders').select('total_price').eq('vendor_id', vendorId).gte('created_at', monthStart),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', vendorId).lt('stock_count', 5),
-    supabase.from('vendor_notifications').select('*', { count: 'exact', head: true }).eq('vendor_id', vendorId).eq('is_read', false),
+    supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId),
+    supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId)
+      .eq('is_active', true),
+    supabase
+      .from('orders')
+      .select('total_price, status')
+      .eq('vendor_id', vendorId),
+    supabase
+      .from('orders')
+      .select('total_price')
+      .eq('vendor_id', vendorId)
+      .gte('created_at', monthStart),
+    supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId)
+      .lt('stock_count', 5),
+    supabase
+      .from('vendor_notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId)
+      .eq('is_read', false),
   ]);
 
-  const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
-  const monthRevenue = monthOrders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
-  const pendingOrders = orders?.filter(o => o.status === 'pending').length ?? 0;
+  const totalRevenue =
+    orders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
+  const monthRevenue =
+    monthOrders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
+  const pendingOrders =
+    orders?.filter((o) => o.status === 'pending').length ?? 0;
 
   return {
     totalProducts: totalProducts ?? 0,
@@ -130,7 +159,9 @@ export async function getVendorStats(vendorId: string): Promise<VendorStats> {
 
 /* ─── Products ─────────────────────────────────────────────────────────── */
 
-export async function getVendorProducts(vendorId: string): Promise<VendorProduct[]> {
+export async function getVendorProducts(
+  vendorId: string,
+): Promise<VendorProduct[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -143,7 +174,7 @@ export async function getVendorProducts(vendorId: string): Promise<VendorProduct
 export async function upsertVendorProduct(
   vendorId: string,
   payload: Omit<VendorProduct, 'id' | 'vendor_id' | 'created_at'>,
-  productId?: string
+  productId?: string,
 ): Promise<void> {
   if (productId) {
     const { error } = await supabase
@@ -160,7 +191,10 @@ export async function upsertVendorProduct(
   }
 }
 
-export async function deleteVendorProduct(vendorId: string, productId: string): Promise<void> {
+export async function deleteVendorProduct(
+  vendorId: string,
+  productId: string,
+): Promise<void> {
   const { error } = await supabase
     .from('products')
     .delete()
@@ -169,7 +203,11 @@ export async function deleteVendorProduct(vendorId: string, productId: string): 
   if (error) throw error;
 }
 
-export async function toggleProductActive(vendorId: string, productId: string, isActive: boolean): Promise<void> {
+export async function toggleProductActive(
+  vendorId: string,
+  productId: string,
+  isActive: boolean,
+): Promise<void> {
   const { error } = await supabase
     .from('products')
     .update({ is_active: isActive })
@@ -178,7 +216,11 @@ export async function toggleProductActive(vendorId: string, productId: string, i
   if (error) throw error;
 }
 
-export async function updateStockCount(vendorId: string, productId: string, delta: number): Promise<void> {
+export async function updateStockCount(
+  vendorId: string,
+  productId: string,
+  delta: number,
+): Promise<void> {
   // Use RPC or a direct update — direct update with guard
   const { data: product } = await supabase
     .from('products')
@@ -198,7 +240,7 @@ export async function updateStockCount(vendorId: string, productId: string, delt
 
 export async function getVendorOrders(
   vendorId: string,
-  options?: { limit?: number; status?: string }
+  options?: { limit?: number; status?: string },
 ): Promise<VendorOrder[]> {
   let query = supabase
     .from('orders')
@@ -218,17 +260,47 @@ export async function getVendorOrders(
   return data ?? [];
 }
 
-export async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+export async function updateOrderStatus(
+  orderId: string,
+  status: string,
+): Promise<void> {
   const { error } = await supabase
     .from('orders')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', orderId);
   if (error) throw error;
+
+  // Trigger customer email notification (non-blocking)
+  if (['shipped', 'delivered', 'cancelled'].includes(status)) {
+    supabase
+      .from('orders')
+      .select('user_id, total_price, profiles!user_id(name, email)')
+      .eq('id', orderId)
+      .single()
+      .then(({ data }: any) => {
+        if (!data) return;
+        const email = data.profiles?.email;
+        const name = data.profiles?.name;
+        if (!email) return;
+        supabase.functions
+          .invoke('send-email-notification', {
+            body: {
+              type: 'order_status_update',
+              to: email,
+              payload: { orderId, status, name, total: data.total_price },
+            },
+          })
+          .catch(console.error);
+      })
+      .catch(console.error);
+  }
 }
 
 /* ─── Payouts ──────────────────────────────────────────────────────────── */
 
-export async function getVendorPayouts(vendorId: string): Promise<VendorPayout[]> {
+export async function getVendorPayouts(
+  vendorId: string,
+): Promise<VendorPayout[]> {
   const { data, error } = await supabase
     .from('vendor_payouts')
     .select('*')
@@ -265,7 +337,9 @@ export async function requestPayout(payload: {
 
 /* ─── Notifications ────────────────────────────────────────────────────── */
 
-export async function getVendorNotifications(vendorId: string): Promise<VendorNotification[]> {
+export async function getVendorNotifications(
+  vendorId: string,
+): Promise<VendorNotification[]> {
   const { data, error } = await supabase
     .from('vendor_notifications')
     .select('*')
@@ -275,7 +349,9 @@ export async function getVendorNotifications(vendorId: string): Promise<VendorNo
   return data ?? [];
 }
 
-export async function markNotificationRead(notificationId: string): Promise<void> {
+export async function markNotificationRead(
+  notificationId: string,
+): Promise<void> {
   const { error } = await supabase
     .from('vendor_notifications')
     .update({ is_read: true })
@@ -283,7 +359,9 @@ export async function markNotificationRead(notificationId: string): Promise<void
   if (error) throw error;
 }
 
-export async function markAllNotificationsRead(vendorId: string): Promise<void> {
+export async function markAllNotificationsRead(
+  vendorId: string,
+): Promise<void> {
   const { error } = await supabase
     .from('vendor_notifications')
     .update({ is_read: true })
@@ -294,7 +372,9 @@ export async function markAllNotificationsRead(vendorId: string): Promise<void> 
 
 /* ─── Applications ─────────────────────────────────────────────────────── */
 
-export async function getMyApplication(userId: string): Promise<VendorApplication | null> {
+export async function getMyApplication(
+  userId: string,
+): Promise<VendorApplication | null> {
   const { data } = await supabase
     .from('vendor_applications')
     .select('*')
@@ -307,20 +387,22 @@ export async function applyToBeVendor(payload: {
   userId: string;
   storeName: string;
   storeDescription?: string;
-  phone?: string;
+  email?: string;
 }): Promise<void> {
   const { error } = await supabase.from('vendor_applications').insert({
     user_id: payload.userId,
     store_name: payload.storeName,
     store_description: payload.storeDescription,
-    phone: payload.phone,
+    email: payload.email,
   });
   if (error) throw error;
 }
 
 /* ─── Admin: Approve / Reject application ─────────────────────────────── */
 
-export async function approveVendorApplication(application: VendorApplication): Promise<void> {
+export async function approveVendorApplication(
+  application: VendorApplication & { user_email?: string },
+): Promise<void> {
   // 1. Update the application status
   const { error: appError } = await supabase
     .from('vendor_applications')
@@ -347,19 +429,73 @@ export async function approveVendorApplication(application: VendorApplication): 
     type: 'approval',
     meta: { application_id: application.id },
   });
+
+  // 4. Trigger Edge Function to send email and reset password
+  if (application.user_email) {
+    const { error: funcError } = await supabase.functions.invoke(
+      'vendor-approval',
+      {
+        body: {
+          action: 'approve_vendor',
+          vendorId: application.user_id,
+          storeName: application.store_name,
+          vendorEmail: application.user_email,
+        },
+      },
+    );
+    if (funcError) {
+      console.error('Failed to trigger vendor approval email:', funcError);
+      // We do not throw here, so the approval doesn't roll back just because the email failed.
+    }
+  }
 }
 
-export async function rejectVendorApplication(applicationId: string, adminNote?: string): Promise<void> {
+export async function rejectVendorApplication(
+  applicationId: string,
+  adminNote?: string,
+): Promise<void> {
+  // 1. Fetch application + applicant details before updating
+  const { data: app } = await supabase
+    .from('vendor_applications')
+    .select('*, profiles!user_id(name, email)')
+    .eq('id', applicationId)
+    .single();
+
   const { error } = await supabase
     .from('vendor_applications')
-    .update({ status: 'rejected', admin_note: adminNote, updated_at: new Date().toISOString() })
+    .update({
+      status: 'rejected',
+      admin_note: adminNote,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', applicationId);
   if (error) throw error;
+
+  // 2. Email the applicant (non-blocking)
+  const email = (app as any)?.profiles?.email;
+  const name = (app as any)?.profiles?.name;
+  if (email) {
+    supabase.functions
+      .invoke('send-email-notification', {
+        body: {
+          type: 'vendor_rejected',
+          to: email,
+          payload: {
+            name,
+            storeName: (app as any)?.store_name,
+            adminNote,
+          },
+        },
+      })
+      .catch(console.error);
+  }
 }
 
 /* ─── Admin: Payout helpers ────────────────────────────────────────────── */
 
-export async function getAllVendorPayouts(status?: string): Promise<(VendorPayout & { vendor_name: string })[]> {
+export async function getAllVendorPayouts(
+  status?: string,
+): Promise<(VendorPayout & { vendor_name: string })[]> {
   let query = supabase
     .from('vendor_payouts')
     .select('*, profiles!vendor_id(name, store_name)')
@@ -376,18 +512,54 @@ export async function getAllVendorPayouts(status?: string): Promise<(VendorPayou
 export async function updatePayoutStatus(
   payoutId: string,
   status: 'pending' | 'processing' | 'paid' | 'failed',
-  fields?: { paystack_transfer_code?: string; paystack_reference?: string; admin_note?: string }
+  fields?: {
+    paystack_transfer_code?: string;
+    paystack_reference?: string;
+    admin_note?: string;
+  },
 ): Promise<void> {
   const { error } = await supabase
     .from('vendor_payouts')
     .update({ status, updated_at: new Date().toISOString(), ...fields })
     .eq('id', payoutId);
   if (error) throw error;
+
+  // Email the vendor when payout is confirmed paid (non-blocking)
+  if (status === 'paid') {
+    supabase
+      .from('vendor_payouts')
+      .select(
+        'amount, payment_method, account_number, vendor_id, profiles!vendor_id(name, email, store_name)',
+      )
+      .eq('id', payoutId)
+      .single()
+      .then(({ data }: any) => {
+        const email = data?.profiles?.email;
+        if (!email) return;
+        supabase.functions
+          .invoke('send-email-notification', {
+            body: {
+              type: 'payout_processed',
+              to: email,
+              payload: {
+                storeName: data.profiles?.store_name || data.profiles?.name,
+                amount: data.amount,
+                method: data.payment_method,
+                accountNumber: data.account_number,
+              },
+            },
+          })
+          .catch(console.error);
+      })
+      .catch(console.error);
+  }
 }
 
 /* ─── Admin: All vendor applications ──────────────────────────────────── */
 
-export async function getAllApplications(status?: string): Promise<(VendorApplication & { user_name: string; user_email: string })[]> {
+export async function getAllApplications(
+  status?: string,
+): Promise<(VendorApplication & { user_name: string; user_email: string })[]> {
   let query = supabase
     .from('vendor_applications')
     .select('*, profiles!user_id(name, email)')
@@ -414,7 +586,10 @@ export async function getAllVendors(): Promise<any[]> {
   return data ?? [];
 }
 
-export async function suspendAccount(userId: string, suspend: boolean): Promise<void> {
+export async function suspendAccount(
+  userId: string,
+  suspend: boolean,
+): Promise<void> {
   const { error } = await supabase
     .from('profiles')
     .update({ is_suspended: suspend })

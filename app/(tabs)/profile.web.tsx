@@ -314,7 +314,7 @@ type Tab = 'overview' | 'orders' | 'mood' | 'settings';
 
 export default function ProfileWeb() {
   const router = useRouter();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isVendor, isAdmin } = useAuth();
   const { theme, isDark, toggleDark } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -867,6 +867,53 @@ export default function ProfileWeb() {
                     <StatCard value={`GH₵${totalSpend.toFixed(0)}`} label="Total spent"  icon={<DollarSign size={15} />} theme={theme} isDark={isDark} />
                     <StatCard value={String(moodCount)}              label="Mood entries" icon={<WebEmoji style={{ fontSize: 15 }}>✨</WebEmoji>} theme={theme} isDark={isDark} />
                   </div>
+
+                  {/* ── Vendor Dashboard Entry ── */}
+                  {isVendor && (
+                    <div
+                      onClick={() => router.push('/vendor' as any)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        background: isDark ? '#2D1820' : '#FFF0F2',
+                        border: `1px solid ${isDark ? '#FF7A8A44' : '#FF7A8A55'}`,
+                        borderRadius: 18, padding: '16px 18px', marginBottom: 20,
+                        cursor: 'pointer', transition: 'opacity 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.85'}
+                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
+                    >
+                      <div style={{ width: 44, height: 44, borderRadius: 13, background: '#FF7A8A22', border: '1px solid #FF7A8A44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>Vendor Dashboard</div>
+                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Manage your products, orders & earnings</div>
+                      </div>
+                      <ArrowRight size={16} color={pri} />
+                    </div>
+                  )}
+
+                  {/* ── Become a Vendor (for customers only) ── */}
+                  {!isVendor && !isAdmin && (
+                    <div
+                      id="vendor-apply-banner"
+                      onClick={() => router.push('/vendor/apply' as any)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        background: isDark ? '#1E293B' : '#F8FAFC',
+                        border: `1px solid ${bord}`,
+                        borderRadius: 18, padding: '16px 18px', marginBottom: 20,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = pri; (e.currentTarget as HTMLDivElement).style.background = isDark ? '#2D1820' : '#FFF0F2'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = bord; (e.currentTarget as HTMLDivElement).style.background = isDark ? '#1E293B' : '#F8FAFC'; }}
+                    >
+                      <div style={{ width: 44, height: 44, borderRadius: 13, background: isDark ? '#334155' : '#F1F5F9', border: `1px solid ${bord}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>Sell on MoodMarket</div>
+                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Apply to become a vendor and reach more customers</div>
+                      </div>
+                      <ArrowRight size={16} color={inact} />
+                    </div>
+                  )}
 
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>

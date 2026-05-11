@@ -1,18 +1,16 @@
 /**
  * app/vendor/notifications.tsx
- * Vendor notification centre — real-time, mark read, type icons.
+ * Vendor notification centre — driven by useRealtimeNotifications.
+ * Surfaces browser/push notifications automatically on INSERT.
  */
-import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, Platform, StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVendorNotifications, markNotificationRead, markAllNotificationsRead } from '@/services/vendorService';
-import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { VendorNotification } from '@/services/vendorService';
-import { useFocusEffect } from 'expo-router';
 
 const P = '#FF7A8A';
 const BG = '#0F172A', CARD = '#1E293B', BORDER = '#334155', TEXT = '#F1F5F9', SUB = '#94A3B8';
@@ -39,38 +37,9 @@ function timeAgo(date: string) {
 export default function VendorNotifications() {
   const { profile } = useAuth();
   const router = useRouter();
-  const [notifications, setNotifications] = useState<VendorNotification[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    if (!profile?.id) return;
-    const data = await getVendorNotifications(profile.id);
-    setNotifications(data);
-    setLoading(false);
-  }, [profile?.id]);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  useRealtimeChannel({
-    channelName: `vendor-notifs-${profile?.id}`,
-    table: 'vendor_notifications',
-    filter: profile?.id ? `vendor_id=eq.${profile.id}` : undefined,
-    onEvent: load,
-    enabled: !!profile?.id,
-  });
-
-  const markRead = async (id: string) => {
-    await markNotificationRead(id);
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-  };
-
-  const markAllRead = async () => {
-    if (!profile?.id) return;
-    await markAllNotificationsRead(profile.id);
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-  };
-
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const { notifications, unreadCount, loading, markRead, markAllRead } =
+    useRealtimeNotifications({ vendorId: profile?.id });
 
   const renderItem = ({ item }: { item: VendorNotification }) => (
     <TouchableOpacity

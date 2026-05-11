@@ -1,8 +1,3 @@
-// app/vendor/_layout.tsx
-// Guard: unauthenticated → /vendor/login
-//        authenticated but not vendor → /vendor/apply
-//        approved vendor → allow through
-
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +5,7 @@ import { View, ActivityIndicator } from 'react-native';
 
 export default function VendorLayout() {
   const { profile, loading, isVendor } = useAuth();
-  const router   = useRouter();
+  const router = useRouter();
   const segments = useSegments();
 
   useEffect(() => {
@@ -23,8 +18,14 @@ export default function VendorLayout() {
     const publicScreen = onLogin || onApply;
 
     if (!profile) {
-      // Not signed in at all — send to vendor login
-      if (!onLogin) router.replace('/vendor/login' as any);
+      // Not signed in at all
+      if (onApply) {
+        // If they want to apply but aren't signed in, they need a normal customer account first
+        router.replace('/login' as any);
+      } else if (!onLogin) {
+        // Otherwise send to vendor login
+        router.replace('/vendor/login' as any);
+      }
       return;
     }
 
@@ -41,7 +42,14 @@ export default function VendorLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#0B0F1A', justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#0B0F1A',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <ActivityIndicator color="#FF7A8A" size="large" />
       </View>
     );
@@ -49,12 +57,12 @@ export default function VendorLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="login"         />
-      <Stack.Screen name="index"         />
-      <Stack.Screen name="apply"         />
-      <Stack.Screen name="products"      />
-      <Stack.Screen name="orders"        />
-      <Stack.Screen name="earnings"      />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="apply" />
+      <Stack.Screen name="products" />
+      <Stack.Screen name="orders" />
+      <Stack.Screen name="earnings" />
       <Stack.Screen name="notifications" />
     </Stack>
   );

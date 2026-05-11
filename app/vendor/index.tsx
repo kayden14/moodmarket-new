@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVendorStats, getVendorOrders } from '@/services/vendorService';
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { VendorStats, VendorOrder } from '@/services/vendorService';
 
 const PRIMARY = '#FF7A8A';
@@ -75,6 +76,7 @@ function VendorDashboardWeb() {
   const { profile, signOut } = useAuth();
   const router = useRouter();
   const { loading, stats, recentOrders, reload } = useVendorDashboard(profile?.id);
+  const { unreadCount } = useRealtimeNotifications({ vendorId: profile?.id });
   const [navOpen, setNavOpen] = useState(true);
 
   const bg     = '#0B0F1A';
@@ -91,9 +93,13 @@ function VendorDashboardWeb() {
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
     @keyframes vd-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes vd-spin { to { transform: rotate(360deg); } }
+    @keyframes vd-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,122,138,.6); } 60% { box-shadow: 0 0 0 6px rgba(255,122,138,0); } }
     .vd-nav { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; border: none; background: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; color: #64748B; transition: all .15s; width: 100%; }
     .vd-nav:hover { background: rgba(255,255,255,.06); color: #94A3B8; }
     .vd-nav.active { background: ${PRIMARY}18; color: ${PRIMARY}; font-weight: 800; }
+    .vd-notif-btn { position: relative; background: rgba(255,255,255,.05); border: 1px solid #1F2D42; border-radius: 10px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all .15s; flex-shrink: 0; }
+    .vd-notif-btn:hover { background: ${PRIMARY}18; border-color: ${PRIMARY}44; }
+    .vd-notif-badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; background: ${PRIMARY}; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; padding: 0 4px; animation: vd-pulse 2s infinite; border: 2px solid #111827; }
     .vd-card { border-radius: 16px; padding: 20px; border: 1px solid ${border}; animation: vd-in .3s ease both; transition: transform .2s; }
     .vd-card:hover { transform: translateY(-2px); }
     .vd-tr { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; padding: 12px 16px; border-bottom: 1px solid ${border}; align-items: center; cursor: pointer; transition: background .1s; }
@@ -103,11 +109,11 @@ function VendorDashboardWeb() {
   `;
 
   const NAV = [
-    { icon: '🏠', label: 'Dashboard', path: '/vendor',              active: true },
-    { icon: '📦', label: 'Products',  path: '/vendor/products',     active: false },
-    { icon: '🛒', label: 'Orders',    path: '/vendor/orders',       active: false },
-    { icon: '💸', label: 'Earnings',  path: '/vendor/earnings',     active: false },
-    { icon: '🔔', label: 'Alerts',    path: '/vendor/notifications', active: false },
+    { icon: '🏠', label: 'Dashboard', path: '/vendor',               active: true,  badge: 0 },
+    { icon: '📦', label: 'Products',  path: '/vendor/products',      active: false, badge: 0 },
+    { icon: '🛒', label: 'Orders',    path: '/vendor/orders',        active: false, badge: 0 },
+    { icon: '💸', label: 'Earnings',  path: '/vendor/earnings',      active: false, badge: 0 },
+    { icon: '🔔', label: 'Alerts',    path: '/vendor/notifications', active: false, badge: unreadCount },
   ];
 
   const STATS = stats ? [
@@ -137,9 +143,24 @@ function VendorDashboardWeb() {
           </div>
           <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {NAV.map(item => (
-              <button key={item.path} className={`vd-nav${item.active ? ' active' : ''}`} onClick={() => router.push(item.path as any)} title={!navOpen ? item.label : undefined}>
+              <button key={item.path} className={`vd-nav${item.active ? ' active' : ''}`} onClick={() => router.push(item.path as any)} title={!navOpen ? item.label : undefined}
+                style={{ position: 'relative' }}>
                 <span style={{ fontSize: 17, flexShrink: 0 }}>{item.icon}</span>
                 {navOpen && item.label}
+                {/* Sidebar unread badge */}
+                {item.badge > 0 && (
+                  <span style={{
+                    marginLeft: navOpen ? 'auto' : undefined,
+                    position: navOpen ? 'relative' : 'absolute',
+                    top: navOpen ? undefined : 4,
+                    right: navOpen ? undefined : 4,
+                    minWidth: 18, height: 18,
+                    background: PRIMARY, borderRadius: 9,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 800, color: '#fff', padding: '0 4px',
+                    lineHeight: 1,
+                  }}>{item.badge > 99 ? '99+' : item.badge}</span>
+                )}
               </button>
             ))}
             <div style={{ flex: 1 }} />
@@ -165,6 +186,18 @@ function VendorDashboardWeb() {
                 ⚠️ {stats.lowStockCount} low stock
               </div>
             ) : null}
+            {/* Notification Bell */}
+            <button
+              id="vendor-notif-bell"
+              className="vd-notif-btn"
+              onClick={() => router.push('/vendor/notifications' as any)}
+              title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'Notifications'}
+            >
+              🔔
+              {unreadCount > 0 && (
+                <span className="vd-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
+            </button>
             <button onClick={reload} style={{ background: 'none', border: `1px solid ${border}`, borderRadius: 9, width: 32, height: 32, cursor: 'pointer', color: PRIMARY, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔄</button>
           </header>
 
