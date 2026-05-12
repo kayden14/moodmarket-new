@@ -8,7 +8,7 @@
  * Docs: https://developers.facebook.com/docs/development/create-an-app/app-dashboard/data-deletion-callback
  */
 
-import { ExpoRequest, ExpoResponse } from 'expo-router/server';
+import { ExpoRequest } from 'expo-router/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -66,26 +66,26 @@ async function parseSignedRequest(
   }
 }
 
-export async function POST(request: ExpoRequest): Promise<ExpoResponse> {
+export async function POST(request: ExpoRequest): Promise<Response> {
   try {
     const body = await request.text();
     const params = new URLSearchParams(body);
     const signedRequest = params.get('signed_request');
 
     if (!signedRequest) {
-      return ExpoResponse.json({ error: 'Missing signed_request' }, { status: 400 });
+      return Response.json({ error: 'Missing signed_request' }, { status: 400 });
     }
 
     const appSecret = process.env.FACEBOOK_APP_SECRET;
     if (!appSecret) {
       console.error('[DataDeletion] FACEBOOK_APP_SECRET not set');
-      return ExpoResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+      return Response.json({ error: 'Server misconfiguration' }, { status: 500 });
     }
 
     // Verify and decode the signed request
     const data = await parseSignedRequest(signedRequest, appSecret);
     if (!data) {
-      return ExpoResponse.json({ error: 'Invalid signed_request' }, { status: 400 });
+      return Response.json({ error: 'Invalid signed_request' }, { status: 400 });
     }
 
     const facebookUserId: string = data.user_id;
@@ -110,14 +110,14 @@ export async function POST(request: ExpoRequest): Promise<ExpoResponse> {
     console.log(`[DataDeletion] Processed deletion for Facebook user: ${facebookUserId}`);
 
     // Facebook expects this exact JSON shape
-    return ExpoResponse.json({
+    return Response.json({
       url: `${process.env.EXPO_PUBLIC_APP_URL}/data-deletion-status?id=${confirmationCode}`,
       confirmation_code: confirmationCode,
     });
 
   } catch (err) {
     console.error('[DataDeletion] Unexpected error:', err);
-    return ExpoResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -125,7 +125,7 @@ export async function POST(request: ExpoRequest): Promise<ExpoResponse> {
  * GET — renders a human-readable page for users who visit the URL directly.
  * Also satisfies Facebook's "Data Deletion Instructions URL" field.
  */
-export async function GET(_request: ExpoRequest): Promise<ExpoResponse> {
+export async function GET(_request: ExpoRequest): Promise<Response> {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,7 +150,7 @@ export async function GET(_request: ExpoRequest): Promise<ExpoResponse> {
 </body>
 </html>`;
 
-  return new ExpoResponse(html, {
+  return new Response(html, {
     status: 200,
     headers: { 'Content-Type': 'text/html' },
   });
