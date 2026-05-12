@@ -451,7 +451,7 @@ export default function HomeScreenWeb() {
               For {selectedMood.label} <WebEmoji>{selectedMood.emoji}</WebEmoji>
             </h2>
             <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
-              {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' /></>}
+              {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} /></>}
             </button>
           </div>
           <div className="mm-grid">
