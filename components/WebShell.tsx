@@ -79,6 +79,7 @@ interface WebShellProps {
   children: React.ReactNode;
   activeNav?: string;
   title?: string;
+  subtitle?: string;
   showSidebar?: boolean;
 }
 
