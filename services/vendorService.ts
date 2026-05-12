@@ -272,27 +272,27 @@ export async function updateOrderStatus(
 
   // Trigger customer email notification (non-blocking)
   if (['shipped', 'delivered', 'cancelled'].includes(status)) {
-    supabase
-      .from('orders')
-      .select('user_id, total_price, profiles!user_id(name, email)')
-      .eq('id', orderId)
-      .single()
-      .then(({ data }: any) => {
-        if (!data) return;
-        const email = data.profiles?.email;
-        const name = data.profiles?.name;
-        if (!email) return;
-        supabase.functions
-          .invoke('send-email-notification', {
-            body: {
-              type: 'order_status_update',
-              to: email,
-              payload: { orderId, status, name, total: data.total_price },
-            },
-          })
-          .catch(console.error);
-      })
-      .catch(console.error);
+    void Promise.resolve(
+      supabase
+        .from('orders')
+        .select('user_id, total_price, profiles!user_id(name, email)')
+        .eq('id', orderId)
+        .single()
+    ).then(({ data }: any) => {
+      if (!data) return;
+      const email = data.profiles?.email;
+      const name = data.profiles?.name;
+      if (!email) return;
+      supabase.functions
+        .invoke('send-email-notification', {
+          body: {
+            type: 'order_status_update',
+            to: email,
+            payload: { orderId, status, name, total: data.total_price },
+          },
+        })
+        .catch(console.error);
+    }).catch(console.error);
   }
 }
 
@@ -526,32 +526,32 @@ export async function updatePayoutStatus(
 
   // Email the vendor when payout is confirmed paid (non-blocking)
   if (status === 'paid') {
-    supabase
-      .from('vendor_payouts')
-      .select(
-        'amount, payment_method, account_number, vendor_id, profiles!vendor_id(name, email, store_name)',
-      )
-      .eq('id', payoutId)
-      .single()
-      .then(({ data }: any) => {
-        const email = data?.profiles?.email;
-        if (!email) return;
-        supabase.functions
-          .invoke('send-email-notification', {
-            body: {
-              type: 'payout_processed',
-              to: email,
-              payload: {
-                storeName: data.profiles?.store_name || data.profiles?.name,
-                amount: data.amount,
-                method: data.payment_method,
-                accountNumber: data.account_number,
-              },
+    void Promise.resolve(
+      supabase
+        .from('vendor_payouts')
+        .select(
+          'amount, payment_method, account_number, vendor_id, profiles!vendor_id(name, email, store_name)',
+        )
+        .eq('id', payoutId)
+        .single()
+    ).then(({ data }: any) => {
+      const email = data?.profiles?.email;
+      if (!email) return;
+      supabase.functions
+        .invoke('send-email-notification', {
+          body: {
+            type: 'payout_processed',
+            to: email,
+            payload: {
+              storeName: data.profiles?.store_name || data.profiles?.name,
+              amount: data.amount,
+              method: data.payment_method,
+              accountNumber: data.account_number,
             },
-          })
-          .catch(console.error);
-      })
-      .catch(console.error);
+          },
+        })
+        .catch(console.error);
+    }).catch(console.error);
   }
 }
 
