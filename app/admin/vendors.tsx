@@ -33,6 +33,13 @@ export default function AdminVendorsScreen() {
   const inputBg = isDark ? '#0F172A' : '#F8FAFC';
 
   const handleApprove = async (app: any) => {
+    // BUG FIX: Ensure the application status is still pending before approving
+    if (app.status !== 'pending') {
+      Alert.alert('Error', 'This application has already been processed.');
+      fetchData();
+      return;
+    }
+
     setProcessing(app.id);
     try {
       await approveVendorApplication(app);
@@ -137,7 +144,7 @@ export default function AdminVendorsScreen() {
         <TouchableOpacity 
           style={[s.actionBtn, { borderColor: border, backgroundColor: '#05966915' }]}
           onPress={() => handleApprove(item)}
-          disabled={!!processing}
+          disabled={!!processing || item.status !== 'pending'}
         >
           <CheckCircle size={16} color="#10B981" />
           <Text style={{ color: '#10B981', fontWeight: '700', fontSize: 13 }}>Approve</Text>
@@ -145,7 +152,7 @@ export default function AdminVendorsScreen() {
         <TouchableOpacity 
           style={[s.actionBtn, { borderColor: border, backgroundColor: '#7F1D1D15' }]}
           onPress={() => openRejectionModal(item.id)}
-          disabled={!!processing}
+          disabled={!!processing || item.status !== 'pending'}
         >
           <XCircle size={16} color="#F87171" />
           <Text style={{ color: '#F87171', fontWeight: '700', fontSize: 13 }}>Reject</Text>
