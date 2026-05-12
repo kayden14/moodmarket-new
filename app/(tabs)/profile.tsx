@@ -192,22 +192,6 @@ export default function ProfileScreen() {
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
 
-      {/* ── Header ── */}
-      <View style={[s.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
-        <View>
-          <Text style={[s.headerEye, { color: primary }]}>ACCOUNT</Text>
-          <Text style={[s.headerTitle, { color: theme.textPrimary }]}>My Profile</Text>
-        </View>
-        <TouchableOpacity
-          style={[s.settingsBtn, { backgroundColor: isDark ? '#2D1820' : '#FFF0F2', borderColor: isDark ? '#3D2030' : '#FFD6DE' }]}
-          onPress={() => router.push('/edit-profile')}
-          activeOpacity={0.75}
-        >
-          <Settings size={18} color={primary} strokeWidth={2} />
-          <Text style={[s.settingsBtnTxt, { color: primary }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
         {/* ── Hero ── */}
