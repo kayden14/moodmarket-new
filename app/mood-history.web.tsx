@@ -34,17 +34,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/services/supabase';
 import { MOOD_META, MOOD_EMOJI } from '@/constants/moods';
 import { MoodEntry } from '@/types/mood';
-  '❤️': '❤️',
-  '😰': '😰',
-  '😑': '😑',
-  '😤': '😤',
-  '🥰': '🥰',
-  '😴': '😴',
-  '🤩': '🤩',
-  '✨': '✨',
-  '😐': '😐',
-  '😠': '😠',
-};
 
 function getMoodMeta(moodKey: string, isDark = false) {
   if (!moodKey) {

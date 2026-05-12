@@ -40,7 +40,7 @@ export default function DashboardShell({
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const { profile, signOut } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleDark } = useTheme();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(width >= 1024);
   const isDesktop = width >= 1024;
@@ -110,7 +110,7 @@ export default function DashboardShell({
       {/* Footer */}
       <View style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 20, gap: 10 }}>
         <TouchableOpacity 
-          onPress={toggleTheme}
+          onPress={toggleDark}
           style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 }}
         >
           {isDark ? <Sun size={18} color={subtext} /> : <Moon size={18} color={subtext} />}

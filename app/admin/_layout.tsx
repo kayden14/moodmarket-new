@@ -11,7 +11,7 @@ const ADMIN_NAV = [
 
 export default function AdminLayout() {
   const segments = useSegments();
-  const isLoginPage = segments.includes('login');
+  const isLoginPage = (segments as string[]).includes('login');
 
   if (isLoginPage) {
     return (
