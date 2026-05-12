@@ -358,6 +358,14 @@ Push your branch and open a PR against `main`. Include:
 
 ---
 
+## Recent Updates
+
+- **Admin panel** — Vendor application approval now uses upsert to prevent duplicate-key errors on re-approvals
+- **Dark / Light mode** — Theme toggle button added to the dashboard header bar (always visible on all screen sizes)
+- **Vendor apply** — Back button now correctly navigates to the consumer store instead of the vendor login page
+
+---
+
 ## License
 
 MIT — see [LICENSE](./LICENSE) for details.

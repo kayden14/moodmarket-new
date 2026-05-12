@@ -263,26 +263,6 @@ export default function CartScreen() {
         backgroundColor={theme.background}
       />
 
-      {/* ── Header ── */}
-      <View style={[s.header, {
-        backgroundColor:   theme.background,
-        borderBottomColor: theme.border,
-      }]}>
-        <View style={s.headerTop}>
-          <View style={s.headerLeft}>
-            <Text style={[s.headerEyebrow, { color: theme.primary }]}>YOUR ORDER</Text>
-            <Text style={[s.headerTitle,   { color: theme.textPrimary }]}>My Cart</Text>
-          </View>
-          <View style={[s.cartBadge, {
-            backgroundColor: theme.isDark ? '#2D1820' : '#FFF0F2',
-            borderColor:     theme.isDark ? '#3D2030' : '#FFD6DE',
-          }]}>
-            <ShoppingCart size={16} color={theme.primary} strokeWidth={2.5} />
-            <Text style={[s.cartBadgeTxt, { color: theme.textPrimary }]}>{cartCount}</Text>
-          </View>
-        </View>
-      </View>
-
       <FlatList
         data={cartItems}
         keyExtractor={i => i.id}

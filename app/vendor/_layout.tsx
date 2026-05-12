@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
 import DashboardShell from '@/components/DashboardShell';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const VENDOR_NAV = [
   { icon: '🏠', label: 'Dashboard',     path: '/vendor' },
@@ -52,6 +53,15 @@ export default function VendorLayout() {
   const seg = segments as string[];
   const isPublicScreen = seg.includes('login') || seg.includes('apply');
 
+  const currentSegment = seg[seg.length - 1];
+  const titleMap: Record<string, string> = {
+    'vendor': 'Store Dashboard',
+    'products': 'My Products',
+    'orders': 'Orders',
+    'earnings': 'Earnings',
+    'notifications': 'Notifications',
+  };
+
   if (isPublicScreen) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
@@ -62,19 +72,22 @@ export default function VendorLayout() {
   }
 
   return (
-    <DashboardShell
-      portalName="Vendor"
-      title="Vendor Portal"
-      navItems={VENDOR_NAV}
-      primaryColor="#FF7A8A"
-    >
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="products" />
-        <Stack.Screen name="orders" />
-        <Stack.Screen name="earnings" />
-        <Stack.Screen name="notifications" />
-      </Stack>
-    </DashboardShell>
+    <ThemeProvider>
+      <DashboardShell
+        portalName="Vendor"
+        title={titleMap[currentSegment] || 'Vendor Portal'}
+        subtitle="🏪 Store Management"
+        navItems={VENDOR_NAV}
+        primaryColor="#FF7A8A"
+      >
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="products" />
+          <Stack.Screen name="orders" />
+          <Stack.Screen name="earnings" />
+          <Stack.Screen name="notifications" />
+        </Stack>
+      </DashboardShell>
+    </ThemeProvider>
   );
 }
