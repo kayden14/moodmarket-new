@@ -310,21 +310,28 @@ export default function HomeScreenWeb() {
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
 
   const fetchProducts = useCallback(async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setAllProducts(data);
-      setFilteredProducts(data);
-      const [recs, trend] = await Promise.all([
-        getRecommendations(user?.id, mood, data, 50),
-        getTrending(data, 12),
-      ]);
-      setRecommended(recs);
-      setTrending(trend);
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      if (error) console.warn('[HomeScreenWeb] products fetch error:', error.message);
+      if (data && data.length > 0) {
+        setAllProducts(data);
+        setFilteredProducts(data);
+        const [recs, trend] = await Promise.all([
+          getRecommendations(user?.id, mood, data, 50),
+          getTrending(data, 12),
+        ]);
+        setRecommended(recs);
+        setTrending(trend);
+      }
+    } catch (err: any) {
+      console.warn('[HomeScreenWeb] fetchProducts threw:', err?.message ?? err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [user?.id, mood]);
 
-  useEffect(() => { fetchProducts(); }, []);
+  // Re-run when auth loads in case RLS requires an authenticated session
+  useEffect(() => { fetchProducts(); }, [user?.id]);
 
   useEffect(() => {
     if (allProducts.length === 0) return;
