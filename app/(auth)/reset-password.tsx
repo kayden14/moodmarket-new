@@ -9,43 +9,40 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { AuthLayoutWeb } from '@/components/AuthLayoutWeb';
-import * as Linking from 'expo-linking';
-import EmojiText from '@/components/EmojiText';
 
 // ── Web Reset Password ──────────────────────────────────────────────────────
 
 function ResetPasswordWeb() {
   const router = useRouter();
+  const { code, error_description } = useLocalSearchParams<{ code: string, error_description: string }>();
 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(error_description || '');
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const init = async () => {
+      if (error_description) return;
+      if (!code) {
+        setError('No reset code provided.');
+        return;
+      }
       try {
-        const url = await Linking.getInitialURL();
-        if (url) {
-          await supabase.auth.exchangeCodeForSession(url);
-        }
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setReady(true);
-        } else {
-          setError('Invalid or expired link. Please request a new password reset email.');
-        }
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+        setReady(true);
       } catch (err) {
-        console.log('Reset init error:', err);
-        setError('Something went wrong. Please request a new reset link.');
+        console.log('Reset exchange error:', err);
+        setError('Invalid or expired reset link.');
       }
     };
     init();
-  }, []);
+  }, [code, error_description]);
 
   const handleUpdate = async () => {
     if (!password.trim()) {
@@ -55,15 +52,10 @@ function ResetPasswordWeb() {
     setLoading(true);
     setError('');
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        throw new Error('Session expired. Please request a new reset link.');
-      }
       const { error } = await supabase.auth.updateUser({ password: password.trim() });
       if (error) throw error;
-      await supabase.auth.signOut();
       setSuccess(true);
-      setTimeout(() => router.replace('/login'), 2000);
+      setTimeout(() => router.replace('/(auth)/login'), 2000);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -93,7 +85,7 @@ function ResetPasswordWeb() {
         subheading="Something went wrong."
         error={error}
       >
-        <button className="auth-cta" onClick={() => router.replace('/login')}>
+        <button className="auth-cta" onClick={() => router.replace('/(auth)/login')}>
           Back to Login
         </button>
       </AuthLayoutWeb>
@@ -150,6 +142,7 @@ function ResetPasswordWeb() {
 
 function ResetPasswordMobile() {
   const router = useRouter();
+  const { code, error_description } = useLocalSearchParams<{ code: string, error_description: string }>();
 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -157,28 +150,24 @@ function ResetPasswordMobile() {
 
   useEffect(() => {
     const init = async () => {
+      if (error_description) {
+        Alert.alert('Error', error_description);
+        router.replace('/(auth)/login');
+        return;
+      }
+      if (!code) return;
       try {
-        const url = await Linking.getInitialURL();
-        if (url) {
-          await supabase.auth.exchangeCodeForSession(url);
-        }
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setReady(true);
-        } else {
-          Alert.alert(
-            'Invalid or expired link',
-            'Please request a new password reset email.'
-          );
-          router.replace('/login');
-        }
-      } catch (err) {
-        console.log('Reset init error:', err);
-        setReady(false);
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+        setReady(true);
+      } catch (err: any) {
+        console.log('Reset exchange error:', err);
+        Alert.alert('Invalid link', 'Please request a new password reset email.');
+        router.replace('/(auth)/login');
       }
     };
     init();
-  }, []);
+  }, [code, error_description]);
 
   const handleUpdate = async () => {
     if (!password.trim()) {
@@ -187,15 +176,10 @@ function ResetPasswordMobile() {
     }
     setLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        throw new Error('Session expired. Please request a new reset link.');
-      }
       const { error } = await supabase.auth.updateUser({ password: password.trim() });
       if (error) throw error;
-      await supabase.auth.signOut();
       Alert.alert('Success', 'Password updated successfully');
-      router.replace('/login');
+      router.replace('/(auth)/login');
     } catch (err: any) {
       Alert.alert('Update failed', err.message || 'Something went wrong');
     } finally {

@@ -35,9 +35,9 @@ function AdminLoginWeb() {
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (authError) throw authError;
-      const { data: profile, error: profileError } = await supabase.from('profiles').select('is_admin').eq('id', authData.user.id).single();
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single();
       if (profileError) throw profileError;
-      if (!profile?.is_admin) { await supabase.auth.signOut(); setError('Access denied. You do not have admin privileges.'); return; }
+      if (profile?.role !== 'admin') { await supabase.auth.signOut(); setError('Access denied. You do not have admin privileges.'); return; }
       router.replace('/admin' as any);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
@@ -224,9 +224,9 @@ function AdminLoginMobile() {
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (authError) throw authError;
-      const { data: profile, error: profileError } = await supabase.from('profiles').select('is_admin').eq('id', authData.user.id).single();
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single();
       if (profileError) throw profileError;
-      if (!profile?.is_admin) { await supabase.auth.signOut(); setError('Access denied. You do not have admin privileges.'); return; }
+      if (profile?.role !== 'admin') { await supabase.auth.signOut(); setError('Access denied. You do not have admin privileges.'); return; }
       router.replace('/admin' as any);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');

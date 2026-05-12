@@ -70,11 +70,13 @@ export default function AdminUsersScreen() {
 
   const handleToggleAdmin = async (user: AdminProfile) => {
     setActioning(true);
+    const newIsAdmin = !user.is_admin;
+    const newRole = newIsAdmin ? 'admin' : (user.role === 'admin' ? 'customer' : user.role);
     try {
-      const { error } = await supabase.from('profiles').update({ is_admin: !user.is_admin }).eq('id', user.id);
+      const { error } = await supabase.from('profiles').update({ is_admin: newIsAdmin, role: newRole }).eq('id', user.id);
       if (error) throw error;
-      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_admin: !u.is_admin } : u));
-      if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_admin: !prev.is_admin } : null);
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_admin: newIsAdmin, role: newRole as any } : u));
+      if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_admin: newIsAdmin, role: newRole as any } : null);
     } catch (err: any) { Alert.alert('Error', err.message); }
     finally { setActioning(false); setConfirmAction(null); }
   };
