@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import {
   View,
   Text,
@@ -22,7 +22,9 @@ import { House, ShoppingBag, UserCircle } from 'lucide-react-native';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationService } from '@/services/notifications';
+import * as Notifications from 'expo-notifications';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+import MobileHeader from '@/components/MobileHeader';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -67,9 +69,8 @@ function TabItem({
     }).start();
   }, [focused]);
 
-  // Active pill tint derived from current mood primary colour
-  const pillActiveBg  = theme.primary + '12'; // 7% opacity
-  const pillActiveBorder = theme.primary + '25'; // 15% opacity
+  const pillActiveBg     = theme.primary + '12';
+  const pillActiveBorder = theme.primary + '25';
 
   return (
     <TouchableOpacity style={t.touch} onPress={onPress} activeOpacity={0.65}>
@@ -101,12 +102,12 @@ function TabItem({
 }
 
 const t = StyleSheet.create({
-  touch:   { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pill:    { flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 18, paddingVertical: 7, borderRadius: 16, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'transparent' },
+  touch:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  pill:     { flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 18, paddingVertical: 7, borderRadius: 16, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'transparent' },
   iconWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  badge:   { position: 'absolute', top: -4, right: -9, minWidth: 15, height: 15, borderRadius: 8, borderWidth: 1.5, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
+  badge:    { position: 'absolute', top: -4, right: -9, minWidth: 15, height: 15, borderRadius: 8, borderWidth: 1.5, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
   badgeTxt: { fontSize: 7.5, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.1 },
-  label:   { fontSize: 10, letterSpacing: 0.1 },
+  label:    { fontSize: 10, letterSpacing: 0.1 },
 });
 
 // ─── Tab Bar ──────────────────────────────────────────────────────────────────
@@ -155,13 +156,6 @@ const b = StyleSheet.create({
   safeAreaFill: {},
 });
 
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
-import MobileHeader from '@/components/MobileHeader';
-
-// ─── Layout constants ─────────────────────────────────────────────────────────
-
-const BAR_HEIGHT = 60;
-...
 // ─── Inner layout (needs ThemeProvider already mounted) ───────────────────────
 
 function InnerTabLayout() {
@@ -174,7 +168,24 @@ function InnerTabLayout() {
   const responseListener = useRef<any>(null);
 
   useEffect(() => {
-...
+    if (!user?.id) return;
+
+    notifListener.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log('[Layout] Notification received:', notification);
+      },
+    );
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('[Layout] Notification response:', response);
+      },
+    );
+
+    return () => {
+      notifListener.current?.remove();
+      responseListener.current?.remove();
+    };
   }, [user?.id]);
 
   const currentSegment = segments[segments.length - 1] || 'index';
@@ -219,8 +230,12 @@ function InnerTabLayout() {
   );
 }
 
-// ─── Default export — wraps everything in ThemeProvider ──────────────────────
+// ─── Default export ───────────────────────────────────────────────────────────
 
 export default function TabLayout() {
-  return <InnerTabLayout />;
+  return (
+    <ThemeProvider>
+      <InnerTabLayout />
+    </ThemeProvider>
+  );
 }
