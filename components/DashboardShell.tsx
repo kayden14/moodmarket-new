@@ -52,7 +52,7 @@ export default function DashboardShell({
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace('/(auth)/login');
+    router.replace('/vendor/login');
   };
 
   const SidebarContent = () => (
