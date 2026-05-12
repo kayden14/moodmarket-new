@@ -256,7 +256,7 @@ function MoodHistoryScreenWeb() {
   const CSS = `
     @import url('https://fonts.googleapis.com/css2?family=Lora:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sora', sans-serif; background: ${bg}; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: ${bg}; }
     @keyframes fade-up  { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
     @keyframes spin     { to   { transform: rotate(360deg); } }
     @keyframes bar-grow { from { width: 0; } }

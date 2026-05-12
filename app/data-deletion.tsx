@@ -45,7 +45,7 @@ export default function DataDeletionPage() {
     const CSS = `
       @import url('https://fonts.googleapis.com/css2?family=Lora:wght@700;900&family=Sora:wght@400;500;600;700;800&display=swap');
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Sora', sans-serif; background: ${bg}; color: ${tp}; }
+      body { font-family: 'Plus Jakarta Sans', sans-serif; background: ${bg}; color: ${tp}; }
       a { color: ${pri}; }
     `;
 
@@ -53,20 +53,20 @@ export default function DataDeletionPage() {
       <>
         {/* @ts-ignore */}
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Sora", sans-serif', color: tp }}>
+        <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp }}>
           {/* Header */}
           <div style={{ background: card, borderBottom: `1px solid ${border}`, padding: '28px 0 20px' }}>
             <div style={{ maxWidth: 760, margin: '0 auto', padding: '0 24px' }}>
               <button
                 onClick={() => router.back()}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontFamily: '"Sora", sans-serif', fontSize: 13, marginBottom: 16 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, marginBottom: 16 }}
               >
                 ← Back
               </button>
               <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, color: red, textTransform: 'uppercase', marginBottom: 8 }}>
                 Legal
               </p>
-              <h1 style={{ fontFamily: '"Lora", serif', fontSize: 36, fontWeight: 900, color: tp, letterSpacing: -0.5 }}>
+              <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 900, color: tp, letterSpacing: -0.5 }}>
                 Data Deletion
               </h1>
               <p style={{ color: ts, marginTop: 8, fontSize: 14 }}>
@@ -84,13 +84,13 @@ export default function DataDeletionPage() {
               </p>
             </div>
 
-            <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 900, color: tp, marginBottom: 20 }}>
+            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 900, color: tp, marginBottom: 20 }}>
               How to delete your data
             </h2>
 
             {steps.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 20, background: card, borderRadius: 16, border: `1px solid ${border}`, padding: '24px 28px', marginBottom: 12 }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: `${pri}55`, flexShrink: 0, minWidth: 40, fontFamily: '"Lora", serif' }}>{s.num}</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: `${pri}55`, flexShrink: 0, minWidth: 40, fontFamily: '"Playfair Display", serif' }}>{s.num}</div>
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: tp, marginBottom: 8 }}>{s.title}</h3>
                   <p style={{ fontSize: 14, color: ts, lineHeight: 1.8, whiteSpace: 'pre-line' }}>{s.body}</p>
@@ -112,7 +112,7 @@ export default function DataDeletionPage() {
                   fontWeight: 800,
                   fontSize: 14,
                   textDecoration: 'none',
-                  fontFamily: '"Sora", sans-serif',
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
                 }}
               >
                 Send Deletion Request →

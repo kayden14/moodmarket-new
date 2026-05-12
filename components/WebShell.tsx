@@ -101,14 +101,14 @@ export default function WebShell({
             color: '#fff',
             fontWeight: 800,
             fontSize: 14,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}
         >
           M
         </div>
         <span
           style={{
-            fontFamily: '"Lora", serif',
+            fontFamily: '"Playfair Display", serif',
             fontSize: 18,
             fontWeight: 700,
             color: tp,
@@ -145,7 +145,7 @@ export default function WebShell({
               justifyContent: 'center',
               fontSize: 13,
               fontWeight: 800,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               flexShrink: 0,
             }}
           >
@@ -157,7 +157,7 @@ export default function WebShell({
                 fontSize: 13,
                 fontWeight: 700,
                 color: tp,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -169,7 +169,7 @@ export default function WebShell({
               style={{
                 fontSize: 11,
                 color: ts,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 marginTop: 2,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -213,7 +213,7 @@ export default function WebShell({
                 fontSize: 13,
                 fontWeight: isActive ? 700 : 600,
                 cursor: 'pointer',
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 transition: 'all 0.12s',
                 textAlign: 'left',
               }}
@@ -245,7 +245,7 @@ export default function WebShell({
       style={{
         minHeight: '100vh',
         background: bg,
-        fontFamily: '"Sora", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: tp,
         display: 'flex',
         flexDirection: 'column',
@@ -281,7 +281,7 @@ export default function WebShell({
             </button>
             <span
               style={{
-                fontFamily: '"Lora", serif',
+                fontFamily: '"Playfair Display", serif',
                 fontSize: 16,
                 fontWeight: 700,
                 color: tp,
@@ -345,7 +345,7 @@ export default function WebShell({
             >
               <span
                 style={{
-                  fontFamily: '"Lora", serif',
+                  fontFamily: '"Playfair Display", serif',
                   fontSize: 18,
                   fontWeight: 700,
                   color: tp,
@@ -406,7 +406,7 @@ export default function WebShell({
               {title && (
                 <h1
                   style={{
-                    fontFamily: '"Lora", serif',
+                    fontFamily: '"Playfair Display", serif',
                     fontSize: isDesktop ? 32 : 24,
                     fontWeight: 900,
                     color: tp,

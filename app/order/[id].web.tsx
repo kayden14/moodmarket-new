@@ -60,7 +60,7 @@ function Card({ icon, title, children }: { icon: React.ReactNode; title: string;
         <span style={{
           fontSize: 10, fontWeight: 800, letterSpacing: 2,
           color: isDark ? '#888' : '#999', textTransform: 'uppercase',
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>{title}</span>
       </div>
       {children}
@@ -110,12 +110,12 @@ export default function OrderTrackingWeb() {
     <WebShell activeNav="profile" title="Order Not Found">
       <div style={{ textAlign: 'center', padding: '48px 0' }}>
         <Package size={48} color={ts} strokeWidth={1.5} style={{ marginBottom: 16 }} />
-        <p style={{ fontSize: 18, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Sora", sans-serif' }}>Order Not Found</p>
-        <p style={{ fontSize: 14, color: ts, marginBottom: 24, fontFamily: '"Sora", sans-serif' }}>We couldn't find this order. It may have been removed.</p>
+        <p style={{ fontSize: 18, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Order Not Found</p>
+        <p style={{ fontSize: 14, color: ts, marginBottom: 24, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>We couldn't find this order. It may have been removed.</p>
         <button onClick={() => router.back()} style={{
           background: pri, color: '#fff', border: 'none', borderRadius: 14,
           padding: '14px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>Go Back</button>
       </div>
     </WebShell>
@@ -137,8 +137,8 @@ export default function OrderTrackingWeb() {
         }}>
           <StatusIcon size={28} color={cfg.color} strokeWidth={1.8} />
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 18, fontWeight: 900, color: cfg.color, letterSpacing: -0.3, marginBottom: 4, fontFamily: '"Sora", sans-serif' }}>{cfg.label}</p>
-            <p style={{ fontSize: 13, lineHeight: 1.4, color: cfg.color, opacity: 0.75, fontFamily: '"Sora", sans-serif' }}>
+            <p style={{ fontSize: 18, fontWeight: 900, color: cfg.color, letterSpacing: -0.3, marginBottom: 4, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{cfg.label}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.4, color: cfg.color, opacity: 0.75, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               {order.status === 'paid' ? 'Your order is confirmed and being prepared' :
                order.status === 'shipped' ? 'Your order is on its way to you' :
                order.status === 'delivered' ? 'Your order has been delivered successfully' :
@@ -174,9 +174,9 @@ export default function OrderTrackingWeb() {
                       fontSize: 14, marginBottom: 3,
                       color: step.done || step.active ? tp : ts,
                       fontWeight: step.active ? 800 : 600,
-                      fontFamily: '"Sora", sans-serif',
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
                     }}>{step.label}</p>
-                    <p style={{ fontSize: 12, lineHeight: 1.4, color: ts, fontFamily: '"Sora", sans-serif' }}>{step.sub}</p>
+                    <p style={{ fontSize: 12, lineHeight: 1.4, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{step.sub}</p>
                   </div>
                 </div>
               ))}
@@ -192,7 +192,7 @@ export default function OrderTrackingWeb() {
           }}>{order.payment_reference ?? order.id.slice(0, 16).toUpperCase()}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
             <Clock size={12} color={ts} strokeWidth={2} />
-            <span style={{ fontSize: 12, fontWeight: 500, color: ts, fontFamily: '"Sora", sans-serif' }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               {new Date(order.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
@@ -209,15 +209,15 @@ export default function OrderTrackingWeb() {
               <span style={{
                 padding: '4px 8px', borderRadius: 8,
                 background: theme.tint, color: pri,
-                fontSize: 12, fontWeight: 800, fontFamily: '"Sora", sans-serif',
+                fontSize: 12, fontWeight: 800, fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}>×{item.quantity}</span>
               <span style={{
                 flex: 1, fontSize: 13, fontWeight: 600, color: tp,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}>{item.name}</span>
               <span style={{
                 fontSize: 13, fontWeight: 800, color: pri,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}>GH₵{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
@@ -225,8 +225,8 @@ export default function OrderTrackingWeb() {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             marginTop: 12, paddingTop: 12, borderTop: `1px solid ${bord}`,
           }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Sora", sans-serif' }}>Total Paid</span>
-            <span style={{ fontSize: 20, fontWeight: 900, color: pri, letterSpacing: -0.5, fontFamily: '"Sora", sans-serif' }}>GH₵ {Number(order.total_price).toFixed(2)}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Total Paid</span>
+            <span style={{ fontSize: 20, fontWeight: 900, color: pri, letterSpacing: -0.5, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>GH₵ {Number(order.total_price).toFixed(2)}</span>
           </div>
         </Card>
 
@@ -252,7 +252,7 @@ export default function OrderTrackingWeb() {
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           background: pri, color: '#fff', border: 'none', borderRadius: 16,
           padding: '16px 0', fontSize: 15, fontWeight: 800, cursor: 'pointer',
-          fontFamily: '"Sora", sans-serif', marginBottom: 12,
+          fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 12,
         }}>
           <Home size={16} strokeWidth={2} /> Back to Home
         </button>
@@ -260,7 +260,7 @@ export default function OrderTrackingWeb() {
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           background: 'transparent', color: pri, border: `1.5px solid ${pri}`,
           borderRadius: 16, padding: '14px 0', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer', fontFamily: '"Sora", sans-serif', marginBottom: 8,
+          cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 8,
         }}>
           <Package size={15} strokeWidth={2} /> All My Orders
         </button>
@@ -275,10 +275,10 @@ function InfoRow({ label, value, accent }: { label: string; value: string; accen
   const ts = isDark ? '#888' : '#666';
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-      <span style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>{label}</span>
+      <span style={{ fontSize: 13, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{label}</span>
       <span style={{
         fontSize: 13, fontWeight: 700, color: accent ?? tp,
-        textAlign: 'right', marginLeft: 16, fontFamily: '"Sora", sans-serif',
+        textAlign: 'right', marginLeft: 16, fontFamily: '"Plus Jakarta Sans", sans-serif',
       }}>{value}</span>
     </div>
   );

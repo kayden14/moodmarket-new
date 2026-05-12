@@ -211,7 +211,7 @@ function ProductCard({ item, onPress, onAddToCart }: {
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Sora", sans-serif' }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
             {(item as Product).price.toFixed(2)}
           </span>
@@ -229,7 +229,7 @@ function ProductCard({ item, onPress, onAddToCart }: {
               padding: '0 12px',
               opacity: adding ? 0.6 : 1,
               transition: 'all 0.18s ease',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               whiteSpace: 'nowrap',
             }}
             aria-label="Add to cart"
@@ -301,7 +301,7 @@ function TrendingCard({ item, onPress, onAddToCart }: {
             fontWeight: 700,
             color: theme.textPrimary,
             letterSpacing: -0.3,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             flexShrink: 0,
           }}>
             GH₵{item.price.toFixed(2)}
@@ -325,7 +325,7 @@ function TrendingCard({ item, onPress, onAddToCart }: {
               cursor: 'pointer',
               padding: '0 var(--trending-btn-px, 11px)' as any,
               transition: 'opacity 0.15s',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               flexShrink: 0,
               opacity: adding ? 0.6 : 1,
             }}
@@ -536,7 +536,7 @@ export default function HomeScreenWeb() {
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Sora", sans-serif' }}>
+      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
         <div style={{ width: 48, height: 48, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WebEmoji style={{ fontSize: 22 }}>{selectedMood.emoji}</WebEmoji>
         </div>
@@ -564,7 +564,7 @@ export default function HomeScreenWeb() {
         .mm-app {
           height: 100vh;
           background: ${bg};
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           color: ${tp};
           display: flex;
           flex-direction: column;
@@ -597,7 +597,7 @@ export default function HomeScreenWeb() {
           font-size: 17px; flex-shrink: 0;
         }
         .mm-logo-text {
-          font-family: "Lora", serif; font-size: 19px;
+          font-family: "Playfair Display", serif; font-size: 19px;
           font-weight: 600; color: ${tp}; letter-spacing: -0.4px;
         }
         .mm-logo-text em { font-style: italic; color: ${pri}; }
@@ -610,7 +610,7 @@ export default function HomeScreenWeb() {
           width: 100%; height: 38px;
           background: ${bg}; border: 1px solid ${bord};
           border-radius: 9px; padding: 0 14px 0 38px;
-          font-size: 13.5px; font-family: "Sora", sans-serif;
+          font-size: 13.5px; font-family: "Plus Jakarta Sans", sans-serif;
           color: ${tp}; outline: none;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
@@ -637,7 +637,7 @@ export default function HomeScreenWeb() {
           width: 100%; height: 40px;
           background: ${bg}; border: 1px solid ${bord};
           border-radius: 9px; padding: 0 14px 0 38px;
-          font-size: 14px; font-family: "Sora", sans-serif;
+          font-size: 14px; font-family: "Plus Jakarta Sans", sans-serif;
           color: ${tp}; outline: none;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
@@ -665,7 +665,7 @@ export default function HomeScreenWeb() {
           color: ${ts}; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           gap: 6px; font-size: 13px; font-weight: 500;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.15s; white-space: nowrap;
           padding: 0 12px; position: relative;
           flex-shrink: 0;
@@ -680,7 +680,7 @@ export default function HomeScreenWeb() {
           height: 38px; padding: 0 14px; border-radius: 9px;
           background: ${pri}; border: 1px solid ${pri};
           font-size: 13px; font-weight: 600;
-          font-family: "Sora", sans-serif; color: #fff;
+          font-family: "Plus Jakarta Sans", sans-serif; color: #fff;
           cursor: pointer; display: flex; align-items: center;
           gap: 6px; transition: opacity 0.15s; white-space: nowrap;
         }
@@ -821,7 +821,7 @@ export default function HomeScreenWeb() {
           background: transparent;
           border: none;
           cursor: pointer;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           font-size: 13.5px;
           font-weight: 500;
           color: ${tp};
@@ -988,7 +988,7 @@ export default function HomeScreenWeb() {
           padding: 9px 10px; border-radius: 8px;
           width: 100%; background: transparent;
           border: 1px solid transparent;
-          cursor: pointer; font-family: "Sora", sans-serif;
+          cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.13s ease; margin-bottom: 2px;
           text-align: left; min-height: 44px;
         }
@@ -1003,7 +1003,7 @@ export default function HomeScreenWeb() {
           padding: 8px 10px; border-radius: 7px;
           width: 100%; background: transparent;
           border: 1px solid transparent;
-          cursor: pointer; font-family: "Sora", sans-serif;
+          cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.13s ease; margin-bottom: 1px;
           text-align: left; min-height: 40px;
         }
@@ -1065,14 +1065,14 @@ export default function HomeScreenWeb() {
           align-items: baseline; margin-bottom: 14px;
         }
         .mm-section-title {
-          font-family: "Lora", serif; font-size: 19px;
+          font-family: "Playfair Display", serif; font-size: 19px;
           font-weight: 600; color: ${tp}; letter-spacing: -0.3px;
         }
         .mm-see-all {
           background: none; border: none;
           color: ${pri}; font-size: 12.5px;
           font-weight: 600; cursor: pointer;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           transition: opacity 0.13s; white-space: nowrap;
           flex-shrink: 0; margin-left: 8px;
         }
@@ -1097,7 +1097,7 @@ export default function HomeScreenWeb() {
           background: ${bg}; border: 1px solid ${bord};
           border-radius: 8px; padding: 10px 24px;
           color: ${ts}; font-weight: 500; font-size: 13px;
-          cursor: pointer; font-family: "Sora", sans-serif;
+          cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.15s; min-height: 44px;
         }
         .mm-show-more-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
@@ -1480,7 +1480,7 @@ export default function HomeScreenWeb() {
 
               <div style={{ padding: '4px 22px 18px' }}>
                 <p style={{ fontSize: 11, color: ts, fontWeight: 400 }}>{greeting}</p>
-                <p style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: tp, letterSpacing: -0.5, marginTop: 2 }}>
+                <p style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 700, color: tp, letterSpacing: -0.5, marginTop: 2 }}>
                   {firstName ?? 'Welcome'}
                 </p>
               </div>

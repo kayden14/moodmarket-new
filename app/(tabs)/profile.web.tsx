@@ -133,21 +133,21 @@ function OrderCard({ order, theme, isDark }: { order: Order; theme: any; isDark:
       }}><ShoppingBag size={16} /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>ORDER</span>
-          <span style={{ fontSize: 12, fontWeight: 800, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: 0.5 }}>#{order.id.slice(0, 8).toUpperCase()}</span>
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>ORDER</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: theme.textPrimary, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: 0.5 }}>#{order.id.slice(0, 8).toUpperCase()}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Calendar size={11} /> {date}</span>
+          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Calendar size={11} /> {date}</span>
           <span style={{ color: theme.border }}>·</span>
-          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Package size={11} /> {order.products.length} items</span>
+          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Package size={11} /> {order.products.length} items</span>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: cfg.bg, borderRadius: 20, padding: '3px 10px' }}>
           <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, fontFamily: '"Sora", sans-serif', textTransform: 'capitalize' }}>{cfg.label}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, fontFamily: '"Plus Jakarta Sans", sans-serif', textTransform: 'capitalize' }}>{cfg.label}</span>
         </div>
-        <span style={{ fontSize: 14, fontWeight: 800, color: theme.primary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.4 }}>
+        <span style={{ fontSize: 14, fontWeight: 800, color: theme.primary, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
           GH₵ {Number(order.total_price).toFixed(2)}
         </span>
       </div>
@@ -173,8 +173,8 @@ function StatCard({ value, label, icon, theme, isDark }: {
         border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
       }}>{icon}</div>
-      <div style={{ fontSize: 22, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.8, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.8, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 500 }}>{label}</div>
     </div>
   );
 }
@@ -204,8 +204,8 @@ function SettingsRow({ icon, label, sub, onPress, theme, isDark }: {
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0,
       }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Plus Jakarta Sans", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
       </div>
       <span style={{ color: theme.inactive, fontSize: 15, flexShrink: 0 }}>›</span>
     </div>
@@ -226,7 +226,7 @@ function TabBtn({ active, onClick, children, theme, isDark }: {
         background: active ? (isDark ? '#2D1820' : '#FFF0F2') : 'none',
         color: active ? theme.primary : theme.textSecondary,
         fontSize: 12, fontWeight: active ? 700 : 500,
-        cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+        cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
         transition: 'all 0.14s', whiteSpace: 'nowrap',
       }}
     >{children}</button>
@@ -243,11 +243,11 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
     <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Sora", sans-serif', textTransform: 'uppercase' }}>YOUR VIBES</p>
-          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Mood History</h3>
+          <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', textTransform: 'uppercase' }}>YOUR VIBES</p>
+          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Mood History</h3>
         </div>
         {moodCount > 0 && (
-          <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}>
+          <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             {moodCount} entries
           </span>
         )}
@@ -256,8 +256,8 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
       {moodCount === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
           <div style={{ fontSize: 44, marginBottom: 14 }}><WebEmoji style={{ fontSize: 44 }}>✨</WebEmoji></div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No mood entries yet</p>
-          <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif' }}>Your mood selections will appear here.</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', marginBottom: 8 }}>No mood entries yet</p>
+          <p style={{ fontSize: 12, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Your mood selections will appear here.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -286,17 +286,17 @@ function MoodHistoryTab({ moodHistory, moodCount, pri, tp, ts, card, bord, isDar
                   fontSize: 22,
                 }}><WebEmoji style={{ fontSize: 22 }}>{emoji}</WebEmoji></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: meta.color, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>{label}</span>
+                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: meta.color, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 2 }}>{label}</span>
                   {dateLong && (
-                    <span style={{ fontSize: 10, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', marginBottom: note ? 4 : 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarDays size={10} /> {dateLong}</span>
+                    <span style={{ fontSize: 10, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: note ? 4 : 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarDays size={10} /> {dateLong}</span>
                   )}
                   {!!note && (
-                    <span style={{ display: 'block', fontSize: 11, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Sora", sans-serif', fontStyle: 'italic', lineHeight: 1.55 }}>"{note}"</span>
+                    <span style={{ display: 'block', fontSize: 11, color: isDark ? '#94A3B8' : '#475569', fontFamily: '"Plus Jakarta Sans", sans-serif', fontStyle: 'italic', lineHeight: 1.55 }}>"{note}"</span>
                   )}
                 </div>
                 {dateShort && (
                   <div style={{ flexShrink: 0, paddingTop: 2 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, background: isDark ? `${meta.color}22` : `${meta.color}15`, padding: '3px 8px', borderRadius: 8, whiteSpace: 'nowrap', border: `1px solid ${meta.color}40`, fontFamily: '"Sora", sans-serif' }}>{dateShort}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, background: isDark ? `${meta.color}22` : `${meta.color}15`, padding: '3px 8px', borderRadius: 8, whiteSpace: 'nowrap', border: `1px solid ${meta.color}40`, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{dateShort}</span>
                   </div>
                 )}
               </div>
@@ -385,13 +385,13 @@ export default function ProfileWeb() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         html {
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           overflow-y: auto;
           overflow-x: hidden;
         }
         body {
           min-height: 100%;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           overflow-y: auto;
           background: ${bg};
         }
@@ -435,14 +435,14 @@ export default function ProfileWeb() {
           font-weight: 600;
           color: ${ts};
           cursor: pointer;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.15s;
           white-space: nowrap;
         }
         .prof-back:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
 
         .prof-logo {
-          font-family: "Lora", serif;
+          font-family: "Playfair Display", serif;
           font-size: 17px;
           font-weight: 700;
           color: ${tp};
@@ -512,12 +512,12 @@ export default function ProfileWeb() {
           font-size: 22px;
           font-weight: 900;
           color: #fff;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           letter-spacing: -0.5px;
         }
 
-        .prof-name  { font-size: 16px; font-weight: 700; color: ${tp}; font-family: "Lora", serif; letter-spacing: -0.2px; margin-bottom: 3px; }
-        .prof-email { font-size: 11px; color: ${inact}; font-family: "Sora", sans-serif; margin-bottom: 16px; word-break: break-all; }
+        .prof-name  { font-size: 16px; font-weight: 700; color: ${tp}; font-family: "Playfair Display", serif; letter-spacing: -0.2px; margin-bottom: 3px; }
+        .prof-email { font-size: 11px; color: ${inact}; font-family: "Plus Jakarta Sans", sans-serif; margin-bottom: 16px; word-break: break-all; }
 
         .prof-edit-btn {
           width: 100%;
@@ -529,7 +529,7 @@ export default function ProfileWeb() {
           font-size: 12px;
           font-weight: 700;
           cursor: pointer;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -556,7 +556,7 @@ export default function ProfileWeb() {
           font-size: 13px;
           font-weight: 600;
           color: ${ts};
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
         }
         .prof-sidenav-item:last-child { border-bottom: none; }
         .prof-sidenav-item:hover { background: ${tint}; }
@@ -774,10 +774,10 @@ export default function ProfileWeb() {
             >
               {/* Avatar in drawer */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px 20px', borderBottom: `1px solid ${bord}`, marginBottom: 8 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: pri, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: '"Sora", sans-serif', flexShrink: 0 }}>{initials}</div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: pri, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: '"Plus Jakarta Sans", sans-serif', flexShrink: 0 }}>{initials}</div>
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name ?? 'User'}</p>
-                  <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Sora", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email}</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name ?? 'User'}</p>
+                  <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email}</p>
                 </div>
               </div>
               {NAV_ITEMS.map(item => (
@@ -806,12 +806,12 @@ export default function ProfileWeb() {
         {!user ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', textAlign: 'center' }}>
             <div style={{ width: 80, height: 80, borderRadius: 22, margin: '0 auto 22px', background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}><User size={34} /></div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>You're not signed in</h2>
-            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif', maxWidth: 300 }}>Log in to view your profile, orders, and mood history.</p>
-            <button onClick={() => router.push('/login')} style={{ padding: '13px 28px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44`, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Sign In <ArrowRight size={14} /></button>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', marginBottom: 10 }}>You're not signed in</h2>
+            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Plus Jakarta Sans", sans-serif', maxWidth: 300 }}>Log in to view your profile, orders, and mood history.</p>
+            <button onClick={() => router.push('/login')} style={{ padding: '13px 28px', borderRadius: 14, border: 'none', background: pri, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', boxShadow: `0 6px 20px ${pri}44`, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Sign In <ArrowRight size={14} /></button>
           </div>
         ) : loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 260, color: inact, fontSize: 14, fontFamily: '"Sora", sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 260, color: inact, fontSize: 14, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             Loading profile…
           </div>
         ) : (
@@ -884,8 +884,8 @@ export default function ProfileWeb() {
                     >
                       <div style={{ width: 44, height: 44, borderRadius: 13, background: '#FF7A8A22', border: '1px solid #FF7A8A44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>Vendor Dashboard</div>
-                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Manage your products, orders & earnings</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 2 }}>Vendor Dashboard</div>
+                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Manage your products, orders & earnings</div>
                       </div>
                       <ArrowRight size={16} color={pri} />
                     </div>
@@ -908,8 +908,8 @@ export default function ProfileWeb() {
                     >
                       <div style={{ width: 44, height: 44, borderRadius: 13, background: isDark ? '#334155' : '#F1F5F9', border: `1px solid ${bord}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif', marginBottom: 2 }}>Sell on MoodMarket</div>
-                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Apply to become a vendor and reach more customers</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 2 }}>Sell on MoodMarket</div>
+                        <div style={{ fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Apply to become a vendor and reach more customers</div>
                       </div>
                       <ArrowRight size={16} color={inact} />
                     </div>
@@ -917,19 +917,19 @@ export default function ProfileWeb() {
 
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                      <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>Recent Orders</h3>
-                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>View all <ArrowRight size={12} /></button>
+                      <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', letterSpacing: -0.3 }}>Recent Orders</h3>
+                      <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: pri, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>View all <ArrowRight size={12} /></button>
                     </div>
                     {orders.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '28px 0' }}>
                         <div style={{ fontSize: 30, marginBottom: 10 }}><Package size={30} /></div>
-                        <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>No orders yet</p>
+                        <p style={{ fontSize: 13, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>No orders yet</p>
                       </div>
                     ) : orders.slice(0, 3).map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
                   </div>
 
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
-                    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Quick Actions</h3>
+                    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Quick Actions</h3>
                     <div className="prof-quick-actions">
                       {[
                         { icon: <ShoppingBag size={18} />, label: 'Shop Now',    action: () => router.push('/(tabs)') },
@@ -938,7 +938,7 @@ export default function ProfileWeb() {
                         { icon: <LogOut size={18} />, label: 'Sign Out',    action: handleSignOut },
                       ].map(({ icon, label, action }) => (
                         <button key={label} onClick={action}
-                          style={{ padding: '13px 10px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, transition: 'all 0.13s' }}
+                          style={{ padding: '13px 10px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, transition: 'all 0.13s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = label === 'Sign Out' ? '#EF4444' : pri; (e.currentTarget as HTMLButtonElement).style.background = label === 'Sign Out' ? (isDark ? '#2D1515' : '#FFF0F0') : tint; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = bord; (e.currentTarget as HTMLButtonElement).style.background = bg; }}
                         >
@@ -955,17 +955,17 @@ export default function ProfileWeb() {
                 <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
-                      <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Sora", sans-serif', textTransform: 'uppercase' }}>HISTORY</p>
-                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>All Orders</h3>
+                      <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 800, letterSpacing: 2, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', textTransform: 'uppercase' }}>HISTORY</p>
+                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>All Orders</h3>
                     </div>
-                    <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}>{orders.length}</span>
+                    <span style={{ background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{orders.length}</span>
                   </div>
                   {orders.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px 0' }}>
                       <div style={{ fontSize: 44, marginBottom: 14 }}><Package size={44} /></div>
-                      <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 8 }}>No orders yet</p>
-                      <p style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif', marginBottom: 20 }}>Start shopping to see your orders here.</p>
-                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '11px 22px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>Browse Products <ArrowRight size={12} /></button>
+                      <p style={{ fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', marginBottom: 8 }}>No orders yet</p>
+                      <p style={{ fontSize: 12, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 20 }}>Start shopping to see your orders here.</p>
+                      <button onClick={() => router.push('/(tabs)')} style={{ padding: '11px 22px', borderRadius: 12, border: `1.5px solid ${pri}`, background: 'none', color: pri, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4 }}>Browse Products <ArrowRight size={12} /></button>
                     </div>
                   ) : orders.map(order => <OrderCard key={order.id} order={order} theme={theme} isDark={isDark} />)}
                 </div>
@@ -980,20 +980,20 @@ export default function ProfileWeb() {
               {activeTab === 'settings' && (
                 <div>
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Account Settings</h3>
+                    <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Account Settings</h3>
                     <SettingsRow icon="✏️" label="Edit Profile"        sub="Update your name and phone number"  onPress={() => router.push('/edit-profile')} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🔔" label="Notifications"       sub="Manage push and email alerts"       onPress={() => {}} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🔒" label="Privacy & Security"  sub="Password and account security"     onPress={() => {}} theme={theme} isDark={isDark} />
                     <SettingsRow icon="🎨" label="App Preferences"     sub="Theme, mood reminders and more"    onPress={() => {}} theme={theme} isDark={isDark} />
                   </div>
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Lora", serif' }}>Appearance</h3>
+                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Appearance</h3>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: bg, border: `1px solid ${bord}`, borderRadius: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <span style={{ fontSize: 16 }}>{isDark ? '🌙' : '☀️'}</span>
                         <div>
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Sora", sans-serif' }}>{isDark ? 'Dark Mode' : 'Light Mode'}</p>
-                          <p style={{ margin: 0, fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>Toggle interface theme</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{isDark ? 'Dark Mode' : 'Light Mode'}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Toggle interface theme</p>
                         </div>
                       </div>
                       <button onClick={toggleDark} style={{ width: 50, height: 27, borderRadius: 20, border: 'none', background: isDark ? pri : bord, position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
@@ -1002,8 +1002,8 @@ export default function ProfileWeb() {
                     </div>
                   </div>
                   <div style={{ background: card, border: `1px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, borderRadius: 22, padding: '22px 20px' }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#EF4444', fontFamily: '"Lora", serif' }}>Danger Zone</h3>
-                    <button onClick={handleSignOut} style={{ width: '100%', padding: '13px 0', borderRadius: 12, border: `1.5px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, background: isDark ? '#2D1515' : '#FFF5F5', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.13s' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#EF4444', fontFamily: '"Playfair Display", serif' }}>Danger Zone</h3>
+                    <button onClick={handleSignOut} style={{ width: '100%', padding: '13px 0', borderRadius: 12, border: `1.5px solid ${isDark ? '#4D2525' : '#FFE5E5'}`, background: isDark ? '#2D1515' : '#FFF5F5', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.13s' }}>
                       🚪 Sign Out
                     </button>
                   </div>

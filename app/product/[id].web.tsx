@@ -113,14 +113,14 @@ function ReviewCard({ review, isOwn, onEdit, onDelete, theme }: {
           background: theme.primary,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>
           {initials}
         </div>
 
         {/* name + stars */}
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: theme.textPrimary, marginBottom: 3, fontFamily: '"Sora", sans-serif' }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: theme.textPrimary, marginBottom: 3, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             {review.reviewer_name || 'Anonymous'}
           </div>
           <StarDisplay rating={review.rating} size={13} />
@@ -128,20 +128,20 @@ function ReviewCard({ review, isOwn, onEdit, onDelete, theme }: {
 
         {/* date + actions */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>{date}</span>
+          <span style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{date}</span>
           {isOwn && (
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={onEdit} style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontSize: 13, color: theme.primary, padding: '2px 4px',
-                fontFamily: '"Sora", sans-serif', fontWeight: 600,
+                fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600,
                 transition: 'opacity 0.13s',
                 display: 'flex', alignItems: 'center', gap: 4,
               }}><Pencil size={13} color={theme.primary} strokeWidth={2} /> Edit</button>
               <button onClick={onDelete} style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontSize: 13, color: '#EF4444', padding: '2px 4px',
-                fontFamily: '"Sora", sans-serif', fontWeight: 600,
+                fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600,
                 transition: 'opacity 0.13s',
                 display: 'flex', alignItems: 'center', gap: 4,
               }}><Trash2 size={13} color="#EF4444" strokeWidth={2} /> Delete</button>
@@ -154,7 +154,7 @@ function ReviewCard({ review, isOwn, onEdit, onDelete, theme }: {
       {!!review.comment && (
         <p style={{
           margin: 0, fontSize: 14, lineHeight: 1.65,
-          color: theme.textSecondary, fontFamily: '"Sora", sans-serif',
+          color: theme.textSecondary, fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>
           {review.comment}
         </p>
@@ -238,7 +238,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <MessageSquare size={16} color={theme.primary} strokeWidth={2} />
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Lora", serif', letterSpacing: -0.3 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Playfair Display", serif', letterSpacing: -0.3 }}>
             Reviews
           </h3>
           {reviews.length > 0 && (
@@ -247,7 +247,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
               border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
               borderRadius: 20, padding: '2px 9px',
               fontSize: 12, fontWeight: 700, color: theme.primary,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               {reviews.length}
             </span>
@@ -263,7 +263,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
               border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
               borderRadius: 10, padding: '8px 14px',
               fontSize: 13, fontWeight: 600, color: theme.primary,
-              cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+              cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
               transition: 'opacity 0.15s',
             }}
           >
@@ -281,12 +281,12 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
           marginBottom: 24,
           boxShadow: `0 8px 32px ${theme.primary}18`,
         }}>
-          <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1.6, color: theme.inactive, textTransform: 'uppercase', fontFamily: '"Sora", sans-serif' }}>
+          <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1.6, color: theme.inactive, textTransform: 'uppercase', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             YOUR RATING
           </p>
           <StarInput value={draftRating} onChange={setDraftRating} />
 
-          <p style={{ margin: '20px 0 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1.6, color: theme.inactive, textTransform: 'uppercase', fontFamily: '"Sora", sans-serif' }}>
+          <p style={{ margin: '20px 0 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1.6, color: theme.inactive, textTransform: 'uppercase', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             YOUR REVIEW (optional)
           </p>
           <textarea
@@ -301,7 +301,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
               background: theme.background,
               color: theme.textPrimary,
               padding: '14px 16px',
-              fontSize: 14, fontFamily: '"Sora", sans-serif',
+              fontSize: 14, fontFamily: '"Plus Jakarta Sans", sans-serif',
               resize: 'vertical', outline: 'none',
               boxSizing: 'border-box',
               transition: 'border-color 0.15s',
@@ -309,7 +309,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
             onFocus={e => { e.target.style.borderColor = theme.primary; }}
             onBlur={e => { e.target.style.borderColor = theme.border; }}
           />
-          <div style={{ textAlign: 'right', fontSize: 11, color: theme.inactive, marginTop: 4, marginBottom: 18, fontFamily: '"Sora", sans-serif' }}>
+          <div style={{ textAlign: 'right', fontSize: 11, color: theme.inactive, marginTop: 4, marginBottom: 18, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             {draftComment.length}/500
           </div>
 
@@ -321,7 +321,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
                 borderRadius: 12, border: `1.5px solid ${theme.border}`,
                 background: 'none', color: theme.textSecondary,
                 fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                fontFamily: '"Sora", sans-serif', transition: 'all 0.15s',
+                fontFamily: '"Plus Jakarta Sans", sans-serif', transition: 'all 0.15s',
               }}
             >
               Cancel
@@ -335,7 +335,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
                 background: draftRating === 0 ? theme.border : theme.primary,
                 color: '#fff',
                 fontSize: 14, fontWeight: 700, cursor: draftRating === 0 ? 'not-allowed' : 'pointer',
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 opacity: submitting ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 transition: 'opacity 0.15s',
@@ -356,7 +356,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
           borderRadius: 12, padding: '14px 18px', marginBottom: 20,
         }}>
           <User size={16} color={theme.inactive} strokeWidth={2} />
-          <span style={{ fontSize: 13, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>
+          <span style={{ fontSize: 13, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             Sign in to leave a review
           </span>
         </div>
@@ -369,13 +369,13 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
           borderRadius: 12, padding: '14px 18px', marginBottom: 16,
           display: 'flex', alignItems: 'center', gap: 12,
         }}>
-          <span style={{ fontSize: 14, color: '#991B1B', fontFamily: '"Sora", sans-serif', flex: 1 }}>
+          <span style={{ fontSize: 14, color: '#991B1B', fontFamily: '"Plus Jakarta Sans", sans-serif', flex: 1 }}>
             Delete your review?
           </span>
-          <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: `1px solid #FECACA`, borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#991B1B', cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>
+          <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: `1px solid #FECACA`, borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#991B1B', cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             Cancel
           </button>
-          <button onClick={handleDelete} style={{ background: '#EF4444', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>
+          <button onClick={handleDelete} style={{ background: '#EF4444', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             Delete
           </button>
         </div>
@@ -383,12 +383,12 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
 
       {/* Reviews list */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '32px 0', color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>Loading reviews…</div>
+        <div style={{ textAlign: 'center', padding: '32px 0', color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Loading reviews…</div>
       ) : reviews.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <Star size={36} color="#F59E0B" fill="#F59E0B" strokeWidth={1.5} />
-          <p style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, margin: 0, fontFamily: '"Lora", serif' }}>No reviews yet</p>
-          <p style={{ fontSize: 13, color: theme.textSecondary, margin: 0, fontFamily: '"Sora", sans-serif' }}>Be the first to share your thoughts!</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, margin: 0, fontFamily: '"Playfair Display", serif' }}>No reviews yet</p>
+          <p style={{ fontSize: 13, color: theme.textSecondary, margin: 0, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Be the first to share your thoughts!</p>
         </div>
       ) : (
         reviews.map(r => (
@@ -471,7 +471,7 @@ export default function ProductDetailWeb() {
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
       `}</style>
-      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, fontFamily: '"Sora", sans-serif' }}>
+      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
         <div style={{ width: 52, height: 52, borderRadius: '50%', background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={24} color={pri} strokeWidth={2} /></div>
         <p style={{ color: ts, fontSize: 14, fontWeight: 500 }}>Loading product…</p>
       </div>
@@ -482,10 +482,10 @@ export default function ProductDetailWeb() {
   if (!product) return (
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
-      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Sora", sans-serif' }}>
+      <div style={{ height: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
         <Package size={48} color={tp} strokeWidth={1.5} />
         <p style={{ fontSize: 18, fontWeight: 700, color: tp }}>Product not found</p>
-        <button onClick={() => router.back()} style={{ marginTop: 8, padding: '12px 28px', background: pri, border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif' }}>
+        <button onClick={() => router.back()} style={{ marginTop: 8, padding: '12px 28px', background: pri, border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
           <ArrowLeft size={16} color="#fff" strokeWidth={2} /> Go Back
         </button>
       </div>
@@ -499,7 +499,7 @@ export default function ProductDetailWeb() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; font-family: "Sora", sans-serif; }
+        html, body { height: 100%; font-family: "Plus Jakarta Sans", sans-serif; }
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -521,13 +521,13 @@ export default function ProductDetailWeb() {
           background: none; border: 1px solid ${bord};
           border-radius: 9px; padding: 7px 14px;
           font-size: 13px; font-weight: 600; color: ${ts};
-          cursor: pointer; font-family: "Sora", sans-serif;
+          cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.15s;
         }
         .pd-back-btn:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
         .pd-breadcrumb {
           display: flex; align-items: center; gap: 6px;
-          font-size: 13px; color: ${ts}; font-family: "Sora", sans-serif;
+          font-size: 13px; color: ${ts}; font-family: "Plus Jakarta Sans", sans-serif;
         }
         .pd-breadcrumb span.sep { color: ${bord}; }
         .pd-breadcrumb span.current { color: ${tp}; font-weight: 600; }
@@ -546,7 +546,7 @@ export default function ProductDetailWeb() {
           font-size: 8px; font-weight: 800;
           display: flex; align-items: center; justify-content: center;
           border: 2px solid ${card};
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
         }
 
         /* ── BODY: split pane ── */
@@ -577,7 +577,7 @@ export default function ProductDetailWeb() {
           background: ${pri}; color: #fff;
           border-radius: 8px; padding: '6px 12px';
           font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-          text-transform: uppercase; font-family: "Sora", sans-serif;
+          text-transform: uppercase; font-family: "Plus Jakarta Sans", sans-serif;
         }
 
         /* Mood tag chips in left column */
@@ -589,7 +589,7 @@ export default function ProductDetailWeb() {
           border: 1px solid ${isDark ? '#3D2030' : '#FFD6DE'};
           border-radius: 20px; padding: 6px 14px;
           font-size: 12px; font-weight: 600; color: ${pri};
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
         }
 
         /* ── RIGHT: scrollable ── */
@@ -616,21 +616,21 @@ export default function ProductDetailWeb() {
 
         /* name + price */
         .pd-name-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
-        .pd-name { font-family: "Lora", serif; font-size: 26px; font-weight: 600; color: ${tp}; line-height: 1.3; letter-spacing: -0.4px; flex: 1; }
-        .pd-price { font-family: "Sora", sans-serif; font-size: 26px; font-weight: 700; color: ${pri}; letter-spacing: -0.5px; white-space: nowrap; }
+        .pd-name { font-family: "Playfair Display", serif; font-size: 26px; font-weight: 600; color: ${tp}; line-height: 1.3; letter-spacing: -0.4px; flex: 1; }
+        .pd-price { font-family: "Plus Jakarta Sans", sans-serif; font-size: 26px; font-weight: 700; color: ${pri}; letter-spacing: -0.5px; white-space: nowrap; }
         .pd-currency { font-size: 14px; font-weight: 500; color: ${ts}; }
 
         /* rating row */
         .pd-rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
         .pd-stars-row { display: flex; align-items: center; gap: 6px; }
-        .pd-rating-val { font-size: 14px; font-weight: 700; color: ${tp}; font-family: "Sora", sans-serif; }
-        .pd-rating-count { font-size: 12px; color: ${ts}; font-family: "Sora", sans-serif; }
+        .pd-rating-val { font-size: 14px; font-weight: 700; color: ${tp}; font-family: "Plus Jakarta Sans", sans-serif; }
+        .pd-rating-count { font-size: 12px; color: ${ts}; font-family: "Plus Jakarta Sans", sans-serif; }
         .pd-stock-badge {
           display: flex; align-items: center; gap: 6px;
           background: ${isDark ? '#0D2B1A' : '#EDFBF1'};
           border-radius: 20px; padding: 5px 12px;
           font-size: 12px; font-weight: 600; color: #22C55E;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
         }
         .pd-stock-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
 
@@ -639,8 +639,8 @@ export default function ProductDetailWeb() {
 
         /* section */
         .pd-section { margin-bottom: 24px; }
-        .pd-section-title { font-size: 13px; font-weight: 700; color: ${tp}; margin-bottom: 10px; letter-spacing: 0.2px; font-family: "Sora", sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 1.2px; color: ${inact}; }
-        .pd-desc { font-size: 14px; line-height: 1.75; color: ${ts}; font-family: "Sora", sans-serif; }
+        .pd-section-title { font-size: 13px; font-weight: 700; color: ${tp}; margin-bottom: 10px; letter-spacing: 0.2px; font-family: "Plus Jakarta Sans", sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 1.2px; color: ${inact}; }
+        .pd-desc { font-size: 14px; line-height: 1.75; color: ${ts}; font-family: "Plus Jakarta Sans", sans-serif; }
 
         /* quantity */
         .pd-qty-row { display: flex; align-items: center; gap: 14px; }
@@ -650,13 +650,13 @@ export default function ProductDetailWeb() {
           background: ${bg};
           font-size: 20px; font-weight: 500; color: ${tp};
           cursor: pointer; display: flex; align-items: center; justify-content: center;
-          transition: all 0.14s; font-family: "Sora", sans-serif;
+          transition: all 0.14s; font-family: "Plus Jakarta Sans", sans-serif;
           line-height: 1;
         }
         .pd-qty-btn:hover:not(:disabled) { border-color: ${pri}; color: ${pri}; background: ${tint}; }
         .pd-qty-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .pd-qty-val { font-size: 17px; font-weight: 700; color: ${tp}; min-width: 28px; text-align: center; font-family: "Sora", sans-serif; }
-        .pd-qty-total { font-size: 14px; font-weight: 500; color: ${ts}; font-family: "Sora", sans-serif; margin-left: 4px; }
+        .pd-qty-val { font-size: 17px; font-weight: 700; color: ${tp}; min-width: 28px; text-align: center; font-family: "Plus Jakarta Sans", sans-serif; }
+        .pd-qty-total { font-size: 14px; font-weight: 500; color: ${ts}; font-family: "Plus Jakarta Sans", sans-serif; margin-left: 4px; }
 
         /* CTA footer */
         .pd-cta { display: flex; align-items: center; gap: 10px; margin-top: 28px; }
@@ -672,7 +672,7 @@ export default function ProductDetailWeb() {
           border: none; background: ${pri};
           color: #fff; font-size: 15px; font-weight: 700;
           cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           box-shadow: 0 6px 20px ${pri}44;
           transition: transform 0.15s, opacity 0.15s, background 0.25s;
           letter-spacing: 0.1px;
@@ -686,7 +686,7 @@ export default function ProductDetailWeb() {
           background: ${isDark ? '#2D1820' : '#FFF0F2'};
           color: ${pri}; font-size: 13px; font-weight: 700;
           cursor: pointer; display: flex; align-items: center; gap: 6px;
-          font-family: "Sora", sans-serif; transition: all 0.15s; white-space: nowrap;
+          font-family: "Plus Jakarta Sans", sans-serif; transition: all 0.15s; white-space: nowrap;
         }
         .pd-view-cart-btn:hover { opacity: 0.85; }
 
@@ -783,7 +783,7 @@ export default function ProductDetailWeb() {
                 background: '#22C55E', color: '#fff',
                 borderRadius: 8, padding: '5px 12px',
                 fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
-                textTransform: 'uppercase', fontFamily: '"Sora", sans-serif',
+                textTransform: 'uppercase', fontFamily: '"Plus Jakarta Sans", sans-serif',
                 boxShadow: '0 2px 8px rgba(34,197,94,0.4)',
               }}>
                 In Stock
@@ -793,7 +793,7 @@ export default function ProductDetailWeb() {
                 position: 'absolute', bottom: 14, right: 14,
                 background: 'rgba(0,0,0,0.5)', color: '#fff',
                 borderRadius: 8, padding: '5px 10px',
-                fontSize: 11, fontFamily: '"Sora", sans-serif',
+                fontSize: 11, fontFamily: '"Plus Jakarta Sans", sans-serif',
                 opacity: imgHovered ? 1 : 0,
                 transition: 'opacity 0.2s',
                 display: 'flex', alignItems: 'center', gap: 4,
@@ -862,7 +862,7 @@ export default function ProductDetailWeb() {
                           border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
                           borderRadius: 20, padding: '6px 14px',
                           fontSize: 12, fontWeight: 600, color: pri,
-                          fontFamily: '"Sora", sans-serif',
+                          fontFamily: '"Plus Jakarta Sans", sans-serif',
                         }}>
                           #{tag}
                         </span>

@@ -6,8 +6,8 @@
 //   <Text style={TYPOGRAPHY.h1}>Title</Text>
 
 export const FONTS = {
-  sans: 'Sora',
-  serif: 'Lora',
+  sans: 'Plus Jakarta Sans',
+  serif: 'Playfair Display',
 } as const;
 
 // ─── Semantic type scale ──────────────────────────────────────────────────────

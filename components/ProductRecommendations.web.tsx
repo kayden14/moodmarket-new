@@ -72,7 +72,7 @@ function RecommendationCard({ product, theme, isDark }: {
             padding: '8px 16px',
             fontSize: 13,
             fontWeight: 700,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             transform: hovered ? 'scale(1)' : 'scale(0.85)',
             transition: 'transform 0.18s',
           }}>
@@ -90,7 +90,7 @@ function RecommendationCard({ product, theme, isDark }: {
             fontSize: 10,
             fontWeight: 700,
             color: theme.primary,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             backdropFilter: 'blur(8px)',
           }}>
             #{product.mood_tags[0]}
@@ -116,7 +116,7 @@ function RecommendationCard({ product, theme, isDark }: {
               fontSize: 10,
               color: theme.inactive,
               marginLeft: 4,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               fontWeight: 600,
             }}>
               {product.rating.toFixed(1)}
@@ -130,7 +130,7 @@ function RecommendationCard({ product, theme, isDark }: {
           fontSize: 14,
           fontWeight: 600,
           color: theme.textPrimary,
-          fontFamily: '"Lora", serif',
+          fontFamily: '"Playfair Display", serif',
           lineHeight: 1.4,
           letterSpacing: -0.2,
           display: '-webkit-box',
@@ -147,7 +147,7 @@ function RecommendationCard({ product, theme, isDark }: {
           fontSize: 15,
           fontWeight: 800,
           color: theme.primary,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
           letterSpacing: -0.3,
         }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
@@ -221,7 +221,7 @@ export default function ProductRecommendations({
       padding: '32px 0',
       textAlign: 'center',
       color: theme.inactive,
-      fontFamily: '"Sora", sans-serif',
+      fontFamily: '"Plus Jakarta Sans", sans-serif',
       fontSize: 13,
     }}>
       Loading recommendations…
@@ -283,7 +283,7 @@ export default function ProductRecommendations({
               fontSize: 18,
               fontWeight: 700,
               color: theme.textPrimary,
-              fontFamily: '"Lora", serif',
+              fontFamily: '"Playfair Display", serif',
               letterSpacing: -0.3,
             }}>
               You might also like
@@ -296,7 +296,7 @@ export default function ProductRecommendations({
               fontSize: 12,
               fontWeight: 700,
               color: theme.primary,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               {products.length}
             </span>
@@ -304,7 +304,7 @@ export default function ProductRecommendations({
           <span style={{
             fontSize: 11,
             color: theme.inactive,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 500,
             letterSpacing: 0.3,
           }}>

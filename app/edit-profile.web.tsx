@@ -115,14 +115,14 @@ function Row({
         <div style={{
           fontSize: 14, fontWeight: 600,
           color: danger ? DANGER : tp,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>{label}</div>
         {sublabel && (
-          <div style={{ fontSize: 12, color: ts, marginTop: 2, fontFamily: '"Sora", sans-serif' }}>{sublabel}</div>
+          <div style={{ fontSize: 12, color: ts, marginTop: 2, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{sublabel}</div>
         )}
       </div>
       {right ?? (onClick ? (
-        <span style={{ color: ts, fontSize: 14, fontFamily: '"Sora", sans-serif' }}>›</span>
+        <span style={{ color: ts, fontSize: 14, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>›</span>
       ) : null)}
     </div>
   );
@@ -159,7 +159,7 @@ function InputRow({
           fontSize: 10, fontWeight: 800, letterSpacing: 1.2,
           color: ts, textTransform: 'uppercase',
           display: 'block', marginBottom: 5,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>{label}</label>
         {editable ? (
           <input
@@ -175,19 +175,19 @@ function InputRow({
               border: 'none',
               outline: 'none',
               padding: 0,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}
           />
         ) : (
           <span style={{
             fontSize: 15, fontWeight: 600, color: ts,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>{value}</span>
         )}
         {hint && (
           <span style={{
             fontSize: 11, color: ts, marginTop: 3,
-            display: 'block', fontFamily: '"Sora", sans-serif',
+            display: 'block', fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>{hint}</span>
         )}
       </div>
@@ -271,20 +271,20 @@ export default function EditProfileWeb() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: 14,
             fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: -1,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             boxShadow: `0 8px 24px ${primary}55`,
           }}>
             {initials}
           </div>
           <div style={{
             fontSize: 22, fontWeight: 900, color: tp, letterSpacing: -0.5,
-            marginBottom: 3, fontFamily: '"Sora", sans-serif',
+            marginBottom: 3, fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>
             {name || 'Your Name'}
           </div>
           <div style={{
             fontSize: 13, fontWeight: 500, color: ts,
-            marginBottom: 10, fontFamily: '"Sora", sans-serif',
+            marginBottom: 10, fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>
             {user?.email}
           </div>
@@ -294,7 +294,7 @@ export default function EditProfileWeb() {
             background: isDark ? '#0D2B1A' : '#EDFBF1',
           }}>
             <span style={{ width: 7, height: 7, borderRadius: 3.5, background: SUCCESS, display: 'inline-block' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: SUCCESS, fontFamily: '"Sora", sans-serif' }}>Active account</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: SUCCESS, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Active account</span>
           </div>
         </div>
 
@@ -441,7 +441,7 @@ export default function EditProfileWeb() {
               padding: '12px 28px',
               fontSize: 14, fontWeight: 800,
               cursor: saving ? 'not-allowed' : 'pointer',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               opacity: saving ? 0.7 : 1,
               boxShadow: `0 6px 20px ${(saved ? SUCCESS : primary)}44`,
             }}
@@ -466,7 +466,7 @@ export default function EditProfileWeb() {
         <p style={{
           textAlign: 'center', fontSize: 11,
           color: ts, marginTop: 8, marginBottom: 48,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>
           Made with <span style={{ fontFamily: undefined }}>❤️</span> in Ghana · MoodMarket © 2025
         </p>
