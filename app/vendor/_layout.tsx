@@ -52,6 +52,15 @@ export default function VendorLayout() {
   const seg = segments as string[];
   const isPublicScreen = seg.includes('login') || seg.includes('apply');
 
+  const currentSegment = seg[seg.length - 1];
+  const titleMap: Record<string, string> = {
+    'vendor': 'Store Dashboard',
+    'products': 'My Products',
+    'orders': 'Orders',
+    'earnings': 'Earnings',
+    'notifications': 'Notifications',
+  };
+
   if (isPublicScreen) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
@@ -64,7 +73,8 @@ export default function VendorLayout() {
   return (
     <DashboardShell
       portalName="Vendor"
-      title="Vendor Portal"
+      title={titleMap[currentSegment] || 'Vendor Portal'}
+      subtitle="🏪 Store Management"
       navItems={VENDOR_NAV}
       primaryColor="#FF7A8A"
     >

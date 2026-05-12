@@ -445,25 +445,6 @@ export default function HomeScreen() {
       {/* Hidden 1×1 camera — invisible to user, provides frames for mood detection */}
       {detecting && <HiddenCamera cameraRef={cameraRef} />}
 
-      <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-        <View style={s.headerTop}>
-          <View>
-            <Text style={[s.greeting, { color: theme.primary }]}>{greeting} <EmojiText>👋</EmojiText></Text>
-            <Text style={[s.userName, { color: theme.textPrimary }]}>{firstName ?? ''}</Text>
-          </View>
-          <View style={s.headerIcons}>
-            <TouchableOpacity style={[s.headerIconBtn, { backgroundColor: theme.background, borderColor: theme.border }]} onPress={() => router.push('/search')} activeOpacity={0.75}>
-              <Search size={18} color={theme.textPrimary} />
-            </TouchableOpacity>
-            <ThemeToggleIcon />
-            <TouchableOpacity style={[s.headerIconBtn, { backgroundColor: theme.background, borderColor: theme.border }]} onPress={() => router.push('/notifications')} activeOpacity={0.75}>
-              <Bell size={18} color={theme.textPrimary} />
-              <View style={[s.notifDot, { backgroundColor: theme.primary, borderColor: theme.card }]} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
       {loading ? (
         <View style={s.loadingWrap}>
           <ActivityIndicator size="large" color={theme.primary} />

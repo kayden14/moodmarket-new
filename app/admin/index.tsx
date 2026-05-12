@@ -61,11 +61,6 @@ export default function AdminDashboard() {
       contentContainerStyle={{ padding: 24 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStats(); }} tintColor={PRIMARY} />}
     >
-      <View style={s.eyebrowWrap}>
-        <Text style={[s.eyebrow, { color: PRIMARY }]}>OVERVIEW</Text>
-        <Text style={[s.heading, { color: text }]}>Dashboard</Text>
-      </View>
-
       {/* Stat Grid */}
       <View style={s.statGrid}>
         {STAT_ITEMS.map((item, i) => (

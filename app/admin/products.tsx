@@ -309,11 +309,6 @@ export default function AdminProductsScreen() {
 
 const s = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  toolBar: { padding: 16, borderBottomWidth: 1, flexDirection: 'row', gap: 12, alignItems: 'center' },
-  searchBox: { flex: 1, height: 44, borderRadius: 12, borderWidth: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, gap: 8 },
-  searchInput: { flex: 1, fontSize: 14 },
-  addBtn: { backgroundColor: PRIMARY, height: 44, borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 8 },
-  addBtnText: { color: '#fff', fontWeight: '800', fontSize: 13, display: Platform.OS === 'web' ? 'flex' : 'none' },
   productCard: { flex: 1, margin: 8, borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   productImg: { width: 64, height: 64, borderRadius: 12 },
   productInfo: { flex: 1 },
@@ -336,6 +331,13 @@ const s = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14 },
   modalFooter: { padding: 20, borderTopWidth: 1, flexDirection: 'row', gap: 12 },
   cancelBtn: { height: 48, borderRadius: 12, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  saveBtn: { flex: 1, height: 48, borderRadius: 12, backgroundColor: PRIMARY, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  saveBtnText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  confirmBox: { width: '100%', maxWidth: 400, padding: 24, borderRadius: 20, borderWidth: 1, alignItems: 'center' },
+  confirmTitle: { fontSize: 20, fontWeight: '900', marginBottom: 8 },
+  confirmSub: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
+});
+derRadius: 12, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
   saveBtn: { flex: 1, height: 48, borderRadius: 12, backgroundColor: PRIMARY, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   saveBtnText: { color: '#fff', fontWeight: '800', fontSize: 15 },
   confirmBox: { width: '100%', maxWidth: 400, padding: 24, borderRadius: 20, borderWidth: 1, alignItems: 'center' },

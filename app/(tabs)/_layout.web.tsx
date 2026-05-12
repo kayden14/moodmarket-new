@@ -6,33 +6,26 @@
 
 import { Tabs, usePathname } from 'expo-router';
 import WebShell from '@/components/WebShell';
+import { StorefrontProvider } from '@/contexts/StorefrontContext';
 
 export default function WebTabLayout() {
   const pathname = usePathname();
-  
-  const navItems = [
-    { label: 'Storefront', icon: '🏠', path: '/(tabs)' },
-    { label: 'My Cart',    icon: '🛒', path: '/(tabs)/cart' },
-    { label: 'Profile',    icon: '👤', path: '/(tabs)/profile' },
-  ];
-
   const activeNav = pathname === '/' ? '/(tabs)' : pathname;
 
   return (
-    <WebShell 
-      activeNav={activeNav}
-      title="MoodMarket"
-    >
-      <Tabs
-        tabBar={() => null}
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Tabs.Screen name="index" />
-        <Tabs.Screen name="cart" />
-        <Tabs.Screen name="profile" />
-      </Tabs>
-    </WebShell>
+    <StorefrontProvider>
+      <WebShell activeNav={activeNav}>
+        <Tabs
+          tabBar={() => null}
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Tabs.Screen name="index" />
+          <Tabs.Screen name="cart" />
+          <Tabs.Screen name="profile" />
+        </Tabs>
+      </WebShell>
+    </StorefrontProvider>
   );
 }

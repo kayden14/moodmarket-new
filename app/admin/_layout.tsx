@@ -13,6 +13,15 @@ export default function AdminLayout() {
   const segments = useSegments();
   const isLoginPage = segments.includes('login');
 
+  const currentSegment = segments[segments.length - 1];
+  const titleMap: Record<string, string> = {
+    'admin': 'Dashboard',
+    'products': 'Products',
+    'orders': 'Orders',
+    'vendors': 'Vendors',
+    'users': 'Users',
+  };
+
   if (isLoginPage) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
@@ -24,7 +33,8 @@ export default function AdminLayout() {
   return (
     <DashboardShell
       portalName="Admin"
-      title="Admin Panel"
+      title={titleMap[currentSegment] || 'Admin Panel'}
+      subtitle="🛡️ Management Portal"
       navItems={ADMIN_NAV}
       primaryColor="#FF7A8A"
     >

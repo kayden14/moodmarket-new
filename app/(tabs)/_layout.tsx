@@ -155,57 +155,67 @@ const b = StyleSheet.create({
   safeAreaFill: {},
 });
 
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+import MobileHeader from '@/components/MobileHeader';
+
+// ─── Layout constants ─────────────────────────────────────────────────────────
+
+const BAR_HEIGHT = 60;
+...
 // ─── Inner layout (needs ThemeProvider already mounted) ───────────────────────
 
 function InnerTabLayout() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { cartCount } = useCart();
+  const segments = useSegments();
 
   const notifListener    = useRef<any>(null);
   const responseListener = useRef<any>(null);
 
   useEffect(() => {
-    // Notifications are handled via Supabase realtime in notifications.tsx
-    // Push token registration is done safely in lib/notifications.ts
-    if (user?.id) {
-      NotificationService.init(user.id).catch(() => {
-        // Silently ignore — push notifications not available in Expo Go
-      });
-    }
-
-    // Wire up notification listeners only if the API is available
-    try {
-      const ExpoNotifications = require('expo-notifications');
-      notifListener.current = ExpoNotifications.addNotificationReceivedListener(
-        (notification: any) => {
-          console.log('[Notifications] Received:', notification.request.content.title);
-        }
-      );
-      responseListener.current = ExpoNotifications.addNotificationResponseReceivedListener(
-        (response: any) => {
-          const screen = response.notification.request.content.data?.screen as string | undefined;
-          if (screen) setTimeout(() => router.push(screen as any), 300);
-        }
-      );
-    } catch {
-      // expo-notifications not available in Expo Go SDK 53+ — safe to ignore
-    }
-
-    return () => {
-      notifListener.current?.remove?.();
-      responseListener.current?.remove?.();
-    };
+...
   }, [user?.id]);
 
+  const currentSegment = segments[segments.length - 1] || 'index';
+  const firstName = profile?.name?.split(' ')[0] ?? '';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const headerProps: any = {
+    index: {
+      title: firstName,
+      greeting: greeting,
+      showSearch: true,
+      showThemeToggle: true,
+      showNotifications: true,
+    },
+    cart: {
+      title: 'My Cart',
+      subtitle: 'YOUR ORDER',
+      showCartBadge: true,
+      cartCount: cartCount,
+    },
+    profile: {
+      title: 'My Profile',
+      subtitle: 'ACCOUNT',
+      showSettings: true,
+      onSettingsPress: () => router.push('/edit-profile'),
+    },
+  };
+
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="cart" />
-      <Tabs.Screen name="profile" />
-    </Tabs>
+    <View style={{ flex: 1 }}>
+      <MobileHeader {...(headerProps[currentSegment] || headerProps.index)} />
+      <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{ headerShown: false }}
+      >
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="cart" />
+        <Tabs.Screen name="profile" />
+      </Tabs>
+    </View>
   );
 }
 
