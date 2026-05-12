@@ -418,26 +418,30 @@ export async function approveVendorApplication(
     .eq('id', application.user_id);
   if (profileError) throw profileError;
 
-  // 3. Create entry in vendors table
+  // 3. Create / update entry in vendors table (upsert so re-approvals don't fail)
   const { error: vendorError } = await supabase
     .from('vendors')
-    .insert({
-      user_id: application.user_id,
-      store_name: application.store_name,
-      store_description: application.store_description,
-      contact_email: application.email || application.user_email,
-      contact_phone: application.phone,
-    });
+    .upsert(
+      {
+        user_id: application.user_id,
+        store_name: application.store_name,
+        store_description: application.store_description,
+        contact_email: application.email || application.user_email,
+        contact_phone: application.phone,
+      },
+      { onConflict: 'user_id' },
+    );
   if (vendorError) throw vendorError;
 
-  // 4. Send a notification to the vendor
-  await supabase.from('vendor_notifications').insert({
+  // 4. Send a notification to the vendor (non-throwing so approval isn't blocked)
+  const { error: notifError } = await supabase.from('vendor_notifications').insert({
     vendor_id: application.user_id,
     title: '🎉 Your store is approved!',
     body: `Welcome to MoodMarket, ${application.store_name}! You can now start adding products and selling.`,
     type: 'approval',
     meta: { application_id: application.id },
   });
+  if (notifError) console.error('[approveVendorApplication] notification error:', notifError);
 
   // 5. Trigger Edge Function to send email and reset password
   if (application.user_email) {

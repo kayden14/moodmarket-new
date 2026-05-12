@@ -49,12 +49,14 @@ export default function DashboardShell({
     setIsSidebarOpen(width >= 1024);
   }, [width]);
 
-  const bg = isDark ? '#0F172A' : '#F1F5F9';
+  const bg       = isDark ? '#0F172A' : '#F1F5F9';
   const sidebarBg = isDark ? '#111827' : '#FFFFFF';
-  const cardBg = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const subtext = isDark ? '#94A3B8' : '#64748B';
+  const cardBg    = isDark ? '#1E293B' : '#FFFFFF';
+  const border    = isDark ? '#334155' : '#E2E8F0';
+  const text      = isDark ? '#F1F5F9' : '#0F172A';
+  const subtext   = isDark ? '#94A3B8' : '#64748B';
+  const toggleBg  = isDark ? '#1E293B' : '#F1F5F9';
+  const toggleBorder = isDark ? '#334155' : '#E2E8F0';
 
   const handleSignOut = async () => {
     await signOut();
@@ -188,13 +190,34 @@ export default function DashboardShell({
               <Text style={{ fontSize: 14, fontWeight: '700', color: text }}>{profile?.name || 'User'}</Text>
               <Text style={{ fontSize: 11, color: subtext }}>{profile?.role?.toUpperCase() || portalName.toUpperCase()}</Text>
             </View>
-            <View style={{ 
-              width: 36, 
-              height: 36, 
-              borderRadius: 18, 
-              backgroundColor: `${primaryColor}22`, 
-              alignItems: 'center', 
-              justifyContent: 'center' 
+
+            {/* Theme toggle — always visible in header */}
+            <TouchableOpacity
+              onPress={toggleDark}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: toggleBg,
+                borderWidth: 1,
+                borderColor: toggleBorder,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark
+                ? <Sun  size={16} color={subtext} />
+                : <Moon size={16} color={subtext} />}
+            </TouchableOpacity>
+
+            <View style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: `${primaryColor}22`,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
               <Text style={{ color: primaryColor, fontWeight: '800', fontSize: 14 }}>
                 {(profile?.name || 'U')[0].toUpperCase()}
@@ -204,7 +227,7 @@ export default function DashboardShell({
         </View>
 
         {/* Content Area */}
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: bg }}>
           {children}
         </View>
       </View>

@@ -166,8 +166,11 @@ function VendorApplyWeb() {
     .va-btn:hover:not(:disabled) { transform: translateY(-2px); opacity: .92; }
     .va-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
     .va-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: va-spin .7s linear infinite; }
-    .va-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid ${BORDER}; border-radius: 20px; padding: 6px 14px; color: #64748B; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 24px; transition: border-color .15s, color .15s; }
+    .va-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid ${BORDER}; border-radius: 20px; padding: 6px 14px; color: #64748B; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 12px; transition: border-color .15s, color .15s; }
     .va-back:hover { border-color: #475569; color: #94A3B8; }
+    .va-back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .va-vendor-link { background: none; border: none; color: #475569; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: underline; padding: 0; transition: color .15s; }
+    .va-vendor-link:hover { color: #94A3B8; }
     .va-status-card {
       background: ${CARD}; border: 1px solid ${BORDER}; border-radius: 20px; padding: 32px; text-align: center;
     }
@@ -292,12 +295,20 @@ function VendorApplyWeb() {
         {/* RIGHT — form */}
         <div className="va-right">
           <div className="va-form-wrap">
-            <button
-              className="va-back"
-              onClick={() => router.push('/vendor/login' as any)}
-            >
-              ← Back to Login
-            </button>
+            <div className="va-back-row">
+              <button
+                className="va-back"
+                onClick={() => router.push('/(tabs)' as any)}
+              >
+                ← Back to Store
+              </button>
+              <button
+                className="va-vendor-link"
+                onClick={() => router.push('/vendor/login' as any)}
+              >
+                Already a vendor? Login
+              </button>
+            </div>
 
             {application ? (
               <div className="va-status-card">
@@ -540,10 +551,10 @@ function VendorApplyMobile() {
         <View style={s.header}>
           <TouchableOpacity
             style={s.backBtn}
-            onPress={() => router.push('/vendor/login' as any)}
+            onPress={() => router.replace('/(tabs)' as any)}
           >
             <ChevronLeft size={20} color={SUB} />
-            <Text style={s.backBtnTxt}>Back to Login</Text>
+            <Text style={s.backBtnTxt}>Back to Store</Text>
           </TouchableOpacity>
 
           <View style={s.logoCircle}>
