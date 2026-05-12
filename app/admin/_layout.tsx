@@ -1,5 +1,6 @@
 import { Stack, useSegments } from 'expo-router';
 import DashboardShell from '@/components/DashboardShell';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const ADMIN_NAV = [
   { icon: '🏠', label: 'Dashboard', path: '/admin' },
@@ -40,20 +41,22 @@ export default function AdminLayout() {
   }
 
   return (
-    <DashboardShell
-      portalName="Admin"
-      title={titleMap[currentSegment] || 'Admin Panel'}
-      subtitle="🛡️ Management Portal"
-      navItems={ADMIN_NAV}
-      primaryColor="#FF7A8A"
-    >
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index"    options={{ headerShown: false }} />
-        <Stack.Screen name="orders"   options={{ headerShown: false }} />
-        <Stack.Screen name="products" options={{ headerShown: false }} />
-        <Stack.Screen name="users"    options={{ headerShown: false }} />
-        <Stack.Screen name="vendors"  options={{ headerShown: false }} />
-      </Stack>
-    </DashboardShell>
+    <ThemeProvider>
+      <DashboardShell
+        portalName="Admin"
+        title={titleMap[currentSegment] || 'Admin Panel'}
+        subtitle="🛡️ Management Portal"
+        navItems={ADMIN_NAV}
+        primaryColor="#FF7A8A"
+      >
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index"    options={{ headerShown: false }} />
+          <Stack.Screen name="orders"   options={{ headerShown: false }} />
+          <Stack.Screen name="products" options={{ headerShown: false }} />
+          <Stack.Screen name="users"    options={{ headerShown: false }} />
+          <Stack.Screen name="vendors"  options={{ headerShown: false }} />
+        </Stack>
+      </DashboardShell>
+    </ThemeProvider>
   );
 }
