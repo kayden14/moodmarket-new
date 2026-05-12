@@ -44,7 +44,7 @@ function Stepper({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 13, fontWeight: 800,
         color: theme.textPrimary,
-        fontFamily: '"Sora", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
       }}>
         {value}
       </div>
@@ -103,7 +103,7 @@ function CartItemRow({
         position: 'absolute', top: 8, left: 10,
         fontSize: 9, fontWeight: 800, letterSpacing: 1,
         color: theme.inactive,
-        fontFamily: '"Sora", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
       }}>
         {String(index + 1).padStart(2, '0')}
       </span>
@@ -131,7 +131,7 @@ function CartItemRow({
           margin: '0 0 3px',
           fontSize: 13, fontWeight: 700,
           color: theme.textPrimary,
-          fontFamily: '"Lora", serif',
+          fontFamily: '"Playfair Display", serif',
           letterSpacing: -0.2,
           lineHeight: 1.35,
           overflow: 'hidden',
@@ -143,7 +143,7 @@ function CartItemRow({
         <p style={{
           margin: '0 0 10px',
           fontSize: 11, color: theme.textSecondary,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>
           GH₵ {item.products.price.toFixed(2)} / unit
         </p>
@@ -163,7 +163,7 @@ function CartItemRow({
         <span style={{
           fontSize: 15, fontWeight: 800,
           color: theme.primary,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
           letterSpacing: -0.4,
         }}>
           GH₵ {lineTotal}
@@ -222,7 +222,7 @@ function DeliveryProgress({ subtotal, theme, isDark }: { subtotal: number; theme
           margin: 0, flex: 1,
           fontSize: 12, fontWeight: 600,
           color: isFree ? '#22C55E' : theme.textSecondary,
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
         }}>
           {isFree
             ? <><PartyPopper size={12} /> Free delivery unlocked!</>
@@ -289,7 +289,7 @@ function OrderSummary({
             fontSize: 10, fontWeight: 800,
             letterSpacing: 2,
             color: theme.primary,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             textTransform: 'uppercase',
           }}>
             ORDER SUMMARY
@@ -298,7 +298,7 @@ function OrderSummary({
             margin: 0,
             fontSize: 17, fontWeight: 700,
             color: theme.textPrimary,
-            fontFamily: '"Lora", serif',
+            fontFamily: '"Playfair Display", serif',
             letterSpacing: -0.3,
           }}>
             Your Bag
@@ -315,7 +315,7 @@ function OrderSummary({
           <span style={{
             fontSize: 13, fontWeight: 800,
             color: theme.textPrimary,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>
             {cartCount}
           </span>
@@ -343,14 +343,14 @@ function OrderSummary({
           }}>
             <span style={{
               fontSize: 13, color: theme.textSecondary,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               {row.label}
             </span>
             <span style={{
               fontSize: 13, fontWeight: 700,
               color: row.color,
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               {row.value}
             </span>
@@ -367,14 +367,14 @@ function OrderSummary({
           <span style={{
             fontSize: 14, fontWeight: 700,
             color: theme.textPrimary,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>
             Total
           </span>
           <span style={{
             fontSize: 26, fontWeight: 900,
             color: theme.primary,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             letterSpacing: -1,
           }}>
             GH₵ {total.toFixed(2)}
@@ -398,7 +398,7 @@ function OrderSummary({
                 background: theme.background,
                 color: theme.textPrimary,
                 fontSize: 12,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 outline: 'none',
                 transition: 'border-color 0.15s',
                 minWidth: 0,
@@ -414,7 +414,7 @@ function OrderSummary({
                 color: theme.primary,
                 fontSize: 12, fontWeight: 700,
                 cursor: 'pointer',
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.13s',
                 flexShrink: 0,
@@ -435,7 +435,7 @@ function OrderSummary({
             <span style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center' }}><CheckCircle size={13} color="#22C55E" /></span>
             <span style={{
               fontSize: 11, fontWeight: 600, color: '#22C55E',
-              fontFamily: '"Sora", sans-serif', flex: 1,
+              fontFamily: '"Plus Jakarta Sans", sans-serif', flex: 1,
             }}>
               10% discount applied!
             </span>
@@ -444,7 +444,7 @@ function OrderSummary({
               style={{
                 background: 'none', border: 'none',
                 color: '#22C55E', cursor: 'pointer',
-                fontSize: 12, fontFamily: '"Sora", sans-serif',
+                fontSize: 12, fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}
             >
               Remove
@@ -462,7 +462,7 @@ function OrderSummary({
             color: '#fff',
             fontSize: 14, fontWeight: 800,
             cursor: 'pointer',
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             boxShadow: `0 8px 24px ${theme.primary}44`,
             transition: 'transform 0.15s, box-shadow 0.15s',
@@ -497,7 +497,7 @@ function OrderSummary({
           <span style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center' }}><Lock size={10} /></span>
           <span style={{
             fontSize: 10, color: theme.inactive,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             letterSpacing: 0.2,
           }}>
             Secured by Paystack · 256-bit SSL
@@ -531,7 +531,7 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
         margin: '0 0 10px',
         fontSize: 22, fontWeight: 700,
         color: theme.textPrimary,
-        fontFamily: '"Lora", serif',
+        fontFamily: '"Playfair Display", serif',
         letterSpacing: -0.5,
       }}>
         Your cart is empty
@@ -540,7 +540,7 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
         margin: '0 0 28px',
         fontSize: 13,
         color: theme.textSecondary,
-        fontFamily: '"Sora", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         lineHeight: 1.65,
         maxWidth: 300,
       }}>
@@ -554,7 +554,7 @@ function CartEmpty({ theme, isDark, onShop }: { theme: any; isDark: boolean; onS
           background: theme.primary, color: '#fff',
           fontSize: 13, fontWeight: 700,
           cursor: 'pointer',
-          fontFamily: '"Sora", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
           display: 'flex', alignItems: 'center', gap: 8,
           boxShadow: `0 6px 20px ${theme.primary}44`,
         }}
@@ -601,7 +601,7 @@ export default function CartWeb() {
           overflow-y: auto !important;
           overflow-x: hidden !important;
           position: static !important;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           -webkit-overflow-scrolling: touch;
         }
 
@@ -653,14 +653,14 @@ export default function CartWeb() {
           font-weight: 600;
           color: ${ts};
           cursor: pointer;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           transition: all 0.15s;
           white-space: nowrap;
         }
         .cart-back:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
 
         .cart-logo {
-          font-family: "Lora", serif;
+          font-family: "Playfair Display", serif;
           font-size: 17px;
           font-weight: 700;
           color: ${tp};
@@ -698,7 +698,7 @@ export default function CartWeb() {
           letter-spacing: 3px;
           color: ${pri};
           margin-bottom: 3px;
-          font-family: "Sora", sans-serif;
+          font-family: "Plus Jakarta Sans", sans-serif;
           text-transform: uppercase;
         }
 
@@ -706,7 +706,7 @@ export default function CartWeb() {
           font-size: 30px;
           font-weight: 700;
           color: ${tp};
-          font-family: "Lora", serif;
+          font-family: "Playfair Display", serif;
           letter-spacing: -0.8px;
           line-height: 1.1;
         }
@@ -877,10 +877,10 @@ export default function CartWeb() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 34,
             }}><User size={34} /></div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', marginBottom: 10 }}>
               Sign in first
             </h2>
-            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif' }}>
+            <p style={{ fontSize: 13, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               Log in to view your cart and check out.
             </p>
             <button
@@ -889,7 +889,7 @@ export default function CartWeb() {
                 padding: '13px 28px', borderRadius: 14,
                 border: 'none', background: pri, color: '#fff',
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 boxShadow: `0 6px 20px ${pri}44`,
               }}
             >
@@ -900,7 +900,7 @@ export default function CartWeb() {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             height: 260, color: inact, fontSize: 14,
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}>
             Loading cart…
           </div>
@@ -943,7 +943,7 @@ export default function CartWeb() {
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: 'pointer',
-                    fontFamily: '"Sora", sans-serif',
+                    fontFamily: '"Plus Jakarta Sans", sans-serif',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 5,
@@ -988,10 +988,10 @@ export default function CartWeb() {
             {/* ── STICKY CHECKOUT BAR (small screens) ── */}
             <div className="cart-sticky-checkout">
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Sora", sans-serif', fontWeight: 600 }}>
+                <p style={{ margin: 0, fontSize: 10, color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 }}>
                   {cartCount} {cartCount === 1 ? 'item' : 'items'}
                 </p>
-                <p style={{ margin: 0, fontSize: 17, fontWeight: 900, color: pri, fontFamily: '"Sora", sans-serif', letterSpacing: -0.5 }}>
+                <p style={{ margin: 0, fontSize: 17, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.5 }}>
                   GH₵ {(cartTotal + (cartTotal >= 200 ? 0 : 15)).toFixed(2)}
                 </p>
               </div>
@@ -1003,7 +1003,7 @@ export default function CartWeb() {
                   background: pri, color: '#fff',
                   fontSize: 13, fontWeight: 800,
                   cursor: 'pointer',
-                  fontFamily: '"Sora", sans-serif',
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
                   display: 'flex', alignItems: 'center', gap: 8,
                   boxShadow: `0 6px 20px ${pri}44`,
                   whiteSpace: 'nowrap',

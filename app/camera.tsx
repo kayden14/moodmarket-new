@@ -499,7 +499,7 @@ function WebCameraScreen() {
       .cam-btn {
         display: flex; align-items: center; justify-content: center; gap: 8px;
         border: none; border-radius: 14px; cursor: pointer;
-        font-family: 'Sora', sans-serif; font-weight: 800;
+        font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
         transition: transform 0.15s ease, opacity 0.15s ease;
       }
       .cam-btn:hover  { transform: translateY(-2px); opacity: 0.9; }
@@ -508,7 +508,7 @@ function WebCameraScreen() {
         display: flex; align-items: center; gap: 10px;
         border-radius: 14px; border-width: 1.5px; border-style: solid;
         padding: 14px 16px; cursor: pointer;
-        font-family: 'Sora', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
         background: none;
       }
@@ -525,7 +525,7 @@ function WebCameraScreen() {
         display: flex; align-items: center; gap: 8px;
         border-radius: 40px; border-width: 1.5px; border-style: solid;
         padding: 8px 16px; cursor: pointer; white-space: nowrap;
-        font-family: 'Sora', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         transition: transform 0.15s ease;
         background: none;
       }
@@ -688,7 +688,7 @@ function WebCameraScreen() {
   const detectedPal  = detectedMood ? MOOD_PALETTES[detectedMood] : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Sora", sans-serif', color: tp, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp, display: 'flex', flexDirection: 'column' }}>
       <video
         ref={videoRef} autoPlay muted playsInline aria-hidden="true"
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }}
@@ -701,7 +701,7 @@ function WebCameraScreen() {
           style={{ width: 40, height: 40, borderRadius: 12, border: `1.5px solid ${bord}`, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, color: tp, flexShrink: 0 }}
         >←</button>
         <div>
-          <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 900, color: tp, letterSpacing: -0.3 }}>
+          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 900, color: tp, letterSpacing: -0.3 }}>
             {phase === 'results' ? 'Your mood · Products' : 'Personalising your experience…'}
           </div>
           <div style={{ fontSize: 11, color: ts }}>
@@ -711,7 +711,7 @@ function WebCameraScreen() {
         {(phase === 'initialising' || phase === 'scanning') && (
           <button
             onClick={() => { stopAll(); setPhase('manual'); }}
-            style={{ marginLeft: 'auto', background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '7px 16px', fontSize: 12, fontWeight: 700, color: ts, cursor: 'pointer', fontFamily: '"Sora", sans-serif', whiteSpace: 'nowrap' }}
+            style={{ marginLeft: 'auto', background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '7px 16px', fontSize: 12, fontWeight: 700, color: ts, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', whiteSpace: 'nowrap' }}
           >
             Pick manually
           </button>
@@ -724,7 +724,7 @@ function WebCameraScreen() {
         {(phase === 'initialising' || phase === 'scanning') && (
           <div style={{ textAlign: 'center', maxWidth: 420 }}>
             <div style={{ width: 96, height: 96, borderRadius: 28, background: tint, border: `2px solid ${pri}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, margin: '0 auto 28px', animation: 'cam-pulse 2s ease-in-out infinite' }}>✨</div>
-            <h1 style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 12 }}>Reading your vibe…</h1>
+            <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 12 }}>Reading your vibe…</h1>
             <p style={{ fontSize: 15, color: ts, lineHeight: 1.7, marginBottom: 32 }}>Hold still for a second while we personalise your recommendations.</p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {[0, 0.3, 0.6].map((delay, i) => (
@@ -738,7 +738,7 @@ function WebCameraScreen() {
         {phase === 'fetching_recs' && detectedMeta && (
           <div style={{ textAlign: 'center', maxWidth: 420 }}>
             <div style={{ fontSize: 72, marginBottom: 20 }}>{detectedMeta.emoji}</div>
-            <h1 style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 12 }}>{detectedMeta.label} mood detected</h1>
+            <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 12 }}>{detectedMeta.label} mood detected</h1>
             <p style={{ fontSize: 15, color: ts, lineHeight: 1.7, marginBottom: 28 }}>Finding products that match your energy right now…</p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {[0, 0.3, 0.6].map((delay, i) => (
@@ -757,7 +757,7 @@ function WebCameraScreen() {
               <span style={{ fontSize: 52 }}>{detectedMeta.emoji}</span>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: detectedPal.primary, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>We detected your mood</div>
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 900, color: detectedPal.primary, letterSpacing: -0.3 }}>{detectedMeta.label}</div>
+                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 26, fontWeight: 900, color: detectedPal.primary, letterSpacing: -0.3 }}>{detectedMeta.label}</div>
                 <div style={{ fontSize: 13, color: detectedPal.primary, opacity: 0.75, marginTop: 2 }}>{detectedMeta.description}</div>
               </div>
               <button
@@ -773,7 +773,7 @@ function WebCameraScreen() {
             {productRecs.length > 0 && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <span style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 900, color: tp, letterSpacing: -0.3 }}>Picked for your vibe ✦</span>
+                  <span style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 900, color: tp, letterSpacing: -0.3 }}>Picked for your vibe ✦</span>
                   <span style={{ fontSize: 12, color: ts, fontWeight: 600 }}>{productRecs.length} items</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
@@ -827,7 +827,7 @@ function WebCameraScreen() {
         {phase === 'error' && (
           <div style={{ textAlign: 'center', maxWidth: 460 }}>
             <div style={{ width: 90, height: 90, borderRadius: 24, background: '#FEF2F2', border: '2px solid #FECACA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, margin: '0 auto 24px' }}>⚠️</div>
-            <h2 style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 900, color: tp, marginBottom: 10 }}>Couldn't access camera</h2>
+            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, marginBottom: 10 }}>Couldn't access camera</h2>
             <p style={{ fontSize: 14, color: ts, lineHeight: 1.7, marginBottom: 28 }}>{errMsg} Please pick your mood manually below.</p>
             <button className="cam-btn" onClick={() => setPhase('manual')} style={{ background: pri, color: '#fff', width: '100%', height: 50, fontSize: 15, borderRadius: 14 }}>
               Pick mood manually
@@ -839,7 +839,7 @@ function WebCameraScreen() {
         {phase === 'manual' && (
           <div style={{ width: '100%', maxWidth: 600 }}>
             <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 8 }}>
+              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 8 }}>
                 How are you <em style={{ color: pri }}>feeling?</em>
               </h2>
               <p style={{ fontSize: 14, color: ts }}>Pick your mood and we'll find the right products.</p>

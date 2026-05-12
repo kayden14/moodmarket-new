@@ -11,7 +11,16 @@ const ADMIN_NAV = [
 
 export default function AdminLayout() {
   const segments = useSegments();
-  const isLoginPage = segments.includes('login');
+  const isLoginPage = (segments as string[]).includes('login');
+
+  const currentSegment = segments[segments.length - 1];
+  const titleMap: Record<string, string> = {
+    'admin': 'Dashboard',
+    'products': 'Products',
+    'orders': 'Orders',
+    'vendors': 'Vendors',
+    'users': 'Users',
+  };
 
   const currentSegment = segments[segments.length - 1];
   const titleMap: Record<string, string> = {

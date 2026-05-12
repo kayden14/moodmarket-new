@@ -58,23 +58,6 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   </Svg>
 );
 
-const AppleIcon = ({
-  color = '#000',
-  size = 20,
-}: {
-  color?: string;
-  size?: number;
-}) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-    <Path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-  </Svg>
-);
-
-const FacebookIcon = ({ size = 20 }: { size?: number }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="#1877F2">
-    <Path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </Svg>
-);
 
 /* ─────────────────────────────────────────────────────────────────────────
    WEB LOGIN
@@ -128,13 +111,13 @@ function LoginScreenWeb() {
   };
 
   const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;900&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
 
     .auth-root {
       min-height: 100vh; display: flex;
-      font-family: 'Sora', sans-serif; background: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif; background: #fff;
     }
 
     .auth-left {
@@ -149,7 +132,7 @@ function LoginScreenWeb() {
     .auth-brand-mark {
       width: 72px; height: 72px; border-radius: 22px; background: #FF7A8A;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Lora', serif; font-size: 36px; font-weight: 700; color: #fff;
+      font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #fff;
       margin: 0 auto 16px;
       box-shadow: 0 16px 40px rgba(255,122,138,0.4);
       cursor: pointer;
@@ -163,7 +146,7 @@ function LoginScreenWeb() {
       transform: scale(0.97);
     }
     .auth-brand-name {
-      font-family: 'Lora', serif; font-size: 28px; font-weight: 700;
+      font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700;
       color: #1A1A1A; letter-spacing: -0.5px; margin-bottom: 6px;
     }
     .auth-brand-tag { font-size: 14px; color: #9CA3AF; font-weight: 500; }
@@ -195,7 +178,7 @@ function LoginScreenWeb() {
       color: #FF7A8A; margin-bottom: 10px;
     }
     .auth-heading {
-      font-family: 'Lora', serif; font-size: clamp(28px, 3vw, 40px);
+      font-family: 'Playfair Display', serif; font-size: clamp(28px, 3vw, 40px);
       font-weight: 900; color: #1A1A1A; letter-spacing: -0.8px; line-height: 1.15; margin-bottom: 8px;
     }
     .auth-heading em { font-style: italic; color: #FF7A8A; }
@@ -210,7 +193,7 @@ function LoginScreenWeb() {
     .auth-field { margin-bottom: 18px; }
     .auth-field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
     .auth-field-label { font-size: 13px; font-weight: 700; color: #374151; }
-    .auth-field-link { font-size: 12px; font-weight: 600; color: #FF7A8A; cursor: pointer; background: none; border: none; font-family: 'Sora', sans-serif; }
+    .auth-field-link { font-size: 12px; font-weight: 600; color: #FF7A8A; cursor: pointer; background: none; border: none; font-family: 'Plus Jakarta Sans', sans-serif; }
     .auth-field-link:hover { text-decoration: underline; }
 
     .auth-input-wrap {
@@ -224,7 +207,7 @@ function LoginScreenWeb() {
     .auth-input-icon { font-size: 17px; flex-shrink: 0; color: #9CA3AF; }
     .auth-input-wrap input {
       flex: 1; background: none; border: none; outline: none;
-      font-size: 15px; color: #111827; font-family: 'Sora', sans-serif;
+      font-size: 15px; color: #111827; font-family: 'Plus Jakarta Sans', sans-serif;
     }
     .auth-input-wrap input::placeholder { color: #9CA3AF; }
     .auth-eye-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: #9CA3AF; padding: 4px; }
@@ -233,7 +216,7 @@ function LoginScreenWeb() {
     .auth-cta {
       width: 100%; background: #FF7A8A; color: #fff; border: none; border-radius: 14px;
       height: 52px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 4px;
-      font-family: 'Sora', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       box-shadow: 0 8px 24px rgba(255,122,138,0.3);
       transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.15s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -253,45 +236,45 @@ function LoginScreenWeb() {
     .auth-divider-line { flex: 1; height: 1px; background: #E5E7EB; }
     .auth-divider-text { font-size: 13px; color: #9CA3AF; font-weight: 500; white-space: nowrap; }
 
-    .auth-socials { display: flex; gap: 10px; }
+    .auth-socials { display: flex; }
     .auth-social-btn {
-      flex: 1; height: 48px; background: #F9FAFB; border: 1.5px solid #E5E7EB;
-      border-radius: 13px; display: flex; align-items: center; justify-content: center;
+      flex: 1; height: 52px; background: #F9FAFB; border: 1.5px solid #E5E7EB;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;
       cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.12s;
-      font-size: 19px;
+      font-size: 15px; font-weight: 700; color: #374151; font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .auth-social-btn:hover { background: #F3F4F6; border-color: #D1D5DB; transform: translateY(-1px); }
+    .auth-social-btn:hover { background: #F3F4F6; border-color: #4285F4; color: #4285F4; transform: translateY(-1px); }
     .auth-social-btn:active { transform: translateY(0); }
 
     .auth-footer { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 24px; font-size: 14px; color: #6B7280; }
-    .auth-footer-link { color: #FF7A8A; font-weight: 700; cursor: pointer; background: none; border: none; font-size: 14px; font-family: 'Sora', sans-serif; }
+    .auth-footer-link { color: #FF7A8A; font-weight: 700; cursor: pointer; background: none; border: none; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; }
     .auth-footer-link:hover { text-decoration: underline; }
 
     .auth-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 500; display: flex; align-items: center; justify-content: center; }
     .auth-modal {
       background: #fff; border-radius: 24px; padding: 32px;
       width: min(440px, 92vw); box-shadow: 0 40px 100px rgba(0,0,0,0.25);
-      font-family: 'Sora', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .auth-modal-title { font-family: 'Lora', serif; font-size: 24px; font-weight: 700; color: #1A1A1A; margin-bottom: 6px; }
+    .auth-modal-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: #1A1A1A; margin-bottom: 6px; }
     .auth-modal-sub { font-size: 14px; color: #6B7280; margin-bottom: 24px; line-height: 1.6; }
     .auth-modal-close { position: absolute; top: 16px; right: 16px; background: none; border: 1px solid #E5E7EB; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: #6B7280; display: flex; align-items: center; justify-content: center; }
     .auth-modal-close:hover { border-color: #FF7A8A; color: #FF7A8A; }
     .auth-modal-input {
       width: 100%; height: 50px; border: 1.5px solid #E5E7EB; border-radius: 13px;
       padding: 0 16px; font-size: 15px; color: #111827; margin-bottom: 16px;
-      font-family: 'Sora', sans-serif; outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none;
       transition: border-color 0.15s;
     }
     .auth-modal-input:focus { border-color: #FF7A8A; }
     .auth-modal-btn {
       width: 100%; height: 50px; background: #FF7A8A; color: #fff; border: none;
       border-radius: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
-      font-family: 'Sora', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       transition: opacity 0.15s, transform 0.15s;
     }
     .auth-modal-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-    .auth-modal-cancel { width: 100%; background: none; border: none; margin-top: 12px; color: #9CA3AF; font-size: 14px; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .auth-modal-cancel { width: 100%; background: none; border: none; margin-top: 12px; color: #9CA3AF; font-size: 14px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
     .auth-modal-cancel:hover { color: #6B7280; }
     .auth-success-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
 
@@ -464,32 +447,14 @@ function LoginScreenWeb() {
             </div>
 
             <div className="auth-socials">
-              {[
-                {
-                  icon: <GoogleIcon size={20} />,
-                  label: 'Google',
-                  provider: 'google' as const,
-                },
-                {
-                  icon: <AppleIcon size={20} color="#000" />,
-                  label: 'Apple',
-                  provider: 'apple' as const,
-                },
-                {
-                  icon: <FacebookIcon size={20} />,
-                  label: 'Facebook',
-                  provider: 'facebook' as const,
-                },
-              ].map((s) => (
-                <button
-                  key={s.label}
-                  className="auth-social-btn"
-                  title={`Continue with ${s.label}`}
-                  onClick={() => signInWithOAuth(s.provider)}
-                >
-                  {s.icon}
-                </button>
-              ))}
+              <button
+                className="auth-social-btn"
+                title="Continue with Google"
+                onClick={() => signInWithOAuth('google')}
+              >
+                <GoogleIcon size={20} />
+                Continue with Google
+              </button>
             </div>
 
             <div className="auth-footer">
@@ -754,29 +719,14 @@ function LoginScreenMobile() {
           </View>
 
           {/* Social buttons */}
-          <View style={ms.socials}>
-            <TouchableOpacity
-              style={ms.socialBtn}
-              activeOpacity={0.7}
-              onPress={() => signInWithOAuth('google')}
-            >
-              <GoogleIcon size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={ms.socialBtn}
-              activeOpacity={0.7}
-              onPress={() => signInWithOAuth('apple')}
-            >
-              <AppleIcon size={20} color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={ms.socialBtn}
-              activeOpacity={0.7}
-              onPress={() => signInWithOAuth('facebook')}
-            >
-              <FacebookIcon size={20} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={ms.socialBtn}
+            activeOpacity={0.85}
+            onPress={() => signInWithOAuth('google')}
+          >
+            <GoogleIcon size={20} />
+            <Text style={ms.socialBtnText}>Continue with Google</Text>
+          </TouchableOpacity>
 
           {/* Sign up link */}
           <View style={ms.signupRow}>
@@ -997,19 +947,24 @@ const ms = StyleSheet.create({
 
   /* ── Social buttons ── */
   socials: {
-    flexDirection: 'row',
-    gap: 10,
     marginBottom: 20,
   },
   socialBtn: {
-    flex: 1,
-    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 52,
     backgroundColor: '#F9FAFB',
     borderWidth: 1.5,
     borderColor: '#E5E7EB',
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 14,
+    marginBottom: 20,
+  },
+  socialBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#374151',
   },
 
   /* ── Sign up row ── */

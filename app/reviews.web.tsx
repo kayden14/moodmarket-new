@@ -84,8 +84,8 @@ export default function ReviewsScreenWeb() {
                 padding: '18px 0', textAlign: 'center',
                 borderRight: i < 2 ? `1px solid ${bord}` : 'none',
               }}>
-                <div style={{ fontSize: 18, fontWeight: 900, color: tp, letterSpacing: -0.4, fontFamily: '"Sora", sans-serif' }}>{stat.value}</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: ts, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4, fontFamily: '"Sora", sans-serif' }}>{stat.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: tp, letterSpacing: -0.4, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{stat.value}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: ts, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -98,7 +98,7 @@ export default function ReviewsScreenWeb() {
               border: `2px solid ${bord}`, borderTopColor: pri,
               borderRadius: '50%', animation: 'spin 0.7s linear infinite',
             }} />
-            <p style={{ fontSize: 14, color: ts, fontFamily: '"Sora", sans-serif' }}>Loading your reviews…</p>
+            <p style={{ fontSize: 14, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Loading your reviews…</p>
           </div>
         ) : !user ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
@@ -111,7 +111,7 @@ export default function ReviewsScreenWeb() {
             }}>
               <MessageSquare size={32} color={pri} strokeWidth={1.5} />
             </div>
-            <p style={{ fontSize: 20, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Sora", sans-serif' }}>Sign in to see reviews</p>
+            <p style={{ fontSize: 20, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Sign in to see reviews</p>
           </div>
         ) : reviews.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
@@ -124,21 +124,21 @@ export default function ReviewsScreenWeb() {
             }}>
               <ShoppingBag size={32} color={pri} strokeWidth={1.5} />
             </div>
-            <p style={{ fontSize: 20, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Sora", sans-serif' }}>No reviews yet</p>
-            <p style={{ fontSize: 14, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Sora", sans-serif' }}>
+            <p style={{ fontSize: 20, fontWeight: 800, color: tp, marginBottom: 8, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>No reviews yet</p>
+            <p style={{ fontSize: 14, color: ts, lineHeight: 1.65, marginBottom: 24, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               Buy products and share your thoughts to help others find what matches their mood.
             </p>
             <button onClick={() => router.push('/(tabs)')} style={{
               background: pri, color: '#fff', border: 'none', borderRadius: 14,
               padding: '14px 28px', fontSize: 15, fontWeight: 800, cursor: 'pointer',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>Start Shopping</button>
           </div>
         ) : (
           <div>
             <p style={{
               fontSize: 12, fontWeight: 500, color: ts, marginBottom: 14, textAlign: 'center',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'} · click any to view the product
             </p>
@@ -166,14 +166,14 @@ export default function ReviewsScreenWeb() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{
                         fontSize: 13, fontWeight: 700, lineHeight: 1.3,
-                        color: tp, marginBottom: 3, fontFamily: '"Sora", sans-serif',
+                        color: tp, marginBottom: 3, fontFamily: '"Plus Jakarta Sans", sans-serif',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>{review.products?.name ?? 'Product'}</p>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: ts, fontFamily: '"Sora", sans-serif' }}>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
                         GH₵{review.products?.price?.toFixed(2)}
                       </p>
                     </div>
-                    <span style={{ color: ts, fontSize: 16, fontFamily: '"Sora", sans-serif' }}>›</span>
+                    <span style={{ color: ts, fontSize: 16, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>›</span>
                   </div>
 
                   <div style={{ height: 1, background: bord, marginBottom: 12 }} />
@@ -182,13 +182,13 @@ export default function ReviewsScreenWeb() {
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <Stars rating={review.rating} size={16} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#F59E0B', fontFamily: '"Sora", sans-serif' }}>{labels[review.rating]}</span>
-                      <span style={{ fontSize: 11, color: ts, marginLeft: 'auto', fontFamily: '"Sora", sans-serif' }}>{date}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#F59E0B', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{labels[review.rating]}</span>
+                      <span style={{ fontSize: 11, color: ts, marginLeft: 'auto', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{date}</span>
                     </div>
                     {review.comment && (
                       <p style={{
                         fontSize: 13, lineHeight: 1.55, color: ts,
-                        fontFamily: '"Sora", sans-serif',
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
                       }}>{review.comment}</p>
                     )}
                   </div>
@@ -200,7 +200,7 @@ export default function ReviewsScreenWeb() {
                       padding: '8px 14px', borderRadius: 10,
                       background: isDark ? '#0D1F2D' : '#EBF4F8',
                       color: '#0A7EA4', border: 'none', cursor: 'pointer',
-                      fontSize: 12, fontWeight: 700, fontFamily: '"Sora", sans-serif',
+                      fontSize: 12, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif',
                     }}>
                       <Pencil size={13} strokeWidth={2} /> Edit
                     </button>
@@ -209,7 +209,7 @@ export default function ReviewsScreenWeb() {
                       padding: '8px 14px', borderRadius: 10,
                       background: isDark ? '#2D1515' : '#FFF0F0',
                       color: '#E53E3E', border: 'none', cursor: 'pointer',
-                      fontSize: 12, fontWeight: 700, fontFamily: '"Sora", sans-serif',
+                      fontSize: 12, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif',
                     }}>
                       <Trash2 size={13} strokeWidth={2} /> Delete
                     </button>

@@ -71,7 +71,7 @@ export default function SearchScreenWeb() {
             style={{
               flex: 1, fontSize: 15, fontWeight: 500,
               color: tp, background: 'transparent', border: 'none', outline: 'none',
-              fontFamily: '"Sora", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}
           />
           {query.length > 0 && (
@@ -83,7 +83,7 @@ export default function SearchScreenWeb() {
 
         {!searched && query.length < 2 ? (
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: tp, marginBottom: 14, fontFamily: '"Sora", sans-serif' }}>Popular searches</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: tp, marginBottom: 14, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Popular searches</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {POPULAR.map(tag => (
                 <button
@@ -93,7 +93,7 @@ export default function SearchScreenWeb() {
                     padding: '8px 16px', borderRadius: 20,
                     border: `1.5px solid ${bord}`, background: card,
                     color: tp, fontSize: 13, fontWeight: 500,
-                    cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+                    cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
                     transition: 'all 0.12s',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = pri; e.currentTarget.style.color = pri; }}
@@ -115,12 +115,12 @@ export default function SearchScreenWeb() {
         ) : results.length === 0 && searched ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <div style={{ fontSize: 40, marginBottom: 12, fontFamily: undefined }}>🔍</div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: tp, marginBottom: 6, fontFamily: '"Sora", sans-serif' }}>No results for "{query}"</p>
-            <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>Try a different keyword or mood</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: tp, marginBottom: 6, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>No results for "{query}"</p>
+            <p style={{ fontSize: 13, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Try a different keyword or mood</p>
           </div>
         ) : (
           <div>
-            <p style={{ fontSize: 12, fontWeight: 500, color: ts, marginBottom: 12, fontFamily: '"Sora", sans-serif' }}>
+            <p style={{ fontSize: 12, fontWeight: 500, color: ts, marginBottom: 12, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -149,18 +149,18 @@ export default function SearchScreenWeb() {
                       <p style={{
                         fontSize: 14, fontWeight: 600, color: tp,
                         marginBottom: 4, lineHeight: 1.4,
-                        fontFamily: '"Sora", sans-serif',
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>{item.name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
                         {[1,2,3,4,5].map(i => (
                           <Star key={i} size={10} color={pri} fill={i <= stars ? pri : 'transparent'} />
                         ))}
-                        <span style={{ fontSize: 11, fontWeight: 600, color: ts, marginLeft: 2, fontFamily: '"Sora", sans-serif' }}>{item.rating?.toFixed(1)}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: ts, marginLeft: 2, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{item.rating?.toFixed(1)}</span>
                       </div>
-                      <p style={{ fontSize: 14, fontWeight: 800, color: pri, fontFamily: '"Sora", sans-serif' }}>GH₵{item.price.toFixed(2)}</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>GH₵{item.price.toFixed(2)}</p>
                     </div>
-                    <span style={{ color: ts, fontSize: 18, fontFamily: '"Sora", sans-serif' }}>›</span>
+                    <span style={{ color: ts, fontSize: 18, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>›</span>
                   </div>
                 );
               })}

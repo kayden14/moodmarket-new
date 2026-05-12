@@ -104,14 +104,14 @@ function StepDots({ step, theme, isDark }: { step: number; theme: any; isDark: b
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 9, fontWeight: 800,
                 color: (done || active) ? '#fff' : theme.inactive,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}>
                 {done ? '✓' : n}
               </div>
               <span style={{
                 fontSize: 8, fontWeight: 600, letterSpacing: 0.2,
                 color: active ? theme.primary : theme.inactive,
-                fontFamily: '"Sora", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}>
                 {label}
               </span>
@@ -142,7 +142,7 @@ function Field({ icon, label, value, onChange, placeholder, type = 'text' }: {
     <div style={{ marginBottom: 10 }}>
       <div style={{
         fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
-        color: theme.inactive, fontFamily: '"Sora", sans-serif', marginBottom: 4,
+        color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 4,
       }}>
         {label}
       </div>
@@ -171,7 +171,7 @@ function Field({ icon, label, value, onChange, placeholder, type = 'text' }: {
             flex: 1, height: 44, padding: '0 12px',
             fontSize: 13, color: theme.textPrimary,
             background: 'transparent', border: 'none', outline: 'none',
-            fontFamily: '"Sora", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             minWidth: 0,
           }}
         />
@@ -209,13 +209,13 @@ function PayMethodCard({ method, selected, onSelect, theme, isDark }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontSize: 13, fontWeight: 800, color: theme.textPrimary,
-          fontFamily: '"Sora", sans-serif', marginBottom: 2, letterSpacing: -0.2,
+          fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 2, letterSpacing: -0.2,
         }}>
           {cfg.title}
         </div>
         <div style={{
           fontSize: 11, color: theme.textSecondary,
-          fontFamily: '"Sora", sans-serif', marginBottom: 6,
+          fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 6,
         }}>
           {cfg.sub}
         </div>
@@ -223,7 +223,7 @@ function PayMethodCard({ method, selected, onSelect, theme, isDark }: {
           {cfg.pills.map(p => (
             <div key={p} style={{
               padding: '2px 7px', borderRadius: 5, fontSize: 9, fontWeight: 800,
-              letterSpacing: 0.5, fontFamily: '"Sora", sans-serif',
+              letterSpacing: 0.5, fontFamily: '"Plus Jakarta Sans", sans-serif',
               border: `1px solid ${selected ? (isDark ? '#3D2030' : '#FFD6DE') : theme.border}`,
               background: selected ? (isDark ? '#2D1820' : '#FFF0F2') : theme.background,
               color: selected ? theme.primary : theme.inactive,
@@ -266,7 +266,7 @@ function MomoSelector({ selected, onSelect, momoNumber, onNumberChange, theme, i
     }}>
       <div style={{
         fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
-        color: theme.inactive, fontFamily: '"Sora", sans-serif', marginBottom: 8,
+        color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 8,
       }}>
         Select Network
       </div>
@@ -281,7 +281,7 @@ function MomoSelector({ selected, onSelect, momoNumber, onNumberChange, theme, i
               background: selected === p.id ? p.bg : theme.background,
               color: selected === p.id ? p.color : theme.inactive,
               fontSize: 11, fontWeight: 800, letterSpacing: 0.3,
-              cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+              cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
               transition: 'all 0.15s', minWidth: 0,
             }}
           >
@@ -291,7 +291,7 @@ function MomoSelector({ selected, onSelect, momoNumber, onNumberChange, theme, i
       </div>
       <div style={{
         fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
-        color: theme.inactive, fontFamily: '"Sora", sans-serif', marginBottom: 5,
+        color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 5,
       }}>
         MoMo Number
       </div>
@@ -317,7 +317,7 @@ function MomoSelector({ selected, onSelect, momoNumber, onNumberChange, theme, i
             flex: 1, height: 44, padding: '0 12px',
             fontSize: 13, color: theme.textPrimary,
             background: 'transparent', border: 'none', outline: 'none',
-            fontFamily: '"Sora", sans-serif', minWidth: 0,
+            fontFamily: '"Plus Jakarta Sans", sans-serif', minWidth: 0,
           }}
         />
       </div>
@@ -376,8 +376,8 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
 
   const InfoRow = ({ label, value }: { label: string; value: string }) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 7, gap: 12 }}>
-      <span style={{ fontSize: 12, color: theme.textSecondary, fontFamily: '"Sora", sans-serif', flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Sora", sans-serif', textAlign: 'right', wordBreak: 'break-word' }}>{value}</span>
+      <span style={{ fontSize: 12, color: theme.textSecondary, fontFamily: '"Plus Jakarta Sans", sans-serif', flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Plus Jakarta Sans", sans-serif', textAlign: 'right', wordBreak: 'break-word' }}>{value}</span>
     </div>
   );
 
@@ -390,7 +390,7 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
   const CardHeader = ({ icon, label }: { icon: string; label: string }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12 }}>
       <span style={{ fontSize: 12 }}>{icon}</span>
-      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>{label}</span>
+      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{label}</span>
     </div>
   );
 
@@ -412,10 +412,10 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 42, margin: '0 auto 18px',
         }}>✅</div>
-        <h2 style={{ fontSize: 24, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Lora", serif', letterSpacing: -0.5, marginBottom: 7 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: theme.textPrimary, fontFamily: '"Playfair Display", serif', letterSpacing: -0.5, marginBottom: 7 }}>
           Order Confirmed!
         </h2>
-        <p style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 1.6, maxWidth: 280, margin: '0 auto', fontFamily: '"Sora", sans-serif' }}>
+        <p style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 1.6, maxWidth: 280, margin: '0 auto', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
           Your payment was successful and your order is being processed.
         </p>
       </div>
@@ -426,7 +426,7 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
           {order.reference}
         </div>
         <div style={{ height: 1, background: theme.border, margin: '8px 0' }} />
-        <div style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Sora", sans-serif' }}>🕐 {order.createdAt}</div>
+        <div style={{ fontSize: 11, color: theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>🕐 {order.createdAt}</div>
       </Card>
 
       <Card>
@@ -435,8 +435,8 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
         <InfoRow label="Payment" value={payLabel} />
         <div style={{ height: 1, background: theme.border, margin: '8px 0' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Sora", sans-serif' }}>Total Paid</span>
-          <span style={{ fontSize: 20, fontWeight: 900, color: theme.primary, fontFamily: '"Sora", sans-serif', letterSpacing: -0.5 }}>GH₵ {order.total.toFixed(2)}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: theme.textPrimary, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Total Paid</span>
+          <span style={{ fontSize: 20, fontWeight: 900, color: theme.primary, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.5 }}>GH₵ {order.total.toFixed(2)}</span>
         </div>
       </Card>
 
@@ -462,8 +462,8 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
               )}
             </div>
             <div style={{ paddingLeft: 11, paddingBottom: 8 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 1, color: (item.done || item.active) ? theme.textPrimary : theme.inactive, fontFamily: '"Sora", sans-serif' }}>{item.label}</div>
-              <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Sora", sans-serif' }}>{item.sub}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 1, color: (item.done || item.active) ? theme.textPrimary : theme.inactive, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{item.label}</div>
+              <div style={{ fontSize: 11, color: theme.textSecondary, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{item.sub}</div>
             </div>
           </div>
         ))}
@@ -472,7 +472,7 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
       <button onClick={onGoHome} style={{
         width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
         background: theme.primary, color: '#fff', fontSize: 14, fontWeight: 800,
-        cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+        cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         marginBottom: 10, transition: 'opacity 0.15s',
       }}>
@@ -482,7 +482,7 @@ function OrderConfirmation({ order, onGoHome, onViewOrders, theme, isDark }: {
         width: '100%', padding: '12px 0', borderRadius: 14,
         border: `1.5px solid ${theme.primary}`, background: 'transparent',
         color: theme.primary, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-        fontFamily: '"Sora", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         transition: 'opacity 0.15s',
       }}>
@@ -500,14 +500,14 @@ const makeGlobalStyles = (bg: string, bord: string) => `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   html {
-    font-family: "Sora", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     overflow-y: auto;
     overflow-x: hidden;
   }
 
   body {
     min-height: 100%;
-    font-family: "Sora", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     overflow-y: auto;
     background: ${bg};
   }
@@ -545,14 +545,14 @@ const makeGlobalStyles = (bg: string, bord: string) => `
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    font-family: "Sora", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     transition: opacity 0.15s;
     flex-shrink: 0;
     white-space: nowrap;
   }
 
   .co-logo {
-    font-family: "Lora", serif;
+    font-family: "Playfair Display", serif;
     font-size: 17px;
     font-weight: 600;
     cursor: pointer;
@@ -601,7 +601,7 @@ const makeGlobalStyles = (bg: string, bord: string) => `
     font-size: 14px;
     font-weight: 800;
     cursor: pointer;
-    font-family: "Sora", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -848,10 +848,10 @@ export default function CheckoutWeb() {
       <div className="co-root" style={{ background: bg, alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', padding: '40px 24px', maxWidth: 400, width: '100%' }}>
           <div style={{ fontSize: 44, marginBottom: 18 }}>🛒</div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Lora", serif', marginBottom: 10 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif', marginBottom: 10 }}>
             Please log in to checkout
           </h2>
-          <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif', marginBottom: 24, lineHeight: 1.65 }}>
+          <p style={{ fontSize: 13, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 24, lineHeight: 1.65 }}>
             Sign in to complete your purchase.
           </p>
           <button
@@ -859,7 +859,7 @@ export default function CheckoutWeb() {
             style={{
               padding: '13px 28px', borderRadius: 14, border: 'none',
               background: pri, color: '#fff', fontSize: 13, fontWeight: 700,
-              cursor: 'pointer', fontFamily: '"Sora", sans-serif',
+              cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif',
               boxShadow: `0 6px 20px ${pri}44`,
             }}
           >
@@ -915,7 +915,7 @@ export default function CheckoutWeb() {
             border: `3px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
             borderTopColor: pri, animation: 'spin .7s linear infinite',
           }} />
-          <p style={{ fontSize: 13, color: ts, fontFamily: '"Sora", sans-serif' }}>Confirming your order…</p>
+          <p style={{ fontSize: 13, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Confirming your order…</p>
         </div>
       </div>
     </>
@@ -948,7 +948,7 @@ export default function CheckoutWeb() {
         <nav className="co-nav" style={navStyle}>
           <button className="co-back-btn" style={backBtnStyle} onClick={() => setStep('details')}>← Back</button>
           <div style={{ margin: '0 auto', textAlign: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif' }}>Payment</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Payment</div>
             <div style={{ marginTop: 4, display: 'flex', justifyContent: 'center' }}>
               <StepDots step={2} theme={theme} isDark={isDark} />
             </div>
@@ -960,15 +960,15 @@ export default function CheckoutWeb() {
             background: isDark ? '#2D1820' : '#FFF0F2',
             border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Sora", sans-serif' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
             </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Sora", sans-serif', letterSpacing: -0.4 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
               GH₵ {total.toFixed(2)}
             </div>
           </div>
 
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Sora", sans-serif', marginBottom: 11 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
             Choose Payment Method
           </div>
           <PayMethodCard method="card"         selected={payMethod === 'card'}         onSelect={() => setPayMethod('card')}         theme={theme} isDark={isDark} />
@@ -1002,7 +1002,7 @@ export default function CheckoutWeb() {
               { icon: '🔒', text: '256-bit SSL'         },
               { icon: '⚡', text: 'Powered by Paystack' },
             ].map(({ icon, text }) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: ts, fontFamily: '"Sora", sans-serif' }}>
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
                 <span>{icon}</span> {text}
               </div>
             ))}
@@ -1021,7 +1021,7 @@ export default function CheckoutWeb() {
         <nav className="co-nav" style={navStyle}>
           <button className="co-back-btn" style={backBtnStyle} onClick={() => router.back()}>← Back</button>
           <div style={{ margin: '0 auto', textAlign: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Sora", sans-serif' }}>Checkout</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Checkout</div>
             <div style={{ marginTop: 4, display: 'flex', justifyContent: 'center' }}>
               <StepDots step={1} theme={theme} isDark={isDark} />
             </div>
@@ -1034,15 +1034,15 @@ export default function CheckoutWeb() {
             background: isDark ? '#2D1820' : '#FFF0F2',
             border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Sora", sans-serif' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
               📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
             </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Sora", sans-serif', letterSpacing: -0.4 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
               GH₵ {total.toFixed(2)}
             </div>
           </div>
 
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Sora", sans-serif', marginBottom: 11 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
             Delivery Details
           </div>
 
@@ -1062,7 +1062,7 @@ export default function CheckoutWeb() {
             </div>
           </div>
 
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Sora", sans-serif', marginTop: 16, marginBottom: 10 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 16, marginBottom: 10 }}>
             Order Summary
           </div>
           <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 14, padding: 15, marginBottom: 16 }}>
@@ -1071,14 +1071,14 @@ export default function CheckoutWeb() {
               { label: 'Delivery', value: shipping === 0 ? 'FREE' : `GH₵ ${shipping.toFixed(2)}`, green: shipping === 0 },
             ].map(r => (
               <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-                <span style={{ fontSize: 12, color: ts, fontFamily: '"Sora", sans-serif' }}>{r.label}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: r.green ? SUCCESS_GREEN : tp, fontFamily: '"Sora", sans-serif' }}>{r.value}</span>
+                <span style={{ fontSize: 12, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: r.green ? SUCCESS_GREEN : tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.value}</span>
               </div>
             ))}
             <div style={{ height: 1, background: bord, margin: '9px 0' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Sora", sans-serif' }}>Total</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: pri, fontFamily: '"Sora", sans-serif', letterSpacing: -0.6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Total</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.6 }}>
                 GH₵ {total.toFixed(2)}
               </span>
             </div>

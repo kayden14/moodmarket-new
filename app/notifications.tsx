@@ -473,7 +473,7 @@ function NotificationsScreenWeb() {
   const CSS = `
     @import url('https://fonts.googleapis.com/css2?family=Lora:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sora', sans-serif; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     @keyframes notif-in {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -486,7 +486,7 @@ function NotificationsScreenWeb() {
       cursor: pointer; position: relative;
       animation: notif-in 0.3s ease both;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
-      font-family: 'Sora', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
     .notif-card:hover {
       transform: translateY(-2px);
@@ -498,7 +498,7 @@ function NotificationsScreenWeb() {
     .filter-tab {
       padding: 7px 16px; border-radius: 20px; border: 1.5px solid ${bord};
       background: none; cursor: pointer; font-size: 13px; font-weight: 600;
-      font-family: 'Sora', sans-serif; color: ${ts};
+      font-family: 'Plus Jakarta Sans', sans-serif; color: ${ts};
       transition: all 0.15s ease; white-space: nowrap;
     }
     .filter-tab:hover { border-color: ${pri}; color: ${pri}; }
@@ -509,7 +509,7 @@ function NotificationsScreenWeb() {
       padding: 8px 16px; border-radius: 20px;
       border: 1.5px solid ${bord}; background: none; cursor: pointer;
       font-size: 12px; font-weight: 700; color: ${ts};
-      font-family: 'Sora', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       transition: all 0.15s ease;
     }
     .mark-all-btn:hover:not(:disabled) { border-color: ${pri}; color: ${pri}; }
@@ -576,7 +576,7 @@ function NotificationsScreenWeb() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Sora", sans-serif', color: tp }}>
+      <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp }}>
 
         {/* ── PAGE HEADER ── */}
         <div style={{ background: card, borderBottom: `1px solid ${bord}`, padding: '32px 0 0' }}>
@@ -586,7 +586,7 @@ function NotificationsScreenWeb() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, fontSize: 13, color: ts }}>
               <button
                 onClick={() => router.push('/(tabs)' as any)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontFamily: '"Sora", sans-serif', fontSize: 13 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13 }}
               >
                 Home
               </button>
@@ -598,7 +598,7 @@ function NotificationsScreenWeb() {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
               <div>
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, color: pri, textTransform: 'uppercase', marginBottom: 6 }}>INBOX</p>
-                <h1 style={{ fontFamily: '"Lora", serif', fontSize: 36, fontWeight: 900, color: tp, letterSpacing: -0.8, lineHeight: 1.1 }}>
+                <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 900, color: tp, letterSpacing: -0.8, lineHeight: 1.1 }}>
                   Notifications
                   {unreadCount > 0 && (
                     <span style={{
@@ -635,7 +635,7 @@ function NotificationsScreenWeb() {
                 </span>
                 <button
                   onClick={() => user?.id && markAllRead(user.id)}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Sora", sans-serif' }}
+                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
                 >
                   Mark all read →
                 </button>
@@ -684,11 +684,11 @@ function NotificationsScreenWeb() {
               <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
                 🔒
               </div>
-              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>Sign in to see notifications</h2>
+              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>Sign in to see notifications</h2>
               <p style={{ fontSize: 14, color: ts, maxWidth: 320, lineHeight: 1.65 }}>Your notifications will appear here once you're signed in to your MoodMarket account.</p>
               <button
                 onClick={() => router.push('/login' as any)}
-                style={{ background: pri, border: 'none', borderRadius: 14, padding: '13px 32px', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: '"Sora", sans-serif', boxShadow: `0 6px 20px ${pri}44`, marginTop: 8 }}
+                style={{ background: pri, border: 'none', borderRadius: 14, padding: '13px 32px', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', boxShadow: `0 6px 20px ${pri}44`, marginTop: 8 }}
               >
                 Sign In →
               </button>
@@ -701,7 +701,7 @@ function NotificationsScreenWeb() {
               <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
                 🔔
               </div>
-              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>
+              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>
                 {activeFilter === 'all' ? 'All caught up!' : `No ${activeFilter} notifications`}
               </h2>
               <p style={{ fontSize: 14, color: ts, maxWidth: 340, lineHeight: 1.65 }}>
@@ -712,7 +712,7 @@ function NotificationsScreenWeb() {
               {activeFilter !== 'all' && (
                 <button
                   onClick={() => setActiveFilter('all')}
-                  style={{ background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '8px 20px', color: tp, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Sora", sans-serif', marginTop: 8 }}
+                  style={{ background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '8px 20px', color: tp, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 8 }}
                 >
                   View all notifications
                 </button>

@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, Platform, ScrollView, Modal, Alert,
+  ActivityIndicator, Platform, ScrollView, Modal, Alert, TextInput,
 } from 'react-native';
 import { useVendorsData } from '@/hooks/useVendorsData';
 import { approveVendorApplication, rejectVendorApplication, suspendAccount } from '@/services/vendorService';

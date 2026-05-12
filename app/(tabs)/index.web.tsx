@@ -5,13 +5,21 @@ import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+<<<<<<< HEAD
 import { useTheme, MoodKey } from '@/contexts/ThemeContext';
+=======
+import { useTheme } from '@/contexts/ThemeContext';
+>>>>>>> origin/main
 import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
 import { NotificationService } from '@/services/notifications';
-import { useMoodDetection } from '@/hooks/useMoodDetection';
+import { useStorefront } from '@/contexts/StorefrontContext';
 import {
+<<<<<<< HEAD
   Heart, Star, ShoppingCart, ArrowRight, Sparkles, Flame, Search, ChevronRight
+=======
+  Heart, Star, ShoppingCart, ArrowRight, Search, ChevronRight
+>>>>>>> origin/main
 } from 'lucide-react';
 import WebShell from '@/components/WebShell';
 
@@ -138,8 +146,14 @@ function ProductCard({ item, onPress, onAddToCart }: {
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 }}>
+<<<<<<< HEAD
           <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary }}>
             GH₵ {(item as Product).price.toFixed(2)}
+=======
+          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
+            {(item as Product).price.toFixed(2)}
+>>>>>>> origin/main
           </span>
           <button
             onClick={handleAdd}
@@ -154,6 +168,11 @@ function ProductCard({ item, onPress, onAddToCart }: {
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '0 12px',
               transition: 'all 0.18s ease',
+<<<<<<< HEAD
+=======
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              whiteSpace: 'nowrap',
+>>>>>>> origin/main
             }}
           >
             {adding ? '...' : '+ Add'}
@@ -211,7 +230,18 @@ function TrendingCard({ item, onPress, onAddToCart }: {
           {item.name}
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+<<<<<<< HEAD
           <span style={{ fontSize: 15, fontWeight: 700, color: theme.textPrimary }}>
+=======
+          <span style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: theme.textPrimary,
+            letterSpacing: -0.3,
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
+            flexShrink: 0,
+          }}>
+>>>>>>> origin/main
             GH₵{item.price.toFixed(2)}
           </span>
           <button
@@ -228,6 +258,12 @@ function TrendingCard({ item, onPress, onAddToCart }: {
               color: '#fff', fontSize: 12, fontWeight: 600,
               cursor: 'pointer', padding: '0 11px',
               transition: 'opacity 0.15s',
+<<<<<<< HEAD
+=======
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              flexShrink: 0,
+              opacity: adding ? 0.6 : 1,
+>>>>>>> origin/main
             }}
           >
             {adding ? '…' : '+ Add'}
@@ -278,17 +314,20 @@ function CartToast({ count, total, visible, onPress }: {
 
 export default function HomeScreenWeb() {
   const router = useRouter();
-  const { profile, user }                   = useAuth();
+  const { user }                            = useAuth();
   const { addToCart, cartCount, cartTotal } = useCart();
+<<<<<<< HEAD
   const { theme, mood, setMood }            = useTheme();
+=======
+  const { theme, mood }                     = useTheme();
+  const { searchQuery, selectedCategory, setSelectedCategory } = useStorefront();
+>>>>>>> origin/main
 
   const [allProducts, setAllProducts]           = useState<Product[]>([]);
   const [recommended, setRecommended]           = useState<ScoredProduct[]>([]);
   const [trending, setTrending]                 = useState<ScoredProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading]                   = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery]           = useState('');
   const [snapVisible, setSnapVisible]           = useState(false);
   const [showAllRecs, setShowAllRecs]           = useState(false);
 
@@ -298,6 +337,7 @@ export default function HomeScreenWeb() {
   const REC_PREVIEW = 10;
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
 
+<<<<<<< HEAD
   const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
     setMood(detectedMood);
     const meta = MOODS.find(m => m.key === detectedMood);
@@ -308,22 +348,31 @@ export default function HomeScreenWeb() {
 
   const { detecting, permissionDenied, rescan } = useMoodDetection({ onMoodDetected: handleMoodDetected });
 
+=======
+>>>>>>> origin/main
   const fetchProducts = useCallback(async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setAllProducts(data);
-      setFilteredProducts(data);
-      const [recs, trend] = await Promise.all([
-        getRecommendations(user?.id, mood, data, 50),
-        getTrending(data, 12),
-      ]);
-      setRecommended(recs);
-      setTrending(trend);
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      if (error) console.warn('[HomeScreenWeb] products fetch error:', error.message);
+      if (data && data.length > 0) {
+        setAllProducts(data);
+        setFilteredProducts(data);
+        const [recs, trend] = await Promise.all([
+          getRecommendations(user?.id, mood, data, 50),
+          getTrending(data, 12),
+        ]);
+        setRecommended(recs);
+        setTrending(trend);
+      }
+    } catch (err: any) {
+      console.warn('[HomeScreenWeb] fetchProducts threw:', err?.message ?? err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [user?.id, mood]);
 
-  useEffect(() => { fetchProducts(); }, []);
+  // Re-run when auth loads in case RLS requires an authenticated session
+  useEffect(() => { fetchProducts(); }, [user?.id]);
 
   useEffect(() => {
     if (allProducts.length === 0) return;
@@ -362,19 +411,59 @@ export default function HomeScreenWeb() {
   const bord = theme.border;
   const pri = theme.primary;
 
+<<<<<<< HEAD
   if (loading) return null;
+=======
+  if (loading) {
+    return (
+      <div style={{ height: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: theme.tint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <WebEmoji style={{ fontSize: 22 }}>{selectedMood.emoji}</WebEmoji>
+        </div>
+        <p style={{ color: ts, fontSize: 14, margin: 0, fontWeight: 500 }}>Loading your mood feed…</p>
+      </div>
+    );
+  }
+>>>>>>> origin/main
 
   return (
     <>
       <style>{`
         .mm-section { margin-bottom: 36px; }
         .mm-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+<<<<<<< HEAD
         .mm-section-title { font-family: "Lora", serif; font-size: 19px; font-weight: 600; color: ${tp}; letter-spacing: -0.3px; }
         .mm-see-all { background: none; border: none; color: ${pri}; font-size: 12.5px; font-weight: 600; cursor: pointer; }
         .mm-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: ${ts}; margin-bottom: 18px; }
         .mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
         .mm-trending-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
         .mm-trending-strip::-webkit-scrollbar { display: none; }
+=======
+        .mm-section-title { font-family: "Playfair Display", serif; font-size: 19px; font-weight: 600; color: ${tp}; letter-spacing: -0.3px; }
+        .mm-see-all { background: none; border: none; color: ${pri}; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; transition: opacity 0.13s; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
+        .mm-see-all:hover { opacity: 0.7; }
+        .mm-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: ${ts}; margin-bottom: 18px; flex-wrap: wrap; }
+        .mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .mm-trending-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; flex-wrap: nowrap; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .mm-trending-strip::-webkit-scrollbar { display: none; }
+        .mm-empty { text-align: center; padding: 80px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .mm-empty-icon { font-size: 36px; }
+        .mm-empty-text { color: ${ts}; font-size: 14px; max-width: 280px; line-height: 1.6; }
+        .mm-show-more { text-align: center; margin-top: 20px; }
+        .mm-show-more-btn { background: ${theme.background}; border: 1px solid ${bord}; border-radius: 8px; padding: 10px 24px; color: ${ts}; font-weight: 500; font-size: 13px; cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; transition: all 0.15s; min-height: 44px; }
+        .mm-show-more-btn:hover { border-color: ${pri}; color: ${pri}; background: ${theme.tint}; }
+
+        @media (max-width: 900px) {
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+          .mm-section-title { font-size: 17px; }
+        }
+        @media (max-width: 700px) {
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+        }
+        @media (max-width: 540px) {
+          .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+>>>>>>> origin/main
       `}</style>
 
       <div className="mm-breadcrumb">
@@ -398,6 +487,12 @@ export default function HomeScreenWeb() {
         <section className="mm-section">
           <div className="mm-section-header">
             <h2 className="mm-section-title">Trending Now</h2>
+<<<<<<< HEAD
+=======
+            <button className="mm-see-all" onClick={() => allProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              See all <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
+            </button>
+>>>>>>> origin/main
           </div>
           <div className="mm-trending-strip">
             {trending.map(item => (
@@ -420,6 +515,7 @@ export default function HomeScreenWeb() {
               For {selectedMood.label} <WebEmoji>{selectedMood.emoji}</WebEmoji>
             </h2>
             <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
+<<<<<<< HEAD
               {showAllRecs ? 'Show less' : 'See all'}
             </button>
           </div>
@@ -454,6 +550,56 @@ export default function HomeScreenWeb() {
             <Search size={36} strokeWidth={1.5} style={{ marginBottom: 12 }} />
             <p>No products found.</p>
           </div>
+=======
+              {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} /></>}
+            </button>
+          </div>
+          <div className="mm-grid">
+            {(showAllRecs ? recommended : recommended.slice(0, REC_PREVIEW)).map(item => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                onPress={() => router.push(`/product/${item.id}`)}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+          {!showAllRecs && recommended.length > REC_PREVIEW && (
+            <div className="mm-show-more">
+              <button className="mm-show-more-btn" onClick={() => setShowAllRecs(true)}>
+                + {recommended.length - REC_PREVIEW} more recommendations
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* All products */}
+      <section ref={allProductsRef as any}>
+        <div className="mm-section-header">
+          <h2 className="mm-section-title">
+            {selectedCategory === 'all'
+              ? 'All Products'
+              : CATEGORIES.find(c => c.id === selectedCategory)?.label ?? 'Products'}
+          </h2>
+          <span style={{ fontSize: 12, color: ts, flexShrink: 0, marginLeft: 8 }}>
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
+          </span>
+        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="mm-empty">
+            <div className="mm-empty-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Search size={36} color={ts} strokeWidth={1.5} /></div>
+            <p className="mm-empty-text">No products found. Try a different category or search term.</p>
+            <button
+              className="mm-show-more-btn"
+              style={{ marginTop: 8, height: 44, padding: '0 18px' }}
+              onClick={() => { setSelectedCategory('all'); }}
+            >
+              Clear filters
+            </button>
+          </div>
+>>>>>>> origin/main
         ) : (
           <div className="mm-grid">
             {filteredProducts.map(item => (
@@ -494,7 +640,10 @@ e); router.push('/(tabs)/cart'); }}
     </>
   );
 }
+<<<<<<< HEAD
 
     </WebShell>
   );
 }
+=======
+>>>>>>> origin/main

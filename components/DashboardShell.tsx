@@ -34,7 +34,7 @@ export default function DashboardShell({
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const { profile, signOut } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleDark } = useTheme();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(width >= 1024);
   const isDesktop = width >= 1024;
@@ -110,7 +110,11 @@ export default function DashboardShell({
       {/* Footer */}
       <View style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 24, gap: 12 }}>
         <TouchableOpacity 
+<<<<<<< HEAD
           onPress={toggleTheme}
+=======
+          onPress={toggleDark}
+>>>>>>> origin/main
           style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
         >
           <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#334155' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
@@ -227,7 +231,7 @@ export default function DashboardShell({
         </View>
 
         {/* Content Area */}
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: bg }}>
           {children}
         </View>
       </View>

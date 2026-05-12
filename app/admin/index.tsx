@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, RefreshControl,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
@@ -138,7 +139,7 @@ const s = StyleSheet.create({
   statIcon: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
   statValue: { fontSize: 28, fontWeight: '600', marginBottom: 4, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
   statLabel: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
-  bottomRow: { flexDirection: Platform.OS === 'web' ? 'row' : 'column', gap: 20 },
+  bottomRow: { flexDirection: Platform            .OS === 'web' ? 'row' : 'column', gap: 20 },
   sectionCard: { flex: 1, borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   sectionHeader: { padding: 16, borderBottomWidth: 1 },
   sectionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 2 },
