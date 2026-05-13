@@ -22,16 +22,17 @@ export default function VendorLayout() {
     if (loading) return;
 
     const seg = segments as string[];
-    const onLogin = seg.includes('login');
-    const onApply = seg.includes('apply');
-    const publicScreen = onLogin || onApply;
+    const isPublic = seg.includes('login') || seg.includes('apply');
 
-    if (!isVendor && !publicScreen) {
-      router.replace('/vendor/apply' as any);
+    // If they are a vendor and on a public screen, send them to the dashboard
+    if (isVendor && isPublic) {
+      router.replace('/vendor' as any);
+      return;
     }
 
-    if (isVendor && onLogin) {
-      router.replace('/vendor' as any);
+    // If they are not a vendor and not on a public screen, force to apply
+    if (!isVendor && !isPublic) {
+      router.replace('/vendor/apply' as any);
     }
   }, [loading, isVendor, segments]);
 
@@ -72,22 +73,20 @@ export default function VendorLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <DashboardShell
-        portalName="Vendor"
-        title={titleMap[currentSegment] || 'Vendor Portal'}
-        subtitle="🏪 Store Management"
-        navItems={VENDOR_NAV}
-        primaryColor="#FF7A8A"
-      >
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="products" />
-          <Stack.Screen name="orders" />
-          <Stack.Screen name="earnings" />
-          <Stack.Screen name="notifications" />
-        </Stack>
-      </DashboardShell>
-    </ThemeProvider>
+    <DashboardShell
+      portalName="Vendor"
+      title={titleMap[currentSegment] || 'Vendor Portal'}
+      subtitle="🏪 Store Management"
+      navItems={VENDOR_NAV}
+      primaryColor="#FF7A8A"
+    >
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="products" />
+        <Stack.Screen name="orders" />
+        <Stack.Screen name="earnings" />
+        <Stack.Screen name="notifications" />
+      </Stack>
+    </DashboardShell>
   );
 }

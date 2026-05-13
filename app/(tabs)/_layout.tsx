@@ -238,9 +238,5 @@ function InnerTabLayout() {
 // ─── Default export ───────────────────────────────────────────────────────────
 
 export default function TabLayout() {
-  return (
-    <ThemeProvider>
-      <InnerTabLayout />
-    </ThemeProvider>
-  );
+  return <InnerTabLayout />;
 }
