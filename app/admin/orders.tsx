@@ -1,11 +1,6 @@
 /**
  * app/admin/orders.tsx
  * Admin orders — content only (Layout provided by _layout.tsx).
- * FIXES:
- *  - Removed <div> elements (crashed on iOS/Android) → replaced with <View>
- *  - Added onRefresh pull-to-refresh
- *  - Status filter tabs added
- *  - Modal scroll height increased, safe on all platforms
  */
 
 import { useState } from 'react';
@@ -15,7 +10,7 @@ import {
 } from 'react-native';
 import { useOrdersData } from '@/hooks/useOrdersData';
 import { useTheme } from '@/contexts/ThemeContext';
-import { X, User, Package } from 'lucide-react-native';
+import { X, User, Package, MapPin, Phone, CreditCard } from 'lucide-react-native';
 import { AdminOrder } from '@/types/admin';
 
 const PRIMARY = '#FF7A8A';
@@ -36,7 +31,7 @@ type StatusFilter = typeof STATUS_FILTERS[number];
 export default function AdminOrdersScreen() {
   const { isDark } = useTheme();
   const { orders, loading, refreshing, setRefreshing, fetchOrders } = useOrdersData();
-  const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const [selected,     setSelected]     = useState<AdminOrder | null>(null);
   const [filterStatus, setFilterStatus] = useState<StatusFilter>('all');
 
   const card   = isDark ? '#1E293B' : '#FFFFFF';
@@ -60,9 +55,9 @@ export default function AdminOrdersScreen() {
         <Text style={[s.orderDate, { color: sub }]}>
           {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </Text>
-        {item.profiles?.name ? (
-          <Text style={[s.orderCustomer, { color: sub }]}>{item.profiles.name}</Text>
-        ) : null}
+        {item.profiles?.name
+          ? <Text style={[s.orderCustomer, { color: sub }]}>{item.profiles.name}</Text>
+          : null}
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[s.orderPrice, { color: text }]}>GH₵{Number(item.total_price).toFixed(2)}</Text>
@@ -75,7 +70,7 @@ export default function AdminOrdersScreen() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: bg }}>
       {/* Status filter tabs */}
       <View style={[s.filterBar, { backgroundColor: card, borderBottomColor: border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
@@ -84,8 +79,8 @@ export default function AdminOrdersScreen() {
               key={status}
               onPress={() => setFilterStatus(status)}
               style={[s.filterTab, {
-                borderColor: filterStatus === status ? PRIMARY : border,
-                backgroundColor: filterStatus === status ? `${PRIMARY}15` : 'transparent',
+                borderColor:       filterStatus === status ? PRIMARY : border,
+                backgroundColor:   filterStatus === status ? `${PRIMARY}15` : 'transparent',
               }]}
             >
               <Text style={[s.filterTabText, { color: filterStatus === status ? PRIMARY : sub }]}>
@@ -102,7 +97,9 @@ export default function AdminOrdersScreen() {
         </View>
       ) : filtered.length === 0 ? (
         <View style={s.center}>
-          <Text style={{ color: sub, fontSize: 14 }}>No {filterStatus === 'all' ? '' : filterStatus} orders found</Text>
+          <Text style={{ color: sub, fontSize: 14 }}>
+            No {filterStatus === 'all' ? '' : filterStatus + ' '}orders found
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -118,9 +115,11 @@ export default function AdminOrdersScreen() {
       )}
 
       {/* ORDER DETAIL MODAL */}
-      <Modal visible={!!selected} animationType="slide" transparent={true}>
+      <Modal visible={!!selected} animationType="slide" transparent>
         <View style={s.modalOverlay}>
           <View style={[s.modalContent, { backgroundColor: card, borderColor: border }]}>
+
+            {/* Header */}
             <View style={[s.modalHeader, { borderBottomColor: border }]}>
               <Text style={[s.modalTitle, { color: text }]}>Order Details</Text>
               <TouchableOpacity onPress={() => setSelected(null)}>
@@ -130,9 +129,12 @@ export default function AdminOrdersScreen() {
 
             {selected && (
               <ScrollView style={s.modalBody} showsVerticalScrollIndicator={false}>
-                {/* Header */}
+
+                {/* Order ID + status */}
                 <View style={s.detailHeader}>
-                  <Text style={[s.detailId, { color: text }]}>#{selected.id.toUpperCase()}</Text>
+                  <Text style={[s.detailId, { color: text }]}>
+                    #{selected.id.slice(0, 8).toUpperCase()}
+                  </Text>
                   <View style={[s.statusBadgeLarge, { backgroundColor: statusColor(selected.status) + '18' }]}>
                     <Text style={[s.statusTextLarge, { color: statusColor(selected.status) }]}>
                       {selected.status.toUpperCase()}
@@ -141,57 +143,105 @@ export default function AdminOrdersScreen() {
                 </View>
 
                 <Text style={[s.orderDateDetail, { color: sub }]}>
-                  Placed {new Date(selected.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date(selected.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                  })}
                 </Text>
 
-                {/* Divider */}
                 <View style={[s.divider, { backgroundColor: border }]} />
 
                 {/* Customer */}
                 <View style={s.section}>
                   <View style={s.sectionHeader}>
-                    <User size={16} color={sub} />
+                    <User size={14} color={sub} />
                     <Text style={[s.sectionTitle, { color: sub }]}>CUSTOMER</Text>
                   </View>
-                  <Text style={[s.detailText, { color: text }]}>{selected.profiles?.name || 'Unknown'}</Text>
-                  <Text style={[s.detailSubText, { color: sub }]}>{selected.profiles?.email}</Text>
+                  <Text style={[s.detailText, { color: text }]}>
+                    {selected.profiles?.name || 'Unknown'}
+                  </Text>
+                  {selected.profiles?.email
+                    ? <Text style={[s.detailSubText, { color: sub }]}>{selected.profiles.email}</Text>
+                    : null}
                 </View>
 
-                {/* Divider */}
+                {/* Delivery */}
+                {(selected.shipping_address || selected.delivery_phone) && (
+                  <>
+                    <View style={[s.divider, { backgroundColor: border }]} />
+                    <View style={s.section}>
+                      {selected.shipping_address && (
+                        <>
+                          <View style={s.sectionHeader}>
+                            <MapPin size={14} color={sub} />
+                            <Text style={[s.sectionTitle, { color: sub }]}>DELIVERY ADDRESS</Text>
+                          </View>
+                          <Text style={[s.detailText, { color: text }]}>{selected.shipping_address}</Text>
+                        </>
+                      )}
+                      {selected.delivery_phone && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                          <Phone size={14} color={sub} />
+                          <Text style={[s.detailSubText, { color: sub }]}>{selected.delivery_phone}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </>
+                )}
+
+                {/* Payment */}
+                {selected.payment_method && (
+                  <>
+                    <View style={[s.divider, { backgroundColor: border }]} />
+                    <View style={s.section}>
+                      <View style={s.sectionHeader}>
+                        <CreditCard size={14} color={sub} />
+                        <Text style={[s.sectionTitle, { color: sub }]}>PAYMENT</Text>
+                      </View>
+                      <Text style={[s.detailText, { color: text, textTransform: 'capitalize' }]}>
+                        {selected.payment_method}
+                      </Text>
+                      {selected.payment_reference && (
+                        <Text style={[s.detailSubText, { color: sub }]}>
+                          Ref: {selected.payment_reference}
+                        </Text>
+                      )}
+                    </View>
+                  </>
+                )}
+
                 <View style={[s.divider, { backgroundColor: border }]} />
 
                 {/* Products */}
                 <View style={s.section}>
                   <View style={s.sectionHeader}>
-                    <Package size={16} color={sub} />
+                    <Package size={14} color={sub} />
                     <Text style={[s.sectionTitle, { color: sub }]}>PRODUCTS</Text>
                   </View>
-                  {(selected.products ?? []).map((p, i) => (
-                    <View key={i} style={s.productRow}>
-                      <Text style={[s.productName, { color: text }]}>{p.name} ×{p.quantity}</Text>
-                      <Text style={[s.productPrice, { color: text }]}>GH₵{(p.price * p.quantity).toFixed(2)}</Text>
-                    </View>
-                  ))}
+                  {selected.products.length === 0 ? (
+                    <Text style={[s.detailSubText, { color: sub }]}>No product details available</Text>
+                  ) : (
+                    selected.products.map((p, i) => (
+                      <View key={i} style={s.productRow}>
+                        <Text style={[s.productName, { color: text }]}>
+                          {p.name} ×{p.quantity}
+                        </Text>
+                        <Text style={[s.productPrice, { color: text }]}>
+                          GH₵{(p.price * p.quantity).toFixed(2)}
+                        </Text>
+                      </View>
+                    ))
+                  )}
 
-                  {/* Divider before total */}
                   <View style={[s.divider, { backgroundColor: border, marginVertical: 12 }]} />
 
                   <View style={s.totalRow}>
                     <Text style={[s.totalLabel, { color: text }]}>Total</Text>
-                    <Text style={[s.totalPrice, { color: PRIMARY }]}>GH₵{Number(selected.total_price).toFixed(2)}</Text>
+                    <Text style={[s.totalPrice, { color: PRIMARY }]}>
+                      GH₵{Number(selected.total_price).toFixed(2)}
+                    </Text>
                   </View>
                 </View>
 
-                {/* Shipping address if available */}
-                {selected.shipping_address ? (
-                  <>
-                    <View style={[s.divider, { backgroundColor: border }]} />
-                    <View style={s.section}>
-                      <Text style={[s.sectionTitle, { color: sub }]}>SHIPPING ADDRESS</Text>
-                      <Text style={[s.detailText, { color: text }]}>{selected.shipping_address}</Text>
-                    </View>
-                  </>
-                ) : null}
               </ScrollView>
             )}
           </View>
@@ -213,24 +263,24 @@ const s = StyleSheet.create({
   orderPrice:       { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   statusBadge:      { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   statusText:       { fontSize: 10, fontWeight: '800', textTransform: 'capitalize' },
-  modalOverlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalOverlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent:     { width: '100%', maxWidth: 600, borderRadius: 20, borderWidth: 1, overflow: 'hidden', maxHeight: '90%' },
   modalHeader:      { padding: 20, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   modalTitle:       { fontSize: 20, fontWeight: '900' },
   modalBody:        { padding: 20 },
-  detailHeader:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  detailHeader:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   detailId:         { fontSize: 16, fontWeight: '800' },
   orderDateDetail:  { fontSize: 12, marginBottom: 16 },
   statusBadgeLarge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusTextLarge:  { fontSize: 12, fontWeight: '900' },
   divider:          { height: 1, marginVertical: 16 },
   section:          { marginBottom: 4 },
-  sectionHeader:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionHeader:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   sectionTitle:     { fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
   detailText:       { fontSize: 15, fontWeight: '700' },
   detailSubText:    { fontSize: 13, marginTop: 2 },
   productRow:       { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  productName:      { fontSize: 14 },
+  productName:      { fontSize: 14, flex: 1, marginRight: 8 },
   productPrice:     { fontSize: 14, fontWeight: '600' },
   totalRow:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   totalLabel:       { fontSize: 16, fontWeight: '800' },

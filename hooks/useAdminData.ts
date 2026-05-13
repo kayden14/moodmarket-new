@@ -1,24 +1,18 @@
 /**
  * hooks/useAdminData.ts
- * FIXES:
- *  - Revenue now sums total_price from ALL orders (not just paid) — adjust the
- *    .in('status', [...]) filter below if you only want paid/delivered revenue
- *  - Each count uses a separate lightweight query with { count: 'exact', head: true }
- *    so we don't pull full rows just for counts
- *  - recentOrders fetches the 5 most recent with profiles joined
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/services/supabase';
 
 interface AdminStats {
-  totalProducts:  number;
-  totalOrders:    number;
-  totalUsers:     number;
-  totalRevenue:   number;
-  pendingOrders:  number;
-  paidOrders:     number;
-  shippedOrders:  number;
+  totalProducts:   number;
+  totalOrders:     number;
+  totalUsers:      number;
+  totalRevenue:    number;
+  pendingOrders:   number;
+  paidOrders:      number;
+  shippedOrders:   number;
   deliveredOrders: number;
 }
 
@@ -41,7 +35,25 @@ export function useAdminData() {
 
   const fetchStats = useCallback(async () => {
     try {
-      // Run all queries in parallel for speed
+      // ── DEBUG: remove this block once everything is working ──────────────
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('=== ADMIN DEBUG ===');
+      console.log('Session user:', session?.user?.id, session?.user?.email);
+
+      const { data: selfProfile } = await supabase
+        .from('profiles')
+        .select('id, role, is_admin')
+        .eq('id', session?.user?.id ?? '')
+        .single();
+      console.log('Self profile:', selfProfile);
+
+      const { data: testOrders, error: testError } = await supabase
+        .from('orders')
+        .select('id')
+        .limit(3);
+      console.log('Test orders:', testOrders, 'Error:', testError?.message);
+      // ── END DEBUG ────────────────────────────────────────────────────────
+
       const [
         productsRes,
         ordersRes,
@@ -53,30 +65,34 @@ export function useAdminData() {
         deliveredRes,
         recentRes,
       ] = await Promise.all([
-        // Counts using head:true — no rows transferred, just the count
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*',   { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
 
-        // Revenue — fetch total_price for all non-cancelled orders
         supabase
           .from('orders')
           .select('total_price')
           .not('status', 'eq', 'cancelled'),
 
-        // Status counts
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'paid'),
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'shipped'),
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'delivered'),
 
-        // Recent orders with customer name
         supabase
           .from('orders')
           .select('id, total_price, status, created_at, profiles(name, email)')
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
+
+      // ── DEBUG: log every result so we can see what's null ────────────────
+      console.log('productsRes count:', productsRes.count, 'error:', productsRes.error?.message);
+      console.log('ordersRes count:',   ordersRes.count,   'error:', ordersRes.error?.message);
+      console.log('usersRes count:',    usersRes.count,    'error:', usersRes.error?.message);
+      console.log('revenueRes data:',   revenueRes.data,   'error:', revenueRes.error?.message);
+      console.log('recentRes data:',    recentRes.data,    'error:', recentRes.error?.message);
+      // ── END DEBUG ────────────────────────────────────────────────────────
 
       const revenue = (revenueRes.data ?? []).reduce(
         (sum: number, o: any) => sum + Number(o.total_price ?? 0),

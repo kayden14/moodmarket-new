@@ -25,7 +25,10 @@ export interface AdminOrder {
   total_price: number;
   status: string;
   created_at: string;
-  shipping_address?: string | null;
+  shipping_address?: string | null;   // mapped from delivery_address
+  delivery_phone?: string | null;
+  payment_method?: string | null;
+  payment_reference?: string | null;
   products: AdminOrderProduct[];
   profiles?: { name: string; email: string } | null;
 }
@@ -35,4 +38,5 @@ export interface AdminOrderProduct {
   name: string;
   price: number;
   quantity: number;
+  image?: string;
 }

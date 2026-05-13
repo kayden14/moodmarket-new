@@ -64,7 +64,7 @@ Return ONLY a JSON array, no markdown, no extra text:
 
     const data = await res.json();
     const raw = (data.content?.[0]?.text ?? "").trim().replace(/```json|```/g, "");
-    
+
     // Validate JSON
     const recs = JSON.parse(raw);
 
