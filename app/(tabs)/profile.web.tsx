@@ -5,6 +5,7 @@
  * FIX: Mood history entries always visible in light and dark mode.
  * FIX 2: Mood label never shows "Unknown" — always falls back to raw mood key.
  * FIX 3: Robust mood key extraction.
+ * FIX 4: Removed duplicate top navbar (WebShell provides it).
  */
 
 import { useState, useEffect } from 'react';
@@ -400,7 +401,6 @@ export default function ProfileWeb() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${bord}; border-radius: 10px; }
 
-        /* ── APP ── */
         .prof-app {
           min-height: 100vh;
           background: ${bg};
@@ -409,66 +409,6 @@ export default function ProfileWeb() {
           color: ${tp};
           overflow-y: auto;
           overflow-x: hidden;
-        }
-
-        /* ── TOP NAV ── */
-        .prof-topnav {
-          height: 56px;
-          background: ${card};
-          border-bottom: 1px solid ${bord};
-          display: flex;
-          align-items: center;
-          padding: 0 40px;
-          gap: 14px;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-          backdrop-filter: blur(10px);
-        }
-
-        .prof-back {
-          background: none;
-          border: 1px solid ${bord};
-          border-radius: 9px;
-          padding: 6px 13px;
-          font-size: 13px;
-          font-weight: 600;
-          color: ${ts};
-          cursor: pointer;
-          font-family: "Plus Jakarta Sans", sans-serif;
-          transition: all 0.15s;
-          white-space: nowrap;
-        }
-        .prof-back:hover { border-color: ${pri}; color: ${pri}; background: ${tint}; }
-
-        .prof-logo {
-          font-family: "Playfair Display", serif;
-          font-size: 17px;
-          font-weight: 700;
-          color: ${tp};
-          letter-spacing: -0.3px;
-          cursor: pointer;
-          transition: opacity 0.13s;
-          margin-right: auto;
-          white-space: nowrap;
-        }
-        .prof-logo:hover { opacity: 0.8; }
-        .prof-logo span { color: ${pri}; }
-
-        /* Hamburger (mobile) */
-        .prof-hamburger {
-          display: none;
-          background: none;
-          border: 1px solid ${bord};
-          border-radius: 9px;
-          width: 36px;
-          height: 36px;
-          cursor: pointer;
-          font-size: 16px;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.15s;
-          flex-shrink: 0;
         }
 
         /* ── BODY GRID ── */
@@ -486,7 +426,7 @@ export default function ProfileWeb() {
         /* ── SIDEBAR ── */
         .prof-sidebar {
           position: sticky;
-          top: 76px;
+          top: 24px;
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -580,7 +520,7 @@ export default function ProfileWeb() {
         .prof-mobile-drawer {
           display: none;
           position: fixed;
-          top: 56px; left: 0; right: 0; bottom: 0;
+          top: 0; left: 0; right: 0; bottom: 0;
           background: rgba(0,0,0,0.4);
           z-index: 150;
           backdrop-filter: blur(4px);
@@ -598,11 +538,24 @@ export default function ProfileWeb() {
           padding: 20px 0;
         }
 
-        /* ─────────────────────────────────────────
-           RESPONSIVE BREAKPOINTS
-           ───────────────────────────────────────── */
+        /* ── HAMBURGER ── */
+        .prof-hamburger {
+          display: none;
+          background: none;
+          border: 1px solid ${bord};
+          border-radius: 9px;
+          width: 36px;
+          height: 36px;
+          cursor: pointer;
+          font-size: 16px;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+          flex-shrink: 0;
+          margin-bottom: 12px;
+        }
 
-        /* Laptop: 961px – 1280px */
+        /* ── RESPONSIVE ── */
         @media (min-width: 961px) and (max-width: 1280px) {
           .prof-body {
             grid-template-columns: 240px 1fr;
@@ -611,41 +564,31 @@ export default function ProfileWeb() {
           }
         }
 
-        /* Tablet landscape: 769px – 960px */
         @media (min-width: 769px) and (max-width: 960px) {
-          .prof-topnav { padding: 0 28px; }
           .prof-body {
             grid-template-columns: 220px 1fr;
             padding: 22px 24px 60px;
             gap: 16px;
           }
-          .prof-sidebar { position: sticky; top: 72px; }
+          .prof-sidebar { top: 16px; }
           .prof-avatar-card { padding: 18px 16px; }
           .prof-avatar { width: 58px; height: 58px; font-size: 18px; }
           .prof-name { font-size: 14px; }
         }
 
-        /* Tablet portrait: 600px – 768px */
         @media (min-width: 600px) and (max-width: 768px) {
-          .prof-topnav { padding: 0 20px; }
           .prof-body {
             grid-template-columns: 1fr;
             padding: 20px 20px 60px;
             gap: 16px;
           }
-          .prof-sidebar {
-            position: static;
-            flex-direction: row;
-            flex-wrap: wrap;
-          }
+          .prof-sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
           .prof-avatar-card { flex: 1 1 240px; }
           .prof-sidenav { display: none; }
-          .prof-tabs { margin-bottom: 16px; }
+          .prof-hamburger { display: flex; }
         }
 
-        /* Mobile large: 480px – 599px */
         @media (min-width: 480px) and (max-width: 599px) {
-          .prof-topnav { padding: 0 16px; }
           .prof-body {
             grid-template-columns: 1fr;
             padding: 16px 16px 60px;
@@ -654,19 +597,12 @@ export default function ProfileWeb() {
           .prof-sidebar { position: static; }
           .prof-sidenav { display: none; }
           .prof-hamburger { display: flex; }
-          .prof-mobile-drawer { display: none; } /* controlled by JS class */
           .prof-avatar-card { display: flex; align-items: center; gap: 16px; text-align: left; padding: 16px; }
           .prof-avatar { margin: 0; width: 56px; height: 56px; font-size: 18px; flex-shrink: 0; }
           .prof-email { margin-bottom: 10px; }
         }
 
-        /* Mobile small: 320px – 479px */
         @media (max-width: 479px) {
-          .prof-topnav {
-            padding: 0 14px;
-            height: 52px;
-            gap: 10px;
-          }
           .prof-body {
             grid-template-columns: 1fr;
             padding: 14px 14px 60px;
@@ -676,57 +612,39 @@ export default function ProfileWeb() {
           .prof-sidenav { display: none; }
           .prof-hamburger { display: flex; }
           .prof-avatar-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            text-align: left;
-            padding: 14px;
-            border-radius: 16px;
+            display: flex; align-items: center; gap: 14px;
+            text-align: left; padding: 14px; border-radius: 16px;
           }
           .prof-avatar { margin: 0; width: 52px; height: 52px; font-size: 16px; flex-shrink: 0; }
           .prof-name { font-size: 14px; }
           .prof-email { font-size: 10px; }
-          /* compact tabs: icon-only on very narrow */
           .prof-tab-label-short { display: none; }
           .prof-tab-icon { display: inline !important; }
         }
 
-        /* Stats grid adapts */
         .prof-stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 10px;
           margin-bottom: 24px;
         }
-        @media (max-width: 960px) {
-          .prof-stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 479px) {
-          .prof-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        }
+        @media (max-width: 960px) { .prof-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 479px) { .prof-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 
-        /* Quick actions grid */
         .prof-quick-actions {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 10px;
         }
-        @media (max-width: 768px) {
-          .prof-quick-actions { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 479px) {
-          .prof-quick-actions { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        }
+        @media (max-width: 768px) { .prof-quick-actions { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 479px) { .prof-quick-actions { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 
-        /* Touch: no hover flicker */
         @media (hover: none) {
-          .prof-back:hover { border-color: ${bord}; color: ${ts}; background: none; }
           .prof-sidenav-item:hover { background: transparent; }
         }
 
-        /* Print */
         @media print {
-          .prof-topnav, .prof-sidenav, .prof-hamburger, .prof-mobile-drawer { display: none !important; }
+          .prof-sidenav, .prof-hamburger, .prof-mobile-drawer { display: none !important; }
           .prof-body { grid-template-columns: 1fr; padding: 0; }
           .prof-sidebar { position: static; }
         }
@@ -734,45 +652,13 @@ export default function ProfileWeb() {
 
       <div className="prof-app">
 
-        {/* TOP NAV */}
-        <nav className="prof-topnav">
-          <button className="prof-back" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
-          <span className="prof-logo" onClick={handleLogoClick}>Mood<span>Market</span></span>
-          {/* Hamburger — visible on mobile */}
-          {user && (
-            <button
-              className="prof-hamburger"
-              onClick={() => setMobileMenuOpen(v => !v)}
-              title="Menu"
-            >
-              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-            </button>
-          )}
-          <button
-            style={{
-              background: 'none', border: `1px solid ${bord}`,
-              borderRadius: 9, width: 34, height: 34,
-              cursor: 'pointer', fontSize: 15,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s', flexShrink: 0,
-            }}
-            onClick={toggleDark}
-          >
-            {isDark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </nav>
-
         {/* MOBILE DRAWER */}
         {user && (
           <div
             className={`prof-mobile-drawer${mobileMenuOpen ? ' open' : ''}`}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div
-              className="prof-mobile-drawer-panel"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Avatar in drawer */}
+            <div className="prof-mobile-drawer-panel" onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px 20px', borderBottom: `1px solid ${bord}`, marginBottom: 8 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: pri, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: '"Plus Jakarta Sans", sans-serif', flexShrink: 0 }}>{initials}</div>
                 <div style={{ minWidth: 0 }}>
@@ -819,6 +705,15 @@ export default function ProfileWeb() {
 
             {/* SIDEBAR */}
             <aside className="prof-sidebar">
+              {/* Hamburger for mobile */}
+              <button
+                className="prof-hamburger"
+                onClick={() => setMobileMenuOpen(v => !v)}
+                title="Menu"
+              >
+                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+              </button>
+
               <div className="prof-avatar-card">
                 <div className="prof-avatar">{initials}</div>
                 <div>
@@ -843,7 +738,6 @@ export default function ProfileWeb() {
 
             {/* MAIN PANEL */}
             <main>
-              {/* Tab bar */}
               <div className="prof-tabs">
                 {[
                   { key: 'overview', short: <BarChart3 size={14} />, label: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><BarChart3 size={14} /> Overview</span> },
@@ -868,17 +762,10 @@ export default function ProfileWeb() {
                     <StatCard value={String(moodCount)}              label="Mood entries" icon={<WebEmoji style={{ fontSize: 15 }}>✨</WebEmoji>} theme={theme} isDark={isDark} />
                   </div>
 
-                  {/* ── Vendor Dashboard Entry ── */}
                   {isVendor && (
                     <div
                       onClick={() => router.push('/vendor' as any)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 14,
-                        background: isDark ? '#2D1820' : '#FFF0F2',
-                        border: `1px solid ${isDark ? '#FF7A8A44' : '#FF7A8A55'}`,
-                        borderRadius: 18, padding: '16px 18px', marginBottom: 20,
-                        cursor: 'pointer', transition: 'opacity 0.15s',
-                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, background: isDark ? '#2D1820' : '#FFF0F2', border: `1px solid ${isDark ? '#FF7A8A44' : '#FF7A8A55'}`, borderRadius: 18, padding: '16px 18px', marginBottom: 20, cursor: 'pointer', transition: 'opacity 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.85'}
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
                     >
@@ -891,18 +778,10 @@ export default function ProfileWeb() {
                     </div>
                   )}
 
-                  {/* ── Become a Vendor (for customers only) ── */}
                   {!isVendor && !isAdmin && (
                     <div
-                      id="vendor-apply-banner"
                       onClick={() => router.push('/vendor/apply' as any)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 14,
-                        background: isDark ? '#1E293B' : '#F8FAFC',
-                        border: `1px solid ${bord}`,
-                        borderRadius: 18, padding: '16px 18px', marginBottom: 20,
-                        cursor: 'pointer', transition: 'all 0.15s',
-                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, background: isDark ? '#1E293B' : '#F8FAFC', border: `1px solid ${bord}`, borderRadius: 18, padding: '16px 18px', marginBottom: 20, cursor: 'pointer', transition: 'all 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = pri; (e.currentTarget as HTMLDivElement).style.background = isDark ? '#2D1820' : '#FFF0F2'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = bord; (e.currentTarget as HTMLDivElement).style.background = isDark ? '#1E293B' : '#F8FAFC'; }}
                     >
@@ -932,10 +811,10 @@ export default function ProfileWeb() {
                     <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Quick Actions</h3>
                     <div className="prof-quick-actions">
                       {[
-                        { icon: <ShoppingBag size={18} />, label: 'Shop Now',    action: () => router.push('/(tabs)') },
-                        { icon: <ShoppingCart size={18} />, label: 'View Cart',   action: () => router.push('/cart') },
+                        { icon: <ShoppingBag size={18} />,  label: 'Shop Now',     action: () => router.push('/(tabs)') },
+                        { icon: <ShoppingCart size={18} />, label: 'View Cart',    action: () => router.push('/cart') },
                         { icon: <WebEmoji style={{ fontSize: 18 }}>✏️</WebEmoji>, label: 'Edit Profile', action: () => router.push('/edit-profile') },
-                        { icon: <LogOut size={18} />, label: 'Sign Out',    action: handleSignOut },
+                        { icon: <LogOut size={18} />,       label: 'Sign Out',     action: handleSignOut },
                       ].map(({ icon, label, action }) => (
                         <button key={label} onClick={action}
                           style={{ padding: '13px 10px', borderRadius: 14, border: `1px solid ${bord}`, background: bg, color: label === 'Sign Out' ? '#EF4444' : tp, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, transition: 'all 0.13s' }}
@@ -981,10 +860,10 @@ export default function ProfileWeb() {
                 <div>
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
                     <h3 style={{ margin: '0 0 18px', fontSize: 17, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Account Settings</h3>
-                    <SettingsRow icon="✏️" label="Edit Profile"        sub="Update your name and phone number"  onPress={() => router.push('/edit-profile')} theme={theme} isDark={isDark} />
-                    <SettingsRow icon="🔔" label="Notifications"       sub="Manage push and email alerts"       onPress={() => {}} theme={theme} isDark={isDark} />
-                    <SettingsRow icon="🔒" label="Privacy & Security"  sub="Password and account security"     onPress={() => {}} theme={theme} isDark={isDark} />
-                    <SettingsRow icon="🎨" label="App Preferences"     sub="Theme, mood reminders and more"    onPress={() => {}} theme={theme} isDark={isDark} />
+                    <SettingsRow icon="✏️" label="Edit Profile"       sub="Update your name and phone number" onPress={() => router.push('/edit-profile')} theme={theme} isDark={isDark} />
+                    <SettingsRow icon="🔔" label="Notifications"      sub="Manage push and email alerts"      onPress={() => {}} theme={theme} isDark={isDark} />
+                    <SettingsRow icon="🔒" label="Privacy & Security" sub="Password and account security"    onPress={() => {}} theme={theme} isDark={isDark} />
+                    <SettingsRow icon="🎨" label="App Preferences"    sub="Theme, mood reminders and more"   onPress={() => {}} theme={theme} isDark={isDark} />
                   </div>
                   <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 22, padding: '22px 20px', marginBottom: 16 }}>
                     <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: tp, fontFamily: '"Playfair Display", serif' }}>Appearance</h3>

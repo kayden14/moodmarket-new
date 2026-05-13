@@ -87,6 +87,7 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
   const { user, profile } = useAuth();
   const { cartCount } = useCart();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useStorefront();
+  const router = useRouter();
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
