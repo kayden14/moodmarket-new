@@ -79,7 +79,10 @@ interface WebShellProps {
   children: React.ReactNode;
   activeNav?: string;
   title?: string;
->>>>>>> origin/main
+  showSidebar?: boolean;
+}
+
+export default function WebShell({ children, activeNav, title, showSidebar = true }: WebShellProps) {
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
   const { user, profile } = useAuth();
   const { cartCount } = useCart();
@@ -585,7 +588,7 @@ interface WebShellProps {
             <div className="mm-main-inner">
               {title && (
                 <div style={{ marginBottom: 24 }}>
-                   <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 32, fontWeight: 900, color: tp, letterSpacing: -0.8, margin: 0 }}>
+                  <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 32, fontWeight: 900, color: tp, letterSpacing: -0.8, margin: 0 }}>
                     {title}
                   </h1>
                 </div>
