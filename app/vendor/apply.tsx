@@ -684,7 +684,7 @@ function VendorApplyMobile() {
 
         <TouchableOpacity
           style={s.footerLink}
-          onPress={() => router.replace('/(tabs)' as any)}
+          onPress={() => router.replace('/' as any)}
         >
           <Text style={s.footerLinkTxt}>← Back to Consumer Store</Text>
         </TouchableOpacity>

@@ -323,7 +323,7 @@ function VendorLoginWeb() {
           <div className="vl-form-wrap">
             <button
               className="vl-back"
-              onClick={() => router.push('/(tabs)' as any)}
+              onClick={() => router.push('/' as any)}
             >
               ← Back to store
             </button>
