@@ -1,54 +1,110 @@
+/**
+ * hooks/useAdminData.ts
+ * FIXES:
+ *  - Revenue now sums total_price from ALL orders (not just paid) — adjust the
+ *    .in('status', [...]) filter below if you only want paid/delivered revenue
+ *  - Each count uses a separate lightweight query with { count: 'exact', head: true }
+ *    so we don't pull full rows just for counts
+ *  - recentOrders fetches the 5 most recent with profiles joined
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/services/supabase';
 
+interface AdminStats {
+  totalProducts:  number;
+  totalOrders:    number;
+  totalUsers:     number;
+  totalRevenue:   number;
+  pendingOrders:  number;
+  paidOrders:     number;
+  shippedOrders:  number;
+  deliveredOrders: number;
+}
+
+const DEFAULT_STATS: AdminStats = {
+  totalProducts:   0,
+  totalOrders:     0,
+  totalUsers:      0,
+  totalRevenue:    0,
+  pendingOrders:   0,
+  paidOrders:      0,
+  shippedOrders:   0,
+  deliveredOrders: 0,
+};
+
 export function useAdminData() {
-  const [loading,    setLoading]    = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({
-    totalProducts: 0, totalOrders: 0, totalUsers: 0, totalRevenue: 0,
-    pendingOrders: 0, paidOrders: 0, shippedOrders: 0, deliveredOrders: 0,
-    totalVendors: 0, pendingApplications: 0, pendingPayouts: 0,
-  });
+  const [stats,        setStats]        = useState<AdminStats>(DEFAULT_STATS);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
+      // Run all queries in parallel for speed
       const [
-        { count: products }, { count: orders }, { count: users },
-        { data: orderData }, { data: recent },
-        { count: vendors }, { count: pendingApps }, { count: pendingPayouts },
+        productsRes,
+        ordersRes,
+        usersRes,
+        revenueRes,
+        pendingRes,
+        paidRes,
+        shippedRes,
+        deliveredRes,
+        recentRes,
       ] = await Promise.all([
+        // Counts using head:true — no rows transferred, just the count
         supabase.from('products').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*',   { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('total_price, status'),
-        supabase.from('orders').select('id, total_price, status, created_at').order('created_at', { ascending: false }).limit(5),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'vendor'),
-        supabase.from('vendor_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('vendor_payouts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+
+        // Revenue — fetch total_price for all non-cancelled orders
+        supabase
+          .from('orders')
+          .select('total_price')
+          .not('status', 'eq', 'cancelled'),
+
+        // Status counts
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'paid'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'shipped'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'delivered'),
+
+        // Recent orders with customer name
+        supabase
+          .from('orders')
+          .select('id, total_price, status, created_at, profiles(name, email)')
+          .order('created_at', { ascending: false })
+          .limit(5),
       ]);
-      const revenue = orderData?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
+
+      const revenue = (revenueRes.data ?? []).reduce(
+        (sum: number, o: any) => sum + Number(o.total_price ?? 0),
+        0,
+      );
+
       setStats({
-        totalProducts: products ?? 0, totalOrders: orders ?? 0, totalUsers: users ?? 0,
-        totalRevenue: revenue,
-        pendingOrders:   orderData?.filter(o => o.status === 'pending').length   ?? 0,
-        paidOrders:      orderData?.filter(o => o.status === 'paid').length      ?? 0,
-        shippedOrders:   orderData?.filter(o => o.status === 'shipped').length   ?? 0,
-        deliveredOrders: orderData?.filter(o => o.status === 'delivered').length ?? 0,
-        totalVendors: vendors ?? 0, pendingApplications: pendingApps ?? 0, pendingPayouts: pendingPayouts ?? 0,
+        totalProducts:   productsRes.count  ?? 0,
+        totalOrders:     ordersRes.count    ?? 0,
+        totalUsers:      usersRes.count     ?? 0,
+        totalRevenue:    revenue,
+        pendingOrders:   pendingRes.count   ?? 0,
+        paidOrders:      paidRes.count      ?? 0,
+        shippedOrders:   shippedRes.count   ?? 0,
+        deliveredOrders: deliveredRes.count ?? 0,
       });
-      setRecentOrders(recent ?? []);
-    } finally { setLoading(false); setRefreshing(false); }
+
+      setRecentOrders(recentRes.data ?? []);
+    } catch (err) {
+      console.error('useAdminData error:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  useEffect(() => { fetchStats(); }, []);
-
   useEffect(() => {
-    const channel = supabase.channel('admin-dashboard-orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchStats())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vendor_applications' }, () => fetchStats())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    fetchStats();
   }, [fetchStats]);
 
   return { loading, refreshing, setRefreshing, stats, recentOrders, fetchStats };

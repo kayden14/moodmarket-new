@@ -1,6 +1,11 @@
 /**
  * app/admin/orders.tsx
  * Admin orders — content only (Layout provided by _layout.tsx).
+ * FIXES:
+ *  - Removed <div> elements (crashed on iOS/Android) → replaced with <View>
+ *  - Added onRefresh pull-to-refresh
+ *  - Status filter tabs added
+ *  - Modal scroll height increased, safe on all platforms
  */
 
 import { useState } from 'react';
@@ -10,7 +15,7 @@ import {
 } from 'react-native';
 import { useOrdersData } from '@/hooks/useOrdersData';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ShoppingBag, X, Calendar, User, Package, MapPin, Phone, CreditCard } from 'lucide-react-native';
+import { X, User, Package } from 'lucide-react-native';
 import { AdminOrder } from '@/types/admin';
 
 const PRIMARY = '#FF7A8A';
@@ -25,18 +30,27 @@ function statusColor(s: string) {
   }
 }
 
+const STATUS_FILTERS = ['all', 'pending', 'paid', 'shipped', 'delivered', 'cancelled'] as const;
+type StatusFilter = typeof STATUS_FILTERS[number];
+
 export default function AdminOrdersScreen() {
   const { isDark } = useTheme();
   const { orders, loading, refreshing, setRefreshing, fetchOrders } = useOrdersData();
   const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const [filterStatus, setFilterStatus] = useState<StatusFilter>('all');
 
-  const card = isDark ? '#1E293B' : '#FFFFFF';
+  const card   = isDark ? '#1E293B' : '#FFFFFF';
   const border = isDark ? '#334155' : '#E2E8F0';
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const sub = isDark ? '#94A3B8' : '#64748B';
+  const text   = isDark ? '#F1F5F9' : '#0F172A';
+  const sub    = isDark ? '#94A3B8' : '#64748B';
+  const bg     = isDark ? '#0F172A' : '#F1F5F9';
+
+  const filtered = filterStatus === 'all'
+    ? orders
+    : orders.filter(o => o.status === filterStatus);
 
   const renderItem = ({ item }: { item: AdminOrder }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[s.orderCard, { backgroundColor: card, borderColor: border }]}
       onPress={() => setSelected(item)}
       activeOpacity={0.7}
@@ -46,6 +60,9 @@ export default function AdminOrdersScreen() {
         <Text style={[s.orderDate, { color: sub }]}>
           {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </Text>
+        {item.profiles?.name ? (
+          <Text style={[s.orderCustomer, { color: sub }]}>{item.profiles.name}</Text>
+        ) : null}
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[s.orderPrice, { color: text }]}>GH₵{Number(item.total_price).toFixed(2)}</Text>
@@ -59,13 +76,37 @@ export default function AdminOrdersScreen() {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Status filter tabs */}
+      <View style={[s.filterBar, { backgroundColor: card, borderBottomColor: border }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
+          {STATUS_FILTERS.map(status => (
+            <TouchableOpacity
+              key={status}
+              onPress={() => setFilterStatus(status)}
+              style={[s.filterTab, {
+                borderColor: filterStatus === status ? PRIMARY : border,
+                backgroundColor: filterStatus === status ? `${PRIMARY}15` : 'transparent',
+              }]}
+            >
+              <Text style={[s.filterTabText, { color: filterStatus === status ? PRIMARY : sub }]}>
+                {status.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {loading ? (
         <View style={s.center}>
           <ActivityIndicator size="large" color={PRIMARY} />
         </View>
+      ) : filtered.length === 0 ? (
+        <View style={s.center}>
+          <Text style={{ color: sub, fontSize: 14 }}>No {filterStatus === 'all' ? '' : filterStatus} orders found</Text>
+        </View>
       ) : (
         <FlatList
-          data={orders}
+          data={filtered}
           renderItem={renderItem}
           keyExtractor={item => item.id}
           contentContainerStyle={{ padding: 16 }}
@@ -88,14 +129,25 @@ export default function AdminOrdersScreen() {
             </View>
 
             {selected && (
-              <ScrollView style={s.modalBody}>
+              <ScrollView style={s.modalBody} showsVerticalScrollIndicator={false}>
+                {/* Header */}
                 <View style={s.detailHeader}>
                   <Text style={[s.detailId, { color: text }]}>#{selected.id.toUpperCase()}</Text>
                   <View style={[s.statusBadgeLarge, { backgroundColor: statusColor(selected.status) + '18' }]}>
-                    <Text style={[s.statusTextLarge, { color: statusColor(selected.status) }]}>{selected.status.toUpperCase()}</Text>
+                    <Text style={[s.statusTextLarge, { color: statusColor(selected.status) }]}>
+                      {selected.status.toUpperCase()}
+                    </Text>
                   </View>
                 </View>
 
+                <Text style={[s.orderDateDetail, { color: sub }]}>
+                  Placed {new Date(selected.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </Text>
+
+                {/* Divider */}
+                <View style={[s.divider, { backgroundColor: border }]} />
+
+                {/* Customer */}
                 <View style={s.section}>
                   <View style={s.sectionHeader}>
                     <User size={16} color={sub} />
@@ -105,24 +157,41 @@ export default function AdminOrdersScreen() {
                   <Text style={[s.detailSubText, { color: sub }]}>{selected.profiles?.email}</Text>
                 </View>
 
+                {/* Divider */}
+                <View style={[s.divider, { backgroundColor: border }]} />
+
+                {/* Products */}
                 <View style={s.section}>
-                  <div style={{ height: 1, background: border, margin: '16px 0' }} />
                   <View style={s.sectionHeader}>
                     <Package size={16} color={sub} />
                     <Text style={[s.sectionTitle, { color: sub }]}>PRODUCTS</Text>
                   </View>
-                  {selected.products.map((p, i) => (
+                  {(selected.products ?? []).map((p, i) => (
                     <View key={i} style={s.productRow}>
-                      <Text style={[s.productName, { color: text }]}>{p.name} x{p.quantity}</Text>
+                      <Text style={[s.productName, { color: text }]}>{p.name} ×{p.quantity}</Text>
                       <Text style={[s.productPrice, { color: text }]}>GH₵{(p.price * p.quantity).toFixed(2)}</Text>
                     </View>
                   ))}
-                  <div style={{ height: 1, background: border, margin: '12px 0' }} />
+
+                  {/* Divider before total */}
+                  <View style={[s.divider, { backgroundColor: border, marginVertical: 12 }]} />
+
                   <View style={s.totalRow}>
                     <Text style={[s.totalLabel, { color: text }]}>Total</Text>
                     <Text style={[s.totalPrice, { color: PRIMARY }]}>GH₵{Number(selected.total_price).toFixed(2)}</Text>
                   </View>
                 </View>
+
+                {/* Shipping address if available */}
+                {selected.shipping_address ? (
+                  <>
+                    <View style={[s.divider, { backgroundColor: border }]} />
+                    <View style={s.section}>
+                      <Text style={[s.sectionTitle, { color: sub }]}>SHIPPING ADDRESS</Text>
+                      <Text style={[s.detailText, { color: text }]}>{selected.shipping_address}</Text>
+                    </View>
+                  </>
+                ) : null}
               </ScrollView>
             )}
           </View>
@@ -133,31 +202,37 @@ export default function AdminOrdersScreen() {
 }
 
 const s = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  orderCard: { flex: 1, margin: 8, borderRadius: 16, borderWidth: 1, padding: 16, flexDirection: 'row', alignItems: 'center' },
-  orderId: { fontSize: 14, fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
-  orderDate: { fontSize: 12, marginTop: 4 },
-  orderPrice: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  statusText: { fontSize: 10, fontWeight: '800', textTransform: 'capitalize' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 600, borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
-  modalHeader: { padding: 20, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalTitle: { fontSize: 20, fontWeight: '900' },
-  modalBody: { padding: 20, maxHeight: 600 },
-  detailHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  detailId: { fontSize: 16, fontWeight: '800' },
+  center:           { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  filterBar:        { borderBottomWidth: 1, paddingVertical: 12 },
+  filterTab:        { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  filterTabText:    { fontSize: 11, fontWeight: '800' },
+  orderCard:        { flex: 1, margin: 8, borderRadius: 16, borderWidth: 1, padding: 16, flexDirection: 'row', alignItems: 'center' },
+  orderId:          { fontSize: 14, fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
+  orderDate:        { fontSize: 12, marginTop: 2 },
+  orderCustomer:    { fontSize: 11, marginTop: 2 },
+  orderPrice:       { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  statusBadge:      { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  statusText:       { fontSize: 10, fontWeight: '800', textTransform: 'capitalize' },
+  modalOverlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent:     { width: '100%', maxWidth: 600, borderRadius: 20, borderWidth: 1, overflow: 'hidden', maxHeight: '90%' },
+  modalHeader:      { padding: 20, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modalTitle:       { fontSize: 20, fontWeight: '900' },
+  modalBody:        { padding: 20 },
+  detailHeader:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  detailId:         { fontSize: 16, fontWeight: '800' },
+  orderDateDetail:  { fontSize: 12, marginBottom: 16 },
   statusBadgeLarge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusTextLarge: { fontSize: 12, fontWeight: '900' },
-  section: { marginBottom: 24 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  sectionTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  detailText: { fontSize: 15, fontWeight: '700' },
-  detailSubText: { fontSize: 13, marginTop: 2 },
-  productRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  productName: { fontSize: 14 },
-  productPrice: { fontSize: 14, fontWeight: '600' },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  totalLabel: { fontSize: 16, fontWeight: '800' },
-  totalPrice: { fontSize: 20, fontWeight: '900' },
+  statusTextLarge:  { fontSize: 12, fontWeight: '900' },
+  divider:          { height: 1, marginVertical: 16 },
+  section:          { marginBottom: 4 },
+  sectionHeader:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionTitle:     { fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  detailText:       { fontSize: 15, fontWeight: '700' },
+  detailSubText:    { fontSize: 13, marginTop: 2 },
+  productRow:       { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  productName:      { fontSize: 14 },
+  productPrice:     { fontSize: 14, fontWeight: '600' },
+  totalRow:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  totalLabel:       { fontSize: 16, fontWeight: '800' },
+  totalPrice:       { fontSize: 20, fontWeight: '900' },
 });

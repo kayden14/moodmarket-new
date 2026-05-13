@@ -1,27 +1,43 @@
+/**
+ * hooks/useVendorsData.ts
+ *
+ * FIXES:
+ *  - Delegates to getAllVendors() and getAllApplications() from vendorService
+ *    so the returned shape (user_name, user_email, contact_email, etc.) exactly
+ *    matches what vendors.tsx and approveVendorApplication() expect.
+ *  - Only fetches 'pending' applications so approved/rejected don't reappear.
+ *  - Added refreshing state for pull-to-refresh.
+ */
+
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/services/supabase';
-import { getAllApplications, getAllVendors } from '@/services/vendorService';
+import { getAllVendors, getAllApplications } from '@/services/vendorService';
 
 export function useVendorsData() {
-  const [vendors, setVendors] = useState<any[]>([]);
-  const [apps,    setApps]    = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [vendors,    setVendors]    = useState<any[]>([]);
+  const [apps,       setApps]       = useState<any[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
-      const [v, a] = await Promise.all([
+      // Run both fetches in parallel
+      const [vendorData, appData] = await Promise.all([
         getAllVendors(),
-        getAllApplications('pending'),
+        getAllApplications('pending'), // only pending — keeps the list clean
       ]);
-      setVendors(v);
-      setApps(a);
-    } catch (e) {
-      console.error('[Admin Vendors]', e);
+      setVendors(vendorData);
+      setApps(appData);
+    } catch (err) {
+      console.error('useVendorsData error:', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, []);
-  return { vendors, apps, loading, fetchData, setVendors, setApps };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { vendors, apps, loading, refreshing, setRefreshing, fetchData };
 }

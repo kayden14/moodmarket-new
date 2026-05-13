@@ -25,12 +25,13 @@ export interface AdminOrder {
   total_price: number;
   status: string;
   created_at: string;
+  shipping_address?: string | null;
   products: AdminOrderProduct[];
-  profiles?: { name: string; email: string };
+  profiles?: { name: string; email: string } | null;
 }
 
 export interface AdminOrderProduct {
-  productId: string;
+  productId?: string;
   name: string;
   price: number;
   quantity: number;
