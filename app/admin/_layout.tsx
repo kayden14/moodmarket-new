@@ -23,14 +23,7 @@ export default function AdminLayout() {
     'users': 'Users',
   };
 
-  const currentSegment = segments[segments.length - 1];
-  const titleMap: Record<string, string> = {
-    'admin': 'Dashboard',
-    'products': 'Products',
-    'orders': 'Orders',
-    'vendors': 'Vendors',
-    'users': 'Users',
-  };
+
 
   if (isLoginPage) {
     return (

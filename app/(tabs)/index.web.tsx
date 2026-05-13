@@ -155,6 +155,65 @@ function ProductCard({ item, onPress, onAddToCart }: {
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '0 12px',
               transition: 'all 0.18s ease',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {adding ? '...' : '+ Add'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrendingCard({ item, onPress, onAddToCart }: {
+  item: ScoredProduct; onPress: () => void; onAddToCart: (p: Product) => void;
+}) {
+  const { theme } = useTheme();
+  const [adding, setAdding]   = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onClick={onPress}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex: '0 0 200px',
+        minWidth: '200px',
+        borderRadius: 14, overflow: 'hidden',
+        background: theme.card, border: `1px solid ${hovered ? theme.secondary : theme.border}`,
+        cursor: 'pointer',
+        transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+        transform: hovered ? 'translateY(-2px)' : 'none',
+        boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
+        scrollSnapAlign: 'start',
+      }}
+    >
+      <div style={{ position: 'relative', height: '140px' }}>
+        <Image
+          source={{ uri: getProductImage(item) }}
+          style={{ width: '100%', height: '100%' } as any}
+          contentFit="cover" transition={200}
+        />
+        <div style={{
+          position: 'absolute', top: 8, left: 8,
+          background: '#EF4444',
+          borderRadius: 5,
+          padding: '3px 8px', fontSize: 10, fontWeight: 700,
+          color: '#fff', textTransform: 'uppercase',
+        }}>Hot</div>
+      </div>
+      <div style={{ padding: '11px 12px 12px' }}>
+        <p style={{
+          margin: '0 0 8px', fontSize: 13, fontWeight: 600,
+          color: theme.textPrimary, whiteSpace: 'nowrap',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {item.name}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
           <span style={{
             fontSize: 15,
             fontWeight: 700,
@@ -179,6 +238,61 @@ function ProductCard({ item, onPress, onAddToCart }: {
               color: '#fff', fontSize: 12, fontWeight: 600,
               cursor: 'pointer', padding: '0 11px',
               transition: 'opacity 0.15s',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              flexShrink: 0,
+              opacity: adding ? 0.6 : 1,
+            }}
+          >
+            {adding ? '…' : '+ Add'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartToast({ count, total, visible, onPress }: {
+  count: number; total: number; visible: boolean; onPress: () => void;
+}) {
+  return (
+    <div
+      onClick={onPress}
+      style={{
+        position: 'fixed', bottom: 24, right: 16,
+        background: '#111',
+        borderRadius: 12,
+        padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10,
+        cursor: 'pointer', zIndex: 9999,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+        transition: 'transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.22s ease',
+        transform: visible ? 'translateY(0) scale(1)' : 'translateY(60px) scale(0.95)',
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? 'auto' : 'none',
+        maxWidth: 'calc(100vw - 32px)',
+      }}
+    >
+      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <ShoppingCart size={15} color="#fff" />
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ color: '#fff', fontWeight: 600, fontSize: 13 }}>Added to cart</div>
+        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
+          {count} items · GH₵{total.toFixed(2)}
+        </div>
+      </div>
+      <div style={{ marginLeft: 6, color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 600, borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 10, flexShrink: 0 }}>
+        View <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────── main page ─────────────────────────────── */
+
+export default function HomeScreenWeb() {
+  const router = useRouter();
+  const { user }                            = useAuth();
+  const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood }                     = useTheme();
   const { searchQuery, selectedCategory, setSelectedCategory } = useStorefront();
 
@@ -196,7 +310,6 @@ function ProductCard({ item, onPress, onAddToCart }: {
   const REC_PREVIEW = 10;
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
 
->>>>>>> origin/main
   const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
@@ -321,6 +434,31 @@ function ProductCard({ item, onPress, onAddToCart }: {
         <section className="mm-section">
           <div className="mm-section-header">
             <h2 className="mm-section-title">Trending Now</h2>
+            <button className="mm-see-all" onClick={() => allProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              See all <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
+            </button>
+          </div>
+          <div className="mm-trending-strip">
+            {trending.map(item => (
+              <TrendingCard
+                key={item.id}
+                item={item}
+                onPress={() => router.push(`/product/${item.id}`)}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recommendations */}
+      {recommended.length > 0 && (
+        <section className="mm-section">
+          <div className="mm-section-header">
+            <h2 className="mm-section-title">
+              For {selectedMood.label} <WebEmoji>{selectedMood.emoji}</WebEmoji>
+            </h2>
+            <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
               {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} /></>}
             </button>
           </div>
@@ -389,18 +527,6 @@ function ProductCard({ item, onPress, onAddToCart }: {
         visible={snapVisible}
         onPress={() => { setSnapVisible(false); router.push('/(tabs)/cart'); }}
       />
-    </WebShell>
-  );
-}
-     )}
-      </section>
-
-      <CartToast
-        count={cartCount}
-        total={cartTotal}
-        visible={snapVisible}
-        onPress={() => { setSnapVisible(false); router.push('/(tabs)/cart'); }}
-      />
-    </WebShell>
+    </>
   );
 }

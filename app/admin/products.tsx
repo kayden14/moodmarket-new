@@ -342,10 +342,3 @@ const s = StyleSheet.create({
   confirmTitle: { fontSize: 20, fontWeight: '900', marginBottom: 8 },
   confirmSub: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
 });
-derRadius: 12, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  saveBtn: { flex: 1, height: 48, borderRadius: 12, backgroundColor: PRIMARY, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  saveBtnText: { color: '#fff', fontWeight: '800', fontSize: 15 },
-  confirmBox: { width: '100%', maxWidth: 400, padding: 24, borderRadius: 20, borderWidth: 1, alignItems: 'center' },
-  confirmTitle: { fontSize: 20, fontWeight: '900', marginBottom: 8 },
-  confirmSub: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
-});
