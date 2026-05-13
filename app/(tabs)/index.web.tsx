@@ -5,21 +5,13 @@ import { supabase } from '@/services/supabase';
 import { Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-<<<<<<< HEAD
-import { useTheme, MoodKey } from '@/contexts/ThemeContext';
-=======
 import { useTheme } from '@/contexts/ThemeContext';
->>>>>>> origin/main
 import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
 import { NotificationService } from '@/services/notifications';
 import { useStorefront } from '@/contexts/StorefrontContext';
 import {
-<<<<<<< HEAD
-  Heart, Star, ShoppingCart, ArrowRight, Sparkles, Flame, Search, ChevronRight
-=======
   Heart, Star, ShoppingCart, ArrowRight, Search, ChevronRight
->>>>>>> origin/main
 } from 'lucide-react';
 import WebShell from '@/components/WebShell';
 
@@ -146,14 +138,9 @@ function ProductCard({ item, onPress, onAddToCart }: {
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 }}>
-<<<<<<< HEAD
-          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary }}>
-            GH₵ {(item as Product).price.toFixed(2)}
-=======
           <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
             {(item as Product).price.toFixed(2)}
->>>>>>> origin/main
           </span>
           <button
             onClick={handleAdd}
@@ -168,71 +155,6 @@ function ProductCard({ item, onPress, onAddToCart }: {
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '0 12px',
               transition: 'all 0.18s ease',
-<<<<<<< HEAD
-=======
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
-              whiteSpace: 'nowrap',
->>>>>>> origin/main
-            }}
-          >
-            {adding ? '...' : '+ Add'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TrendingCard({ item, onPress, onAddToCart }: {
-  item: ScoredProduct; onPress: () => void; onAddToCart: (p: Product) => void;
-}) {
-  const { theme } = useTheme();
-  const [adding, setAdding]   = useState(false);
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <div
-      onClick={onPress}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        flex: '0 0 200px',
-        minWidth: '200px',
-        borderRadius: 14, overflow: 'hidden',
-        background: theme.card, border: `1px solid ${hovered ? theme.secondary : theme.border}`,
-        cursor: 'pointer',
-        transition: 'transform 0.18s ease, box-shadow 0.18s ease',
-        transform: hovered ? 'translateY(-2px)' : 'none',
-        boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
-        scrollSnapAlign: 'start',
-      }}
-    >
-      <div style={{ position: 'relative', height: '140px' }}>
-        <Image
-          source={{ uri: getProductImage(item) }}
-          style={{ width: '100%', height: '100%' } as any}
-          contentFit="cover" transition={200}
-        />
-        <div style={{
-          position: 'absolute', top: 8, left: 8,
-          background: '#EF4444',
-          borderRadius: 5,
-          padding: '3px 8px', fontSize: 10, fontWeight: 700,
-          color: '#fff', textTransform: 'uppercase',
-        }}>Hot</div>
-      </div>
-      <div style={{ padding: '11px 12px 12px' }}>
-        <p style={{
-          margin: '0 0 8px', fontSize: 13, fontWeight: 600,
-          color: theme.textPrimary, whiteSpace: 'nowrap',
-          overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {item.name}
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
-<<<<<<< HEAD
-          <span style={{ fontSize: 15, fontWeight: 700, color: theme.textPrimary }}>
-=======
           <span style={{
             fontSize: 15,
             fontWeight: 700,
@@ -241,7 +163,6 @@ function TrendingCard({ item, onPress, onAddToCart }: {
             fontFamily: '"Plus Jakarta Sans", sans-serif',
             flexShrink: 0,
           }}>
->>>>>>> origin/main
             GH₵{item.price.toFixed(2)}
           </span>
           <button
@@ -258,70 +179,8 @@ function TrendingCard({ item, onPress, onAddToCart }: {
               color: '#fff', fontSize: 12, fontWeight: 600,
               cursor: 'pointer', padding: '0 11px',
               transition: 'opacity 0.15s',
-<<<<<<< HEAD
-=======
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
-              flexShrink: 0,
-              opacity: adding ? 0.6 : 1,
->>>>>>> origin/main
-            }}
-          >
-            {adding ? '…' : '+ Add'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CartToast({ count, total, visible, onPress }: {
-  count: number; total: number; visible: boolean; onPress: () => void;
-}) {
-  return (
-    <div
-      onClick={onPress}
-      style={{
-        position: 'fixed', bottom: 24, right: 16,
-        background: '#111',
-        borderRadius: 12,
-        padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10,
-        cursor: 'pointer', zIndex: 9999,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        transition: 'transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.22s ease',
-        transform: visible ? 'translateY(0) scale(1)' : 'translateY(60px) scale(0.95)',
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? 'auto' : 'none',
-        maxWidth: 'calc(100vw - 32px)',
-      }}
-    >
-      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <ShoppingCart size={15} color="#fff" />
-      </div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ color: '#fff', fontWeight: 600, fontSize: 13 }}>Added to cart</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-          {count} items · GH₵{total.toFixed(2)}
-        </div>
-      </div>
-      <div style={{ marginLeft: 6, color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 600, borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 10, flexShrink: 0 }}>
-        View <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────── main page ─────────────────────────────── */
-
-export default function HomeScreenWeb() {
-  const router = useRouter();
-  const { user }                            = useAuth();
-  const { addToCart, cartCount, cartTotal } = useCart();
-<<<<<<< HEAD
-  const { theme, mood, setMood }            = useTheme();
-=======
   const { theme, mood }                     = useTheme();
   const { searchQuery, selectedCategory, setSelectedCategory } = useStorefront();
->>>>>>> origin/main
 
   const [allProducts, setAllProducts]           = useState<Product[]>([]);
   const [recommended, setRecommended]           = useState<ScoredProduct[]>([]);
@@ -337,18 +196,6 @@ export default function HomeScreenWeb() {
   const REC_PREVIEW = 10;
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
 
-<<<<<<< HEAD
-  const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
-    setMood(detectedMood);
-    const meta = MOODS.find(m => m.key === detectedMood);
-    if (profile?.id && meta) {
-      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
-    }
-  }, [setMood, profile?.id]);
-
-  const { detecting, permissionDenied, rescan } = useMoodDetection({ onMoodDetected: handleMoodDetected });
-
-=======
 >>>>>>> origin/main
   const fetchProducts = useCallback(async () => {
     try {
@@ -411,9 +258,6 @@ export default function HomeScreenWeb() {
   const bord = theme.border;
   const pri = theme.primary;
 
-<<<<<<< HEAD
-  if (loading) return null;
-=======
   if (loading) {
     return (
       <div style={{ height: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
@@ -424,21 +268,12 @@ export default function HomeScreenWeb() {
       </div>
     );
   }
->>>>>>> origin/main
 
   return (
     <>
       <style>{`
         .mm-section { margin-bottom: 36px; }
         .mm-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
-<<<<<<< HEAD
-        .mm-section-title { font-family: "Lora", serif; font-size: 19px; font-weight: 600; color: ${tp}; letter-spacing: -0.3px; }
-        .mm-see-all { background: none; border: none; color: ${pri}; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-        .mm-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: ${ts}; margin-bottom: 18px; }
-        .mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-        .mm-trending-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
-        .mm-trending-strip::-webkit-scrollbar { display: none; }
-=======
         .mm-section-title { font-family: "Playfair Display", serif; font-size: 19px; font-weight: 600; color: ${tp}; letter-spacing: -0.3px; }
         .mm-see-all { background: none; border: none; color: ${pri}; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; transition: opacity 0.13s; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
         .mm-see-all:hover { opacity: 0.7; }
@@ -463,7 +298,6 @@ export default function HomeScreenWeb() {
         @media (max-width: 540px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
         }
->>>>>>> origin/main
       `}</style>
 
       <div className="mm-breadcrumb">
@@ -487,70 +321,6 @@ export default function HomeScreenWeb() {
         <section className="mm-section">
           <div className="mm-section-header">
             <h2 className="mm-section-title">Trending Now</h2>
-<<<<<<< HEAD
-=======
-            <button className="mm-see-all" onClick={() => allProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-              See all <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} />
-            </button>
->>>>>>> origin/main
-          </div>
-          <div className="mm-trending-strip">
-            {trending.map(item => (
-              <TrendingCard
-                key={item.id}
-                item={item}
-                onPress={() => router.push(`/product/${item.id}`)}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Recommendations */}
-      {recommended.length > 0 && (
-        <section className="mm-section">
-          <div className="mm-section-header">
-            <h2 className="mm-section-title">
-              For {selectedMood.label} <WebEmoji>{selectedMood.emoji}</WebEmoji>
-            </h2>
-            <button className="mm-see-all" onClick={() => setShowAllRecs(v => !v)}>
-<<<<<<< HEAD
-              {showAllRecs ? 'Show less' : 'See all'}
-            </button>
-          </div>
-          <div className="mm-grid">
-            {(showAllRecs ? recommended : recommended.slice(0, REC_PREVIEW)).map(item => (
-              <ProductCard
-                key={item.id}
-                item={item}
-                onPress={() => router.push(`/product/${item.id}`)}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* All products */}
-      <section ref={allProductsRef as any}>
-        <div className="mm-section-header">
-          <h2 className="mm-section-title">
-            {selectedCategory === 'all'
-              ? 'All Products'
-              : CATEGORIES.find(c => c.id === selectedCategory)?.label ?? 'Products'}
-          </h2>
-          <span style={{ fontSize: 12, color: ts }}>
-            {filteredProducts.length} items
-          </span>
-        </div>
-
-        {filteredProducts.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: ts }}>
-            <Search size={36} strokeWidth={1.5} style={{ marginBottom: 12 }} />
-            <p>No products found.</p>
-          </div>
-=======
               {showAllRecs ? 'Show less' : <>See all {recommended.length} <ArrowRight size={12} style={{ display: 'inline-flex', verticalAlign: 'middle' }} /></>}
             </button>
           </div>
@@ -599,7 +369,6 @@ export default function HomeScreenWeb() {
               Clear filters
             </button>
           </div>
->>>>>>> origin/main
         ) : (
           <div className="mm-grid">
             {filteredProducts.map(item => (
@@ -635,15 +404,3 @@ export default function HomeScreenWeb() {
     </WebShell>
   );
 }
-e); router.push('/(tabs)/cart'); }}
-      />
-    </>
-  );
-}
-<<<<<<< HEAD
-
-    </WebShell>
-  );
-}
-=======
->>>>>>> origin/main

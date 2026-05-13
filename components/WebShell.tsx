@@ -79,23 +79,6 @@ interface WebShellProps {
   children: React.ReactNode;
   activeNav?: string;
   title?: string;
-<<<<<<< HEAD
-=======
-  subtitle?: string;
->>>>>>> origin/main
-  showSidebar?: boolean;
-}
-
-export default function WebShell({
-  children,
-  activeNav,
-  title,
-  showSidebar = true,
-}: WebShellProps) {
-  const router = useRouter();
-<<<<<<< HEAD
-  const pathname = usePathname();
-=======
 >>>>>>> origin/main
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
   const { user, profile } = useAuth();
@@ -197,11 +180,7 @@ export default function WebShell({
         .mm-app {
           height: 100vh;
           background: ${bg};
-<<<<<<< HEAD
-          font-family: "Sora", sans-serif;
-=======
           font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
           color: ${tp};
           display: flex;
           flex-direction: column;
@@ -231,11 +210,7 @@ export default function WebShell({
           font-size: 17px; flex-shrink: 0;
         }
         .mm-logo-text {
-<<<<<<< HEAD
-          font-family: "Lora", serif; font-size: 19px;
-=======
           font-family: "Playfair Display", serif; font-size: 19px;
->>>>>>> origin/main
           font-weight: 600; color: ${tp}; letter-spacing: -0.4px;
         }
         .mm-logo-text em { font-style: italic; color: ${pri}; }
@@ -247,11 +222,7 @@ export default function WebShell({
           width: 100%; height: 38px;
           background: ${bg}; border: 1px solid ${bord};
           border-radius: 9px; padding: 0 14px 0 38px;
-<<<<<<< HEAD
-          font-size: 13.5px; font-family: "Sora", sans-serif;
-=======
           font-size: 13.5px; font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
           color: ${tp}; outline: none;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
@@ -272,11 +243,7 @@ export default function WebShell({
           width: 100%; height: 40px;
           background: ${bg}; border: 1px solid ${bord};
           border-radius: 9px; padding: 0 14px 0 38px;
-<<<<<<< HEAD
-          font-size: 14px; font-family: "Sora", sans-serif;
-=======
           font-size: 14px; font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
           color: ${tp}; outline: none;
         }
 
@@ -292,11 +259,7 @@ export default function WebShell({
           color: ${ts}; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           gap: 6px; font-size: 13px; font-weight: 500;
-<<<<<<< HEAD
-          font-family: "Sora", sans-serif;
-=======
           font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
           transition: all 0.15s; white-space: nowrap;
           padding: 0 12px; position: relative;
           flex-shrink: 0;
@@ -377,11 +340,7 @@ export default function WebShell({
         .mm-more-item {
           display: flex; align-items: center; gap: 11px; width: 100%;
           padding: 12px 16px; background: transparent; border: none;
-<<<<<<< HEAD
-          cursor: pointer; font-family: "Sora", sans-serif; font-size: 13.5px;
-=======
           cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; font-size: 13.5px;
->>>>>>> origin/main
           font-weight: 500; color: ${tp}; text-align: left;
         }
         .mm-more-item:hover { background: ${bg}; }
@@ -432,11 +391,7 @@ export default function WebShell({
           display: flex; align-items: center; gap: 9px; padding: 9px 10px;
           border-radius: 8px; width: 100%; background: transparent;
           border: 1px solid transparent; cursor: pointer; transition: all 0.13s;
-<<<<<<< HEAD
-          text-align: left; min-height: 44px; font-family: "Sora", sans-serif;
-=======
           text-align: left; min-height: 44px; font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
         }
         .mm-mood-item:hover { background: ${bg}; border-color: ${bord}; }
         .mm-mood-item.active { background: ${tint}; border-color: ${theme.secondary}; }
@@ -448,11 +403,7 @@ export default function WebShell({
           display: flex; align-items: center; gap: 9px; padding: 8px 10px;
           border-radius: 7px; width: 100%; background: transparent;
           border: 1px solid transparent; cursor: pointer; transition: all 0.13s;
-<<<<<<< HEAD
-          text-align: left; min-height: 40px; font-family: "Sora", sans-serif;
-=======
           text-align: left; min-height: 40px; font-family: "Plus Jakarta Sans", sans-serif;
->>>>>>> origin/main
         }
         .mm-cat-item:hover { background: ${bg}; }
         .mm-cat-item.active { background: ${tint}; }
@@ -582,11 +533,7 @@ export default function WebShell({
               <div className="mm-sidebar-inner">
                 <div style={{ padding: '4px 22px 18px' }}>
                   <p style={{ fontSize: 11, color: ts }}>{greeting}</p>
-<<<<<<< HEAD
-                  <p style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: tp, marginTop: 2 }}>
-=======
                   <p style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 700, color: tp, marginTop: 2 }}>
->>>>>>> origin/main
                     {firstName ?? 'Welcome'}
                   </p>
                 </div>
@@ -636,8 +583,6 @@ export default function WebShell({
 
           <main className="mm-main">
             <div className="mm-main-inner">
-<<<<<<< HEAD
-=======
               {title && (
                 <div style={{ marginBottom: 24 }}>
                    <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 32, fontWeight: 900, color: tp, letterSpacing: -0.8, margin: 0 }}>
@@ -645,7 +590,6 @@ export default function WebShell({
                   </h1>
                 </div>
               )}
->>>>>>> origin/main
               {children}
             </div>
           </main>
