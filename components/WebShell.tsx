@@ -79,10 +79,11 @@ interface WebShellProps {
   children: React.ReactNode;
   activeNav?: string;
   title?: string;
+  subtitle?: string;
   showSidebar?: boolean;
 }
 
-export default function WebShell({ children, activeNav, title, showSidebar = true }: WebShellProps) {
+export default function WebShell({ children, activeNav, title, subtitle, showSidebar = true }: WebShellProps) {
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
   const { user, profile } = useAuth();
   const { cartCount } = useCart();
@@ -610,6 +611,11 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
                   <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 32, fontWeight: 900, color: tp, letterSpacing: -0.8, margin: 0 }}>
                     {title}
                   </h1>
+                  {subtitle && (
+                    <p style={{ fontSize: 14, color: ts, marginTop: 4, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                      {subtitle}
+                    </p>
+                  )}
                 </div>
               )}
               {children}
