@@ -642,7 +642,7 @@ function NotificationsScreenWeb() {
   `;
 
   return (
-    <WebShell hideTopNav>
+    <WebShell>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="notif-page">
 
