@@ -467,7 +467,7 @@ function NotificationsScreenWeb() {
   const filteredEarlier = filtered.filter(n => new Date(n.created_at).toDateString() !== new Date().toDateString());
 
   const renderCard = (notif: AppNotification, index: number) => {
-    const { bg, color, icon: Icon } = getIconConfig(notif.type, isDark);
+    const { bg, color, Icon } = getIconConfig(notif.type, isDark);
     
     return (
       <div 
