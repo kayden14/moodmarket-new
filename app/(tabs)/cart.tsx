@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useResponsive } from '@/hooks/useResponsive';
+import { useResponsive } from '../../hooks/useResponsive';
 import {
   Trash2, Plus, Minus, ShoppingBag,
   ArrowRight, Truck, ShoppingCart, Lock, Zap,

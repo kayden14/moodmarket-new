@@ -14,7 +14,7 @@ import {
   Heart, Star, ShoppingCart, ArrowRight, Search, ChevronRight, Sparkles, Camera
 } from 'lucide-react';
 import WebShell from '@/components/WebShell';
-import { useResponsive } from '@/hooks/useResponsive';
+import { useResponsive } from '../../hooks/useResponsive';
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
