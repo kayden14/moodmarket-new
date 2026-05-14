@@ -981,7 +981,7 @@ export default function CheckoutWeb() {
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
                 Choose Payment Method
               </div>
-              <PayMethodCard method="card"         selected={payMethod === 'card'}         onSelect={() => setPayMethod('card'}         theme={theme} isDark={isDark} />
+              <PayMethodCard method="card"         selected={payMethod === 'card'}         onSelect={() => setPayMethod('card')}         theme={theme} isDark={isDark} />
               <PayMethodCard method="mobile_money" selected={payMethod === 'mobile_money'} onSelect={() => setPayMethod('mobile_money')} theme={theme} isDark={isDark} />
 
               {payMethod === 'mobile_money' && (
