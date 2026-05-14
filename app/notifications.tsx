@@ -512,7 +512,7 @@ function NotificationsScreenWeb() {
     @keyframes notif-spin { to { transform:rotate(360deg); } }
     @keyframes pulse-dot  { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-    .notif-page { max-width: 760px; margin: 0 auto; font-family: "Plus Jakarta Sans", sans-serif; }
+    .notif-page { width: 100%; font-family: "Plus Jakarta Sans", sans-serif; }
 
     /* ── Header ── */
     .notif-header {
