@@ -216,7 +216,7 @@ export default function AdminVendorsScreen() {
 
   // ── UI ────────────────────────────────────────────────────────────────────
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: isDark ? '#0F0F0F' : '#F8FAFC' }}>
       {/* Tabs */}
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
         <TouchableOpacity

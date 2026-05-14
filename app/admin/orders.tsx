@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { useOrdersData } from '@/hooks/useOrdersData';
 import { useTheme } from '@/contexts/ThemeContext';
-import { X, User, Package, MapPin, Phone, CreditCard } from 'lucide-react-native';
+import { X, User, Package, MapPin, Phone, CreditCard, Truck, Check, AlertTriangle } from 'lucide-react-native';
 import { AdminOrder } from '@/types/admin';
+import { supabase } from '@/services/supabase';
 
 const PRIMARY = '#FF7A8A';
 
@@ -39,6 +40,29 @@ export default function AdminOrdersScreen() {
   const text   = theme.textPrimary;
   const sub    = theme.textSecondary;
   const bg     = theme.background;
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const updateStatus = async (orderId: string, newStatus: string) => {
+    setUpdating(newStatus);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      
+      // Update local state
+      fetchOrders();
+      if (selected) {
+        setSelected({ ...selected, status: newStatus as any });
+      }
+    } catch (e: any) {
+      alert('Failed to update status: ' + e.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
 
   const filtered = filterStatus === 'all'
     ? orders
@@ -242,6 +266,40 @@ export default function AdminOrdersScreen() {
                   </View>
                 </View>
 
+                {/* Status Update Actions */}
+                <View style={[s.divider, { backgroundColor: border }]} />
+                <View style={s.section}>
+                  <Text style={[s.sectionTitle, { color: sub, marginBottom: 12 }]}>UPDATE STATUS</Text>
+                  <View style={s.statusActionsRow}>
+                    <TouchableOpacity 
+                      style={[s.statusActionBtn, { borderColor: border, backgroundColor: selected.status === 'shipped' ? '#A78BFA22' : 'transparent' }]}
+                      onPress={() => updateStatus(selected.id, 'shipped')}
+                      disabled={!!updating}
+                    >
+                      <Truck size={18} color={selected.status === 'shipped' ? '#A78BFA' : sub} />
+                      <Text style={[s.statusActionText, { color: selected.status === 'shipped' ? '#A78BFA' : sub }]}>Shipped</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[s.statusActionBtn, { borderColor: border, backgroundColor: selected.status === 'delivered' ? '#4ADE8022' : 'transparent' }]}
+                      onPress={() => updateStatus(selected.id, 'delivered')}
+                      disabled={!!updating}
+                    >
+                      <Check size={18} color={selected.status === 'delivered' ? '#4ADE80' : sub} />
+                      <Text style={[s.statusActionText, { color: selected.status === 'delivered' ? '#4ADE80' : sub }]}>Delivered</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[s.statusActionBtn, { borderColor: border, backgroundColor: selected.status === 'cancelled' ? '#F8717122' : 'transparent' }]}
+                      onPress={() => updateStatus(selected.id, 'cancelled')}
+                      disabled={!!updating}
+                    >
+                      <AlertTriangle size={18} color={selected.status === 'cancelled' ? '#F87171' : sub} />
+                      <Text style={[s.statusActionText, { color: selected.status === 'cancelled' ? '#F87171' : sub }]}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
               </ScrollView>
             )}
           </View>
@@ -285,4 +343,7 @@ const s = StyleSheet.create({
   totalRow:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   totalLabel:       { fontSize: 16, fontWeight: '800' },
   totalPrice:       { fontSize: 20, fontWeight: '900' },
+  statusActionsRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  statusActionBtn:  { flex: 1, minWidth: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
+  statusActionText: { fontSize: 13, fontWeight: '700' },
 });

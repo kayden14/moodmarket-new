@@ -166,7 +166,7 @@ export default function AdminUsersScreen() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: isDark ? '#0F0F0F' : '#F8FAFC' }}>
       {/* ToolBar */}
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
         <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>

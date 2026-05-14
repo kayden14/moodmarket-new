@@ -137,7 +137,7 @@ export default function AdminProductsScreen() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header / Search */}
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
         <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>

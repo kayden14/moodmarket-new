@@ -72,7 +72,7 @@ export default function VendorOrders() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       {loading ? (
         <View style={[s.center, { backgroundColor: theme.background }]}>
           <ActivityIndicator size="large" color={PRIMARY} />
@@ -104,8 +104,8 @@ export default function VendorOrders() {
               <ScrollView style={s.modalBody}>
                 <View style={s.section}>
                   <Text style={[s.label, { color: sub }]}>STATUS</Text>
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-                    {['paid', 'shipped', 'delivered'].map(st => (
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                    {['paid', 'shipped', 'delivered', 'cancelled'].map(st => (
                       <TouchableOpacity 
                         key={st}
                         style={[s.statusTab, { 
