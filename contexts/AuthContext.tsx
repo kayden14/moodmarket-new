@@ -46,7 +46,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string, name: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   signInWithOAuth: (provider: 'google' | 'apple' | 'facebook') => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: () => Promise<Profile | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
