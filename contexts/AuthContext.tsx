@@ -106,8 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
-  const refreshProfile = async () => {
-    if (user?.id) await fetchProfile(user.id);
+  const refreshProfile = async (): Promise<Profile | null> => {
+    if (user?.id) return await fetchProfile(user.id);
+    return null;
   };
 
   useEffect(() => {

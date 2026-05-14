@@ -360,8 +360,12 @@ function VendorApplyWeb() {
                     className="va-btn"
                     onClick={async () => {
                       setLoading(true);
-                      await refreshProfile();
-                      // Redirect will be handled by useEffect when isVendor becomes true
+                      const p = await refreshProfile();
+                      if (p?.role === 'vendor') {
+                        router.replace('/vendor' as any);
+                      } else {
+                        setLoading(false);
+                      }
                     }}
                     style={{ marginTop: 24 }}
                   >
@@ -609,7 +613,12 @@ function VendorApplyMobile() {
                 style={s.primaryBtn}
                 onPress={async () => {
                   setLoading(true);
-                  await refreshProfile();
+                  const p = await refreshProfile();
+                  if (p?.role === 'vendor') {
+                    router.replace('/vendor' as any);
+                  } else {
+                    setLoading(false);
+                  }
                 }}
               >
                 <Text style={s.primaryBtnTxt}>Go to Dashboard →</Text>
