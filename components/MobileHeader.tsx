@@ -32,16 +32,38 @@ export default function MobileHeader({
   onSettingsPress,
 }: MobileHeaderProps) {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme, moodPalette } = useTheme();
+
+  const [logoClicks, setLogoClicks] = React.useState(0);
+  const logoTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogoClick = () => {
+    if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
+    const newCount = logoClicks + 1;
+    if (newCount >= 5) {
+      setLogoClicks(0);
+      router.push('/admin');
+    } else {
+      setLogoClicks(newCount);
+      logoTimerRef.current = setTimeout(() => setLogoClicks(0), 3000);
+    }
+  };
 
   return (
     <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
       <View style={s.headerTop}>
-        <View>
-          {greeting && <Text style={[s.greeting, { color: theme.primary }]}>{greeting} <EmojiText>👋</EmojiText></Text>}
+        <TouchableOpacity activeOpacity={1} onPress={handleLogoClick}>
+          {greeting && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ width: 20, height: 20, borderRadius: 6, backgroundColor: moodPalette.primary, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 10 }}>🛍️</Text>
+              </View>
+              <Text style={[s.greeting, { color: theme.primary }]}>{greeting} <EmojiText>👋</EmojiText></Text>
+            </View>
+          )}
           {subtitle && <Text style={[s.subtitle, { color: theme.primary }]}>{subtitle}</Text>}
           <Text style={[s.title, { color: theme.textPrimary }]}>{title}</Text>
-        </View>
+        </TouchableOpacity>
         
         <View style={s.headerIcons}>
           {showSearch && (

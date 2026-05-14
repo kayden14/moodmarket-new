@@ -39,6 +39,23 @@ export default function DashboardShell({
   const [isSidebarOpen, setIsSidebarOpen] = useState(width >= 1024);
   const isDesktop = width >= 1024;
 
+  const [logoClicks, setLogoClicks] = useState(0);
+  const logoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogoClick = () => {
+    if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
+    
+    const newCount = logoClicks + 1;
+    if (newCount >= 5) {
+      setLogoClicks(0);
+      router.push('/admin');
+    } else {
+      setLogoClicks(newCount);
+      logoTimerRef.current = setTimeout(() => setLogoClicks(0), 3000);
+      router.push('/');
+    }
+  };
+
   useEffect(() => {
     setIsSidebarOpen(width >= 1024);
   }, [width]);
@@ -58,7 +75,11 @@ export default function DashboardShell({
   const SidebarContent = () => (
     <View style={{ flex: 1, padding: 24 }}>
       {/* Brand */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 40, gap: 12 }}>
+      <TouchableOpacity 
+        activeOpacity={0.8} 
+        onPress={handleLogoClick}
+        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 40, gap: 12 }}
+      >
         <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: primaryColor, alignItems: 'center', justifyContent: 'center', shadowColor: primaryColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }}>
           <Text style={{ fontSize: 22 }}>{portalName === 'Admin' ? '🛡️' : '🏪'}</Text>
         </View>
@@ -66,7 +87,7 @@ export default function DashboardShell({
           <Text style={{ fontWeight: '900', color: text, fontSize: 18, letterSpacing: -0.5 }}>MoodMarket</Text>
           <Text style={{ fontSize: 10, fontWeight: '800', color: primaryColor, letterSpacing: 1.5, textTransform: 'uppercase' }}>{portalName}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Nav */}
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>

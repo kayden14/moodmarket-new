@@ -95,8 +95,23 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
+  const [logoClicks, setLogoClicks] = useState(0);
+  const logoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogoClick = () => {
+    if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
+    
+    const newCount = logoClicks + 1;
+    if (newCount >= 5) {
+      setLogoClicks(0);
+      router.push('/admin');
+    } else {
+      setLogoClicks(newCount);
+      logoTimerRef.current = setTimeout(() => setLogoClicks(0), 3000);
+      router.push('/');
+    }
+  };
 
   const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
     setMood(detectedMood);
@@ -457,7 +472,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
             </button>
           )}
 
-          <div className="mm-logo" onClick={() => router.push('/')}>
+          <div className="mm-logo" onClick={handleLogoClick}>
             <div className="mm-logo-icon"><WebEmoji style={{ fontSize: 17 }}>{selectedMood.emoji}</WebEmoji></div>
             <span className="mm-logo-text">Mood<em>Market</em></span>
           </div>
