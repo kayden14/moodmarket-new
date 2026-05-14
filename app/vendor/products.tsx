@@ -113,7 +113,7 @@ export default function VendorProducts() {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
-        <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>
+        <View style={[s.searchBox, { backgroundColor: isDark ? theme.background : '#F1F5F9', borderColor: border }]}>
           <Search size={18} color={sub} />
           <TextInput
             style={[s.searchInput, { color: text }]}

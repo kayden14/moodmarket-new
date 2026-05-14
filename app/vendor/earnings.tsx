@@ -9,13 +9,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { getVendorStats, getVendorPayouts, requestPayout } from '@/services/vendorService';
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
 import type { VendorStats, VendorPayout } from '@/services/vendorService';
 import { useFocusEffect } from 'expo-router';
 
 const P = '#FF7A8A';
-const BG = '#0F172A', CARD = '#1E293B', BORDER = '#334155', TEXT = '#F1F5F9', SUB = '#94A3B8';
 
 function statusColor(s: string) {
   const m: Record<string, string> = { paid: '#4ADE80', processing: '#38BDF8', failed: '#F87171' };
@@ -24,7 +24,13 @@ function statusColor(s: string) {
 
 export default function VendorEarnings() {
   const { profile } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
+  const BG = theme.background;
+  const CARD = theme.card;
+  const BORDER = theme.border;
+  const TEXT = theme.textPrimary;
+  const SUB = theme.textSecondary;
   const [stats, setStats]     = useState<VendorStats | null>(null);
   const [payouts, setPayouts] = useState<VendorPayout[]>([]);
   const [loading, setLoading] = useState(true);
