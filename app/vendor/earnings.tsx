@@ -146,7 +146,7 @@ export default function VendorEarnings() {
         )}
 
         {/* Payout history */}
-        <Text style={s.sectionLabel}>PAYOUT HISTORY</Text>
+        <Text style={[s.sectionLabel, { color: SUB }]}>PAYOUT HISTORY</Text>
         {payouts.length === 0
           ? <Text style={{ color: SUB, textAlign: 'center', padding: 20, fontSize: 13 }}>No payout requests yet.</Text>
           : payouts.map((payout, i) => (
@@ -180,10 +180,10 @@ export default function VendorEarnings() {
               Your payout will be processed via Paystack. Enter the amount and your payment details below.
             </Text>
 
-            <Text style={s.label}>Amount (GH₵) *</Text>
-            <TextInput style={s.input} placeholder="0.00" placeholderTextColor={SUB} keyboardType="numeric" value={form.amount} onChangeText={v => setForm(f => ({ ...f, amount: v }))} />
+            <Text style={[s.label, { color: SUB }]}>Amount (GH₵) *</Text>
+            <TextInput style={[s.input, { backgroundColor: CARD, color: TEXT, borderColor: BORDER }]} placeholder="0.00" placeholderTextColor={SUB} keyboardType="numeric" value={form.amount} onChangeText={v => setForm(f => ({ ...f, amount: v }))} />
 
-            <Text style={[s.label, { marginTop: 16 }]}>Payment Method</Text>
+            <Text style={[s.label, { color: SUB, marginTop: 16 }]}>Payment Method</Text>
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
               {(['momo', 'bank'] as const).map(m => (
                 <TouchableOpacity key={m} style={{ flex: 1, paddingVertical: 12, borderRadius: 11, borderWidth: 1.5, borderColor: form.method === m ? P : BORDER, backgroundColor: form.method === m ? P + '18' : CARD, alignItems: 'center' }}
@@ -199,8 +199,8 @@ export default function VendorEarnings() {
               ...(form.method === 'bank' ? [{ label: 'Bank Code *', key: 'bankCode', placeholder: 'e.g. 030100' }] : []),
             ].map(f => (
               <View key={f.key} style={{ marginBottom: 16 }}>
-                <Text style={s.label}>{f.label}</Text>
-                <TextInput style={s.input} placeholder={f.placeholder} placeholderTextColor={SUB} value={(form as any)[f.key]} onChangeText={v => setForm(prev => ({ ...prev, [f.key]: v }))} />
+                <Text style={[s.label, { color: SUB }]}>{f.label}</Text>
+                <TextInput style={[s.input, { backgroundColor: CARD, color: TEXT, borderColor: BORDER }]} placeholder={f.placeholder} placeholderTextColor={SUB} value={(form as any)[f.key]} onChangeText={v => setForm(prev => ({ ...prev, [f.key]: v }))} />
               </View>
             ))}
 
@@ -221,7 +221,7 @@ export default function VendorEarnings() {
 
 const s = StyleSheet.create({
   header:       { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'flex-end', borderBottomWidth: 1 },
-  sectionLabel: { fontSize: 10, fontWeight: '800', color: SUB, letterSpacing: 2, marginBottom: 10 },
-  label:        { fontSize: 11, fontWeight: '700', color: SUB, marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase' },
-  input:        { backgroundColor: CARD, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER, marginBottom: 4 },
+  sectionLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 2, marginBottom: 10 },
+  label:        { fontSize: 11, fontWeight: '700', marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase' },
+  input:        { borderRadius: 11, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, borderWidth: 1, marginBottom: 4 },
 });
