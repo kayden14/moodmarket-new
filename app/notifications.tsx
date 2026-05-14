@@ -8,7 +8,7 @@
  * Platform switch at the default export — no .web.tsx split needed.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Platform, StatusBar, ScrollView,
