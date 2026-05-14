@@ -16,11 +16,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Store, Mail, Lock, Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';
-const BG = '#0F172A';
-const CARD = '#1E293B';
-const BORDER = '#334155';
+const BG = '#0F0F0F';
+const CARD = '#1E1E1E';
+const BORDER = '#2A2A2A';
 const TEXT = '#F1F5F9';
-const SUB = '#94A3B8';
+const SUB = '#A0A0A0';
 
 /* ─── shared auth logic ─── */
 async function attemptVendorLogin(
@@ -93,7 +93,7 @@ function VendorLoginWeb() {
     @keyframes vl-float  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     .vl-root { display: flex; min-height: 100vh; }
     .vl-left {
-      width: 44%; background: linear-gradient(160deg, #0A0F1E 0%, #0F1829 100%);
+      width: 44%; background: #0F0F0F;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 60px 48px; position: relative; overflow: hidden;
     }

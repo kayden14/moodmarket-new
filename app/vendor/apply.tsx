@@ -25,11 +25,11 @@ import type { VendorApplication } from '@/services/vendorService';
 import { Store, Mail, FileText, ChevronLeft } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';
-const BG = '#0F172A';
-const CARD = '#1E293B';
-const BORDER = '#334155';
+const BG = '#0F0F0F';
+const CARD = '#1E1E1E';
+const BORDER = '#2A2A2A';
 const TEXT = '#F1F5F9';
-const SUB = '#94A3B8';
+const SUB = '#A0A0A0';
 
 const STATUS_CONFIG = {
   pending: {
@@ -121,7 +121,7 @@ function VendorApplyWeb() {
     @keyframes va-float  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     .va-root { display: flex; min-height: 100vh; }
     .va-left {
-      width: 44%; background: linear-gradient(160deg, #0A0F1E 0%, #0F1829 100%);
+      width: 44%; background: #0F0F0F;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 60px 48px; position: relative; overflow: hidden;
     }
@@ -359,8 +359,9 @@ function VendorApplyWeb() {
                   <button
                     className="va-btn"
                     onClick={async () => {
+                      setLoading(true);
                       await refreshProfile();
-                      router.replace('/vendor' as any);
+                      // Redirect will be handled by useEffect when isVendor becomes true
                     }}
                     style={{ marginTop: 24 }}
                   >
@@ -607,8 +608,8 @@ function VendorApplyMobile() {
               <TouchableOpacity
                 style={s.primaryBtn}
                 onPress={async () => {
+                  setLoading(true);
                   await refreshProfile();
-                  router.replace('/vendor' as any);
                 }}
               >
                 <Text style={s.primaryBtnTxt}>Go to Dashboard →</Text>
