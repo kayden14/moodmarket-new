@@ -40,10 +40,25 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Generate a temporary password
+    // 1. Safety check — never reset password for admin accounts
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role, is_admin')
+      .eq('id', vendorId)
+      .single();
+
+    if (profile?.role === 'admin' || profile?.is_admin === true) {
+      console.warn(`[vendor-approval] Skipping password reset for admin account ${vendorEmail}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Cannot reset password for an admin account.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 },
+      );
+    }
+
+    // 2. Generate a temporary password
     const tempPassword = `Mood-${Math.random().toString(36).slice(-6).toUpperCase()}`;
 
-    // 2. Update the user's password using Admin API
+    // 3. Update the user's password using Admin API
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       vendorId,
       { password: tempPassword }
