@@ -482,7 +482,7 @@ function NotificationsScreenWeb() {
           animation: `notif-in 0.3s ease both ${index * 0.05}s`
         }}
       >
-        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justify-content: 'center', flexShrink: 0 }}>
+        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon size={20} color={color} />
         </div>
         <div style={{ flex: 1 }}>
@@ -522,7 +522,7 @@ function NotificationsScreenWeb() {
                   padding: '8px 16px', borderRadius: '20px', border: activeTab === tab.key ? `1.5px solid ${pri}` : `1.5px solid ${bord}`,
                   background: activeTab === tab.key ? tint : 'transparent',
                   color: activeTab === tab.key ? pri : ts,
-                  fontSize: '13px', fontWeight: activeTab === tab.key ? 800 : 600, cursor: 'pointer', transition: 'all 0.2s', white-space: 'nowrap'
+                  fontSize: '13px', fontWeight: activeTab === tab.key ? 800 : 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap'
                 }}
               >
                 {tab.label}
