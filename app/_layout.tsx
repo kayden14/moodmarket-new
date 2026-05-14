@@ -23,6 +23,7 @@ import {
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+import { StorefrontProvider } from '@/contexts/StorefrontContext';
 
 function InnerLayout() {
   const { theme, isDark } = useTheme();
@@ -75,7 +76,9 @@ export default function RootLayout() {
       <ThemeProvider>
         <AuthProvider>
           <CartProvider>
-            <InnerLayout />
+            <StorefrontProvider>
+              <InnerLayout />
+            </StorefrontProvider>
           </CartProvider>
         </AuthProvider>
       </ThemeProvider>
