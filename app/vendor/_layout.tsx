@@ -3,7 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
 import DashboardShell from '@/components/DashboardShell';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 
 const VENDOR_NAV = [
   { icon: '🏠', label: 'Dashboard',     path: '/vendor' },
@@ -15,6 +15,7 @@ const VENDOR_NAV = [
 
 export default function VendorLayout() {
   const { profile, loading, isVendor } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
   const segments = useSegments();
 
