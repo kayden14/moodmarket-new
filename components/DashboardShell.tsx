@@ -159,8 +159,17 @@ export default function DashboardShell({
     <View style={{ flex: 1, backgroundColor: bg, flexDirection: 'row' }}>
       {/* Sidebar Desktop */}
       {isDesktop && (
-        <View style={{ width: 280, backgroundColor: sidebarBg, borderRightWidth: 1, borderRightColor: border }}>
-          <SidebarContent />
+        <View style={{ 
+          width: isSidebarOpen ? 280 : 0, 
+          backgroundColor: sidebarBg, 
+          borderRightWidth: isSidebarOpen ? 1 : 0, 
+          borderRightColor: border,
+          overflow: 'hidden',
+          // transition: 'width 0.3s ease-in-out' // Note: This doesn't work in RN StyleSheet but works via inline style on web
+        } as any}>
+          <View style={{ width: 280 }}>
+            <SidebarContent />
+          </View>
         </View>
       )}
 
@@ -168,14 +177,15 @@ export default function DashboardShell({
       {!isDesktop && isSidebarOpen && (
         <View style={{ position: 'absolute', inset: 0, zIndex: 1000, flexDirection: 'row' }}>
           <TouchableOpacity 
-            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' } as any} 
+            activeOpacity={1}
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' } as any} 
             onPress={() => setIsSidebarOpen(false)} 
           />
           <View style={{ 
-            width: Math.min(width * 0.85, 300), 
+            width: Math.min(width * 0.85, 320), 
             backgroundColor: sidebarBg, 
             height: '100%',
-            shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 20
+            shadowColor: '#000', shadowOffset: { width: 10, height: 0 }, shadowOpacity: 0.15, shadowRadius: 30, elevation: 20
           }}>
             <SidebarContent />
           </View>
@@ -190,32 +200,35 @@ export default function DashboardShell({
           backgroundColor: headerBg, 
           borderBottomWidth: 1, 
           borderBottomColor: border, 
+          flexDirection: 'row',
           alignItems: 'center', 
           justifyContent: 'space-between',
-          paddingHorizontal: isDesktop ? 24 : 16,
+          paddingHorizontal: isDesktop ? 32 : 16,
           zIndex: 100,
           ...Platform.select({
+            web: { boxShadow: '0 2px 10px rgba(0,0,0,0.02)' } as any,
             ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10 },
             android: { elevation: 4 }
           })
         }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
             {!isDesktop && (
-              <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: isDark ? '#1E293B' : '#F1F5F9', alignItems: 'center', justifyContent: 'center' }}>
-                <Menu size={22} color={text} />
+              <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9', alignItems: 'center', justifyContent: 'center' }}>
+                <Menu size={20} color={text} />
+              </TouchableOpacity>
+            )}
+            {isDesktop && (
+              <TouchableOpacity onPress={() => setIsSidebarOpen(!isSidebarOpen)} style={{ width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 4 }}>
+                <Menu size={18} color={subtext} />
               </TouchableOpacity>
             )}
             <View style={{ flex: 1, minWidth: 0 }}>
-              {subtitle && <Text style={{ fontSize: 9, fontWeight: '800', color: primaryColor, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }} numberOfLines={1}>{subtitle}</Text>}
-              <Text style={{ fontSize: isDesktop ? 22 : 18, fontWeight: '900', color: text, letterSpacing: -0.5 }} numberOfLines={1}>{title}</Text>
+              {subtitle && <Text style={{ fontSize: 10, fontWeight: '800', color: primaryColor, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }} numberOfLines={1}>{subtitle}</Text>}
+              <Text style={{ fontSize: isDesktop ? 22 : 18, fontWeight: '900', color: text, letterSpacing: -0.8 }} numberOfLines={1}>{title}</Text>
             </View>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            {actions}
-            
-            <View style={{ width: 1, height: 32, backgroundColor: border, marginHorizontal: 8 }} />
-
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ alignItems: 'flex-end', display: isDesktop ? 'flex' : 'none' }}>
                 <Text style={{ fontSize: 14, fontWeight: '800', color: text }}>{profile?.name || 'User'}</Text>

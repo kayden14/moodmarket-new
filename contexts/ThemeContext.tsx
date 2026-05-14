@@ -76,6 +76,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Web background color fix
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const bgColor = isDark ? '#0F0F0F' : '#F7F7F7';
+      document.body.style.backgroundColor = bgColor;
+      document.body.style.transition = 'background-color 0.3s ease';
+    }
+  }, [isDark]);
+
   const toggleDark = useCallback(() => {
     setIsDark((prev) => {
       const next = !prev;
