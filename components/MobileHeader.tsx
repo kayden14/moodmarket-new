@@ -35,7 +35,7 @@ export default function MobileHeader({
   const { theme, moodPalette } = useTheme();
 
   const [logoClicks, setLogoClicks] = React.useState(0);
-  const logoTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const logoTimerRef = React.useRef<any>(null);
 
   const handleLogoClick = () => {
     if (logoTimerRef.current) clearTimeout(logoTimerRef.current);

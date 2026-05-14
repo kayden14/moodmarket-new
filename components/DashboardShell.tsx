@@ -40,7 +40,7 @@ export default function DashboardShell({
   const isDesktop = width >= 1024;
 
   const [logoClicks, setLogoClicks] = useState(0);
-  const logoTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoTimerRef = useRef<any>(null);
 
   const handleLogoClick = () => {
     if (logoTimerRef.current) clearTimeout(logoTimerRef.current);

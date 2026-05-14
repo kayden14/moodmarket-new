@@ -97,7 +97,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const [logoClicks, setLogoClicks] = useState(0);
-  const logoTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoTimerRef = useRef<any>(null);
 
   const handleLogoClick = () => {
     if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
