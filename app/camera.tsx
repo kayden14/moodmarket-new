@@ -42,6 +42,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/services/supabase';
 import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
+import { notifyUser } from '@/services/notifyUser';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -280,7 +281,10 @@ function MobileCameraScreen() {
     if (!detectedMood) return;
     const meta = MOODS_META.find(m => m.key === detectedMood)!;
     setMood(detectedMood);
-    if (profile?.id) NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+    if (profile?.id) {
+      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
+    }
     router.back();
   }, [detectedMood, setMood, profile, router]);
 
@@ -568,7 +572,10 @@ function WebCameraScreen() {
   const handleConfirm = useCallback((moodKey: MoodKey) => {
     const meta = MOODS_META.find(m => m.key === moodKey)!;
     setMood(moodKey);
-    if (profile?.id) NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+    if (profile?.id) {
+      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
+    }
     router.back();
   }, [setMood, profile, router]);
 

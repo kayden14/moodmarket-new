@@ -40,7 +40,7 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Safety check — never reset password for admin accounts
+
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role, is_admin')

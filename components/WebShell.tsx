@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
+import { notifyUser } from '@/services/notifyUser';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
@@ -119,6 +120,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
     const meta = MOODS.find(m => m.key === detectedMood);
     if (profile?.id && meta) {
       NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
     }
   }, [setMood, profile?.id]);
 
