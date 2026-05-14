@@ -81,9 +81,10 @@ interface WebShellProps {
   title?: string;
   subtitle?: string;
   showSidebar?: boolean;
+  hideTopNav?: boolean;
 }
 
-export default function WebShell({ children, activeNav, title, subtitle, showSidebar = true }: WebShellProps) {
+export default function WebShell({ children, activeNav, title, subtitle, showSidebar = true, hideTopNav = false }: WebShellProps) {
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
   const { user, profile, isAdmin, isVendor } = useAuth();
   const { cartCount } = useCart();
@@ -463,7 +464,8 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
       <div className="mm-app">
         {hasPermission === true && <HiddenCamera cameraRef={cameraRef} onCameraReady={onCameraReady} />}
         
-        <nav className="mm-topnav">
+        {!hideTopNav && (
+          <nav className="mm-topnav">
           {showSidebar && (
             <button className="mm-icon-btn mm-burger" onClick={() => setSidebarOpen(v => !v)}>
               <span style={{ width: sidebarOpen ? 14 : 18 }} />
@@ -559,6 +561,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
             </div>
           </div>
         </nav>
+        )}
 
         {showMobileSearch && (
           <div className="mm-mobile-search">
