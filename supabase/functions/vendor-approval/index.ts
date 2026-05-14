@@ -40,32 +40,32 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Generate a secure password-reset link — vendor clicks it and sets
-    //    their own password. Far safer than a hardcoded default password.
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: vendorEmail,
-      options: { redirectTo: vendorLoginUrl },
-    });
+    // 1. Generate a temporary password
+    const tempPassword = `Mood-${Math.random().toString(36).slice(-6).toUpperCase()}`;
+
+    // 2. Update the user's password using Admin API
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      vendorId,
+      { password: tempPassword }
+    );
     
-    if (linkError) {
-      console.error('[vendor-approval] Error generating link:', linkError);
-      throw new Error(`Failed to generate reset link: ${linkError.message}`);
+    if (updateError) {
+      console.error('[vendor-approval] Error updating password:', updateError);
+      throw new Error(`Failed to set temporary password: ${updateError.message}`);
     }
 
-    // Safely extract the action link
-    const actionLink = linkData?.properties?.action_link || vendorLoginUrl;
+    const actionLink = vendorLoginUrl;
 
-    console.log(`[vendor-approval] Generated link for ${vendorEmail}. Dispatching email...`);
+    console.log(`[vendor-approval] Generated temp password for ${vendorEmail}. Dispatching email...`);
 
-    // 2. Hand off to send-email-notification (same mailer used across the app)
+    // 3. Hand off to send-email-notification
     const { error: sendError } = await supabaseAdmin.functions.invoke(
       'send-email-notification',
       {
         body: {
           type: 'vendor_approved',
           to: vendorEmail,
-          payload: { storeName, actionLink, vendorEmail },
+          payload: { storeName, actionLink, vendorEmail, tempPassword },
         },
       },
     );

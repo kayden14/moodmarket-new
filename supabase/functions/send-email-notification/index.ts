@@ -158,8 +158,8 @@ function buildEmailHTML(type: NotifType, payload: Record<string, any>): { subjec
                       </tr>
                       <tr>
                         <td style="padding:8px 0;">
-                          <span style="font-size:12px;color:#64748b;font-weight:600;">Password</span><br>
-                          <span style="font-size:14px;color:#94a3b8;">Use the button below to set your password securely.</span>
+                          <span style="font-size:12px;color:#64748b;font-weight:600;">Temporary Password</span><br>
+                          <span style="font-size:20px;color:#FF7A8A;font-weight:900;letter-spacing:1px;font-family:monospace;">${payload.tempPassword}</span>
                         </td>
                       </tr>
                     </table>
@@ -171,13 +171,12 @@ function buildEmailHTML(type: NotifType, payload: Record<string, any>): { subjec
               <div style="text-align:center;margin-bottom:32px;">
                 <a href="${payload.actionLink}"
                    style="display:inline-block;background:linear-gradient(135deg,#FF7A8A,#e55d6c);color:#ffffff;font-size:15px;font-weight:800;text-decoration:none;padding:16px 36px;border-radius:14px;letter-spacing:0.2px;box-shadow:0 8px 24px rgba(255,122,138,0.4);">
-                  Set Password &amp; Log In →
+                  Log In Now →
                 </a>
               </div>
 
               <p style="margin:0 0 8px;font-size:12px;color:#475569;text-align:center;">
-                This link expires in 24 hours. After setting your password you can always log in at
-                <a href="https://moodmarket.vercel.app/vendor/login" style="color:#FF7A8A;">moodmarket.vercel.app</a>
+                Please log in and change your password immediately in your dashboard settings.
               </p>
 
               <!-- What's next -->
