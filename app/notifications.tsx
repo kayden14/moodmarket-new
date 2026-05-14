@@ -437,11 +437,11 @@ function NotificationsScreenMobile() {
 ───────────────────────────────────────────────────────────────────────── */
 
 const FILTER_TABS = [
-  { key: 'all',    label: 'All'    },
-  { key: 'mood',   label: 'Mood'   },
-  { key: 'order',  label: 'Orders' },
-  { key: 'deal',   label: 'Deals'  },
-  { key: 'system', label: 'System' },
+  { key: 'all',    label: 'All',    emoji: '🔔' },
+  { key: 'mood',   label: 'Mood',   emoji: '✨' },
+  { key: 'order',  label: 'Orders', emoji: '📦' },
+  { key: 'deal',   label: 'Deals',  emoji: '❤️' },
+  { key: 'system', label: 'System', emoji: '⚡' },
 ] as const;
 
 function NotificationsScreenWeb() {
@@ -455,129 +455,276 @@ function NotificationsScreenWeb() {
 
   const [activeTab, setActiveTab] = useState<'all' | 'mood' | 'order' | 'deal' | 'system'>('all');
 
-  const tp = theme.textPrimary;
-  const ts = theme.textSecondary;
-  const pri = theme.primary;
+  const bg   = theme.background;
+  const tp   = theme.textPrimary;
+  const ts   = theme.textSecondary;
+  const pri  = theme.primary;
   const bord = theme.border;
   const card = theme.card;
-  const tint = theme.tint;
+  const inact = theme.inactive;
 
   const filtered = notifications.filter(n => activeTab === 'all' || n.type === activeTab);
   const filteredToday   = filtered.filter(n => new Date(n.created_at).toDateString() === new Date().toDateString());
   const filteredEarlier = filtered.filter(n => new Date(n.created_at).toDateString() !== new Date().toDateString());
 
+  const typeConfig: Record<string, { emoji: string; label: string; color: string; bg: string }> = {
+    mood:   { emoji: '✨', label: 'Mood',   color: '#FF7A8A', bg: isDark ? 'rgba(255,122,138,0.12)' : 'rgba(255,122,138,0.08)' },
+    order:  { emoji: '📦', label: 'Order',  color: '#38BDF8', bg: isDark ? 'rgba(56,189,248,0.12)'  : 'rgba(56,189,248,0.08)'  },
+    deal:   { emoji: '❤️', label: 'Deal',   color: '#F472B6', bg: isDark ? 'rgba(244,114,182,0.12)' : 'rgba(244,114,182,0.08)' },
+    system: { emoji: '⚡', label: 'System', color: '#A78BFA', bg: isDark ? 'rgba(167,139,250,0.12)' : 'rgba(167,139,250,0.08)' },
+  };
+
   const renderCard = (notif: AppNotification, index: number) => {
-    const { bg, color, Icon } = getIconConfig(notif.type, isDark);
-    
+    const cfg = typeConfig[notif.type] ?? { emoji: '🔔', label: 'Info', color: inact, bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' };
     return (
-      <div 
+      <div
         key={notif.id}
+        className={`notif-card${notif.read ? '' : ' notif-unread'}`}
         onClick={() => handleTap(notif, (p) => (window.location.href = p))}
-        style={{
-          display: 'flex', gap: '16px', padding: '16px', borderRadius: '12px',
-          background: notif.read ? 'transparent' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
-          border: `1px solid ${notif.read ? bord : pri + '33'}`,
-          cursor: 'pointer', marginBottom: '12px', transition: 'all 0.2s',
-          position: 'relative', overflow: 'hidden',
-          animation: `notif-in 0.3s ease both ${index * 0.05}s`
-        }}
+        style={{ animationDelay: `${index * 0.04}s` }}
       >
-        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {Icon ? <Icon size={20} color={color} /> : <span style={{ fontSize: '20px' }}>🔔</span>}
+        {/* Unread left accent */}
+        {!notif.read && <div className="notif-accent" style={{ background: cfg.color }} />}
+
+        {/* Icon */}
+        <div className="notif-icon" style={{ background: cfg.bg }}>
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>{cfg.emoji}</span>
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-            <span style={{ fontWeight: 700, color: tp, fontSize: '15px' }}>{notif.title}</span>
-            <span style={{ fontSize: '11px', color: ts, fontWeight: 500 }}>{timeAgo(notif.created_at)}</span>
+
+        {/* Content */}
+        <div className="notif-body">
+          <div className="notif-top">
+            <div className="notif-meta">
+              <span className="notif-badge" style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
+              <span className="notif-time">{timeAgo(notif.created_at)}</span>
+            </div>
+            {!notif.read && <div className="notif-dot" style={{ background: cfg.color }} />}
           </div>
-          <p style={{ margin: 0, fontSize: '13.5px', color: ts, lineHeight: '1.5' }}>{notif.body}</p>
+          <p className="notif-title">{notif.title}</p>
+          <p className="notif-text">{notif.body}</p>
         </div>
-        {!notif.read && (
-          <div style={{ position: 'absolute', top: '16px', right: '16px', width: '8px', height: '8px', borderRadius: '50%', background: pri }} />
-        )}
       </div>
     );
   };
 
-  return (
-    <WebShell 
-      title={`Notifications ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
-      subtitle="Stay updated with your latest alerts and activity"
-      hideTopNav
-    >
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes notif-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes notif-spin { to { transform: rotate(360deg); } }
-      `}} />
+  const css = `
+    @keyframes notif-in   { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes notif-spin { to { transform:rotate(360deg); } }
+    @keyframes pulse-dot  { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* Tabs & Mark All */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: `1px solid ${bord}`, paddingBottom: '16px', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {FILTER_TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                style={{
-                  padding: '8px 16px', borderRadius: '20px', border: activeTab === tab.key ? `1.5px solid ${pri}` : `1.5px solid ${bord}`,
-                  background: activeTab === tab.key ? tint : 'transparent',
-                  color: activeTab === tab.key ? pri : ts,
-                  fontSize: '13px', fontWeight: activeTab === tab.key ? 800 : 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+    .notif-page { max-width: 760px; margin: 0 auto; font-family: "Plus Jakarta Sans", sans-serif; }
+
+    /* ── Header ── */
+    .notif-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
+    }
+    .notif-header-left h1 {
+      font-family: "Playfair Display", serif;
+      font-size: 36px; font-weight: 900; color: ${tp};
+      letter-spacing: -1px; margin: 0 0 6px;
+    }
+    .notif-header-left p { font-size: 14px; color: ${ts}; margin: 0; }
+    .notif-count-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: ${pri}18; color: ${pri};
+      font-size: 12px; font-weight: 800;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid ${pri}30; margin-top: 8px;
+    }
+    .notif-count-dot { width: 7px; height: 7px; border-radius: 50%; background: ${pri}; animation: pulse-dot 1.5s infinite; }
+
+    .notif-mark-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 12px;
+      background: ${card}; border: 1px solid ${bord};
+      color: ${ts}; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-family: "Plus Jakarta Sans", sans-serif;
+    }
+    .notif-mark-btn:hover { border-color: ${pri}; color: ${pri}; background: ${pri}10; }
+    .notif-mark-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Filter Tabs ── */
+    .notif-tabs {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 2px; margin-bottom: 28px;
+      scrollbar-width: none;
+    }
+    .notif-tabs::-webkit-scrollbar { display: none; }
+    .notif-tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 10px;
+      border: 1.5px solid ${bord}; background: transparent;
+      color: ${ts}; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-family: "Plus Jakarta Sans", sans-serif;
+    }
+    .notif-tab:hover { border-color: ${pri}40; color: ${tp}; }
+    .notif-tab.active {
+      background: ${pri}15; border-color: ${pri}60; color: ${pri};
+    }
+
+    /* ── Section Label ── */
+    .notif-section-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 2.5px;
+      text-transform: uppercase; color: ${inact};
+      margin: 0 0 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .notif-section-label::after {
+      content: ''; flex: 1; height: 1px; background: ${bord};
+    }
+
+    /* ── Notification Card ── */
+    .notif-card {
+      display: flex; gap: 16px; padding: 18px 20px;
+      border-radius: 16px; border: 1px solid ${bord};
+      background: ${card}; cursor: pointer; margin-bottom: 10px;
+      transition: all 0.18s; position: relative; overflow: hidden;
+      animation: notif-in 0.35s ease both;
+    }
+    .notif-card:hover { border-color: ${pri}40; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,${isDark ? '0.3' : '0.06'}); }
+    .notif-card.notif-unread { background: ${isDark ? `rgba(255,255,255,0.03)` : `rgba(0,0,0,0.015)`}; }
+
+    .notif-accent {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; border-radius: 0 3px 3px 0;
+    }
+
+    .notif-icon {
+      width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-top  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .notif-meta { display: flex; align-items: center; gap: 8px; }
+    .notif-badge {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+      padding: 2px 8px; border-radius: 6px; text-transform: uppercase;
+    }
+    .notif-time { font-size: 11px; color: ${inact}; font-weight: 600; }
+    .notif-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .notif-title { font-size: 15px; font-weight: 700; color: ${tp}; margin: 0 0 4px; }
+    .notif-text  { font-size: 13.5px; color: ${ts}; margin: 0; line-height: 1.5; }
+
+    /* ── States ── */
+    .notif-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 20px; gap: 16px; }
+    .notif-spinner { width: 36px; height: 36px; border: 3px solid ${bord}; border-top-color: ${pri}; border-radius: 50%; animation: notif-spin 0.8s linear infinite; }
+
+    .notif-empty { text-align: center; padding: 80px 20px; animation: notif-in 0.4s ease both; }
+    .notif-empty-icon { font-size: 56px; margin-bottom: 16px; }
+    .notif-empty h2 { font-family: "Playfair Display", serif; font-size: 26px; font-weight: 700; color: ${tp}; margin: 0 0 8px; }
+    .notif-empty p  { font-size: 14px; color: ${ts}; margin: 0 0 24px; }
+
+    .notif-signin-card {
+      background: ${card}; border: 1px solid ${bord};
+      border-radius: 24px; padding: 60px 40px; text-align: center;
+      animation: notif-in 0.4s ease both;
+    }
+    .notif-signin-icon { font-size: 52px; margin-bottom: 20px; }
+    .notif-signin-card h2 { font-family: "Playfair Display", serif; font-size: 26px; color: ${tp}; margin: 0 0 10px; }
+    .notif-signin-card p  { color: ${ts}; font-size: 14px; margin: 0 0 28px; }
+    .notif-signin-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 32px; border-radius: 14px;
+      background: ${pri}; color: #fff; border: none;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      transition: opacity 0.15s;
+    }
+    .notif-signin-btn:hover { opacity: 0.88; }
+
+    @media (max-width: 600px) {
+      .notif-card { padding: 14px 16px; gap: 12px; }
+      .notif-header-left h1 { font-size: 28px; }
+    }
+  `;
+
+  return (
+    <WebShell hideTopNav>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <div className="notif-page">
+
+        {/* ── Header ── */}
+        <div className="notif-header">
+          <div className="notif-header-left">
+            <h1>Notifications</h1>
+            <p>Stay on top of your orders, moods and deals</p>
+            {unreadCount > 0 && (
+              <div className="notif-count-badge">
+                <div className="notif-count-dot" />
+                {unreadCount} unread
+              </div>
+            )}
           </div>
           {user && unreadCount > 0 && (
-            <button 
+            <button
+              className="notif-mark-btn"
               onClick={() => markAllRead(user.id)}
               disabled={markingAll}
-              style={{ background: 'none', border: 'none', color: pri, fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: markingAll ? 0.5 : 1 }}
             >
-              {markingAll ? 'Marking...' : 'Mark all read'}
+              {markingAll ? '⏳ Marking…' : '✓ Mark all read'}
             </button>
           )}
         </div>
 
+        {/* ── Filter Tabs ── */}
+        <div className="notif-tabs">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.key}
+              className={`notif-tab${activeTab === tab.key ? ' active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.emoji}</span> {tab.label}
+              {tab.key === 'all' && unreadCount > 0 && (
+                <span style={{ marginLeft: 4, background: pri, color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '10px', padding: '1px 6px' }}>
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Content ── */}
         {loading ? (
-          <div style={{ padding: '100px 0', textAlign: 'center' }}>
-            <div style={{ width: '40px', height: '40px', border: `3px solid ${bord}`, borderTopColor: pri, borderRadius: '50%', animation: 'notif-spin 0.8s linear infinite', margin: '0 auto' }} />
+          <div className="notif-loading">
+            <div className="notif-spinner" />
+            <span style={{ fontSize: '13px', color: ts }}>Loading notifications…</span>
           </div>
         ) : !user ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', background: card, borderRadius: '24px', border: `1px solid ${bord}`, animation: 'notif-in 0.4s ease both' }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔒</div>
-            <h2 style={{ color: tp, margin: '0 0 8px' }}>Sign in to see notifications</h2>
-            <p style={{ color: ts, margin: '0 0 24px' }}>Join the community to get updates on your orders and mood alerts.</p>
-            <button 
-              onClick={() => (window.location.href = '/login')}
-              style={{ padding: '12px 32px', borderRadius: '12px', background: pri, color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer' }}
-            >
-              Sign In
+          <div className="notif-signin-card">
+            <div className="notif-signin-icon">🔔</div>
+            <h2>Sign in to see notifications</h2>
+            <p>Get updates on your orders, mood picks and exclusive deals.</p>
+            <button className="notif-signin-btn" onClick={() => (window.location.href = '/login')}>
+              Sign In →
             </button>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', animation: 'notif-in 0.4s ease both' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>✨</div>
-            <h2 style={{ color: tp, margin: '0 0 8px' }}>All caught up!</h2>
-            <p style={{ color: ts, margin: 0 }}>No notifications found in this category.</p>
+          <div className="notif-empty">
+            <div className="notif-empty-icon">✨</div>
+            <h2>All caught up!</h2>
+            <p>No {activeTab === 'all' ? '' : activeTab + ' '}notifications yet. Check back later.</p>
           </div>
         ) : (
           <div>
             {filteredToday.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '10px', fontWeight: 800, color: theme.inactive, letterSpacing: '2px', marginBottom: '16px', textTransform: 'uppercase' }}>Today</h3>
+                <p className="notif-section-label">Today</p>
                 {filteredToday.map((n, i) => renderCard(n, i))}
               </div>
             )}
             {filteredEarlier.length > 0 && (
               <div>
-                <h3 style={{ fontSize: '10px', fontWeight: 800, color: theme.inactive, letterSpacing: '2px', marginBottom: '16px', textTransform: 'uppercase' }}>Earlier</h3>
+                <p className="notif-section-label">Earlier</p>
                 {filteredEarlier.map((n, i) => renderCard(n, filteredToday.length + i))}
               </div>
             )}
           </div>
         )}
+
       </div>
     </WebShell>
   );
