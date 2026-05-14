@@ -457,7 +457,7 @@ export async function approveVendorApplication(
       },
     );
     if (funcError) {
-      console.error('Failed to trigger vendor approval email:', funcError);
+      throw new Error(`Vendor promoted, but email failed: ${funcError.message}`);
     }
   }
 }
