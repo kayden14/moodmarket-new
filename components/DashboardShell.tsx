@@ -69,7 +69,8 @@ export default function DashboardShell({
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace('/vendor/login');
+    const loginPath = portalName === 'Admin' ? '/admin/login' : '/vendor/login';
+    router.replace(loginPath as any);
   };
 
   const SidebarContent = () => (
@@ -132,9 +133,9 @@ export default function DashboardShell({
       <View style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 24, gap: 12 }}>
         <TouchableOpacity 
           onPress={() => router.replace('/')}
-          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9' }}
         >
-          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#334155' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
             <ArrowLeft size={16} color={primaryColor} />
           </View>
           <Text style={{ color: text, fontWeight: '700', fontSize: 13 }}>
@@ -144,9 +145,9 @@ export default function DashboardShell({
 
         <TouchableOpacity 
           onPress={toggleDark}
-          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9' }}
         >
-          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#334155' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
             {isDark ? <Sun size={16} color="#FBBF24" /> : <Moon size={16} color="#475569" />}
           </View>
           <Text style={{ color: text, fontWeight: '700', fontSize: 13 }}>
@@ -234,7 +235,7 @@ export default function DashboardShell({
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
             {!isDesktop && (
-              <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9', alignItems: 'center', justifyContent: 'center' }}>
+              <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9', alignItems: 'center', justifyContent: 'center' }}>
                 <Menu size={20} color={text} />
               </TouchableOpacity>
             )}

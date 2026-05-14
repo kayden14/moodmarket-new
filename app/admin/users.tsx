@@ -43,8 +43,8 @@ export default function AdminUsersScreen() {
   const [confirmAction, setConfirmAction] = useState<{ type: 'admin' | 'vendor' | 'suspend' | 'delete'; user: AdminProfile } | null>(null);
   const [actioning,     setActioning]     = useState(false);
 
-  const card    = isDark ? '#1E293B' : '#FFFFFF';
-  const border  = isDark ? '#334155' : '#E2E8F0';
+  const card    = isDark ? '#1E1E1E' : '#FFFFFF';
+  const border  = isDark ? '#2A2A2A' : '#E2E8F0';
   const text    = isDark ? '#F1F5F9' : '#0F172A';
   const sub     = isDark ? '#94A3B8' : '#64748B';
 
@@ -169,7 +169,7 @@ export default function AdminUsersScreen() {
     <View style={{ flex: 1, backgroundColor: isDark ? '#0F0F0F' : '#F8FAFC' }}>
       {/* ToolBar */}
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
-        <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>
+        <View style={[s.searchBox, { backgroundColor: isDark ? '#121212' : '#F1F5F9', borderColor: border }]}>
           <Search size={18} color={sub} />
           <TextInput
             style={[s.searchInput, { color: text }]}
@@ -230,15 +230,15 @@ export default function AdminUsersScreen() {
               </View>
 
               <View style={s.statsRow}>
-                <View style={[s.statItem, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+                <View style={[s.statItem, { backgroundColor: isDark ? '#121212' : '#F1F5F9' }]}>
                   <Text style={[s.statVal, { color: text }]}>{loadingOrders ? '...' : userOrders.length}</Text>
                   <Text style={[s.statLabel, { color: sub }]}>ORDERS</Text>
                 </View>
-                <View style={[s.statItem, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+                <View style={[s.statItem, { backgroundColor: isDark ? '#121212' : '#F1F5F9' }]}>
                   <Text style={[s.statVal, { color: text }]}>GH₵{loadingOrders ? '...' : totalSpend(userOrders).toFixed(0)}</Text>
                   <Text style={[s.statLabel, { color: sub }]}>SPENT</Text>
                 </View>
-                <View style={[s.statItem, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+                <View style={[s.statItem, { backgroundColor: isDark ? '#121212' : '#F1F5F9' }]}>
                   <Text style={[s.statVal, { color: text }]}>{selected?.mood_history?.length || 0}</Text>
                   <Text style={[s.statLabel, { color: sub }]}>SCANS</Text>
                 </View>

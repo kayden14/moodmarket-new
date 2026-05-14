@@ -64,12 +64,12 @@ function AdminLoginWeb() {
     @keyframes al-spin   { to { transform: rotate(360deg); } }
     .al-root { display: flex; min-height: 100vh; }
     .al-left {
-      width: 44%; background: #0A0F1E;
+      width: 44%; background: #0F0F0F;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 60px 48px; position: relative; overflow: hidden;
     }
     .al-right {
-      flex: 1; background: #0F172A; display: flex; align-items: center; justify-content: center;
+      flex: 1; background: #121212; display: flex; align-items: center; justify-content: center;
       padding: 48px 60px;
     }
     .al-form-wrap { width: 100%; max-width: 420px; animation: al-fadein .4s ease both; }
@@ -97,7 +97,7 @@ function AdminLoginWeb() {
     .al-label { font-size: 11px; font-weight: 700; color: #64748B; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 7px; display: block; }
     .al-input-wrap {
       display: flex; align-items: center; gap: 10px;
-      background: #1E293B; border: 1.5px solid #334155;
+      background: #1E1E1E; border: 1.5px solid #2A2A2A;
       border-radius: 13px; padding: 0 16px; height: 50px;
       transition: border-color .18s, box-shadow .18s;
     }
@@ -107,9 +107,9 @@ function AdminLoginWeb() {
       flex: 1; background: none; border: none; outline: none;
       font-size: 15px; color: #F1F5F9; font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .al-input-wrap input::placeholder { color: #334155; }
+    .al-input-wrap input::placeholder { color: #2A2A2A; }
     .al-eye { background: none; border: none; cursor: pointer; font-size: 15px; color: #475569; padding: 4px; transition: color .15s; }
-    .al-eye:hover { color: #94A3B8; }
+    .al-eye:hover { color: #A0A0A0; }
     .al-btn {
       width: 100%; height: 52px; background: ${PRIMARY}; color: #fff; border: none;
       border-radius: 13px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 4px;
@@ -121,9 +121,9 @@ function AdminLoginWeb() {
     .al-btn:hover:not(:disabled) { transform: translateY(-2px); }
     .al-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
     .al-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: al-spin .7s linear infinite; }
-    .al-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #334155; border-radius: 20px; padding: 6px 14px; color: #64748B; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 24px; transition: border-color .15s, color .15s; }
-    .al-back:hover { border-color: #475569; color: #94A3B8; }
-    .al-footer { text-align: center; color: #1E293B; font-size: 11px; margin-top: 24px; font-family: 'JetBrains Mono', monospace; }
+    .al-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #2A2A2A; border-radius: 20px; padding: 6px 14px; color: #64748B; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 24px; transition: border-color .15s, color .15s; }
+    .al-back:hover { border-color: #475569; color: #A0A0A0; }
+    .al-footer { text-align: center; color: #1E1E1E; font-size: 11px; margin-top: 24px; font-family: 'JetBrains Mono', monospace; }
     @media (max-width: 768px) { .al-left { display: none; } .al-right { padding: 40px 24px; } }
   `;
 
@@ -298,22 +298,22 @@ export default function AdminLoginScreen() {
 }
 
 const s = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: '#0F172A' },
+  container:  { flex: 1, backgroundColor: '#121212' },
   inner:      { flex: 1, justifyContent: 'center', padding: 24 },
   logoWrap:   { alignItems: 'center', marginBottom: 32 },
   logoCircle: { width: 72, height: 72, borderRadius: 20, backgroundColor: PRIMARY, justifyContent: 'center', alignItems: 'center', marginBottom: 14, shadowColor: PRIMARY, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 10 },
   logoTitle:  { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: -0.8 },
   logoSub:    { fontSize: 13, color: '#64748B', fontWeight: '600', marginTop: 4, letterSpacing: 1 },
-  card:       { backgroundColor: '#1E293B', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: '#334155' },
+  card:       { backgroundColor: '#1E1E1E', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: '#2A2A2A' },
   cardTitle:  { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 6 },
   cardSub:    { fontSize: 13, color: '#64748B', marginBottom: 20, lineHeight: 19 },
   errorBox:   { backgroundColor: '#450A0A', borderWidth: 1, borderColor: '#7F1D1D', borderRadius: 10, padding: 12, marginBottom: 16 },
   errorTxt:   { color: '#FCA5A5', fontSize: 13, fontWeight: '500' },
   fieldWrap:  { marginBottom: 14 },
-  label:      { fontSize: 12, fontWeight: '700', color: '#94A3B8', marginBottom: 6, letterSpacing: 0.5 },
-  inputRow:   { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0F172A', borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: '#334155', height: 50 },
+  label:      { fontSize: 12, fontWeight: '700', color: '#A0A0A0', marginBottom: 6, letterSpacing: 0.5 },
+  inputRow:   { flexDirection: 'row', alignItems: 'center', backgroundColor: '#121212', borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: '#2A2A2A', height: 50 },
   input:      { flex: 1, fontSize: 14, color: '#fff' },
   btn:        { backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 8, shadowColor: PRIMARY, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
   btnTxt:     { color: '#fff', fontSize: 15, fontWeight: '800' },
-  footer:     { textAlign: 'center', color: '#334155', fontSize: 11, marginTop: 24 },
+  footer:     { textAlign: 'center', color: '#2A2A2A', fontSize: 11, marginTop: 24 },
 });

@@ -33,8 +33,8 @@ export default function AdminProductsScreen() {
   const [deleteConfirm, setDeleteConfirm] = useState<AdminProduct | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const card   = theme.card;
-  const border = theme.border;
+  const card   = isDark ? '#1E1E1E' : '#FFFFFF';
+  const border = isDark ? '#2A2A2A' : '#E2E8F0';
   const text   = theme.textPrimary;
   const sub    = theme.textSecondary;
 
@@ -140,7 +140,7 @@ export default function AdminProductsScreen() {
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header / Search */}
       <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
-        <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>
+        <View style={[s.searchBox, { backgroundColor: isDark ? '#121212' : '#F1F5F9', borderColor: border }]}>
           <Search size={18} color={sub} />
           <TextInput
             style={[s.searchInput, { color: text }]}
@@ -190,7 +190,7 @@ export default function AdminProductsScreen() {
 
               <ScrollView style={s.modalBody}>
                 {/* Image Upload */}
-                <TouchableOpacity style={[s.imageUpload, { borderColor: border, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]} onPress={handleImagePicker}>
+                <TouchableOpacity style={[s.imageUpload, { borderColor: border, backgroundColor: isDark ? '#121212' : '#F1F5F9' }]} onPress={handleImagePicker}>
                   {uploadingImage ? (
                     <ActivityIndicator color={PRIMARY} />
                   ) : form.image ? (

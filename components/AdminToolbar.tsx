@@ -20,15 +20,15 @@ export default function AdminToolbar({
 }: AdminToolbarProps) {
   const { isDark } = useTheme();
   
-  const card   = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
+   const card   = isDark ? '#1E1E1E' : '#FFFFFF';
+  const border = isDark ? '#2A2A2A' : '#E2E8F0';
   const text   = isDark ? '#F1F5F9' : '#0F172A';
-  const sub    = isDark ? '#94A3B8' : '#64748B';
+  const sub    = isDark ? '#A0A0A0' : '#64748B';
   const primary = '#FF7A8A';
 
   return (
     <View style={[s.toolBar, { backgroundColor: card, borderBottomColor: border }]}>
-      <View style={[s.searchBox, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9', borderColor: border }]}>
+      <View style={[s.searchBox, { backgroundColor: isDark ? '#121212' : '#F1F5F9', borderColor: border }]}>
         <Search size={18} color={sub} />
         <TextInput
           style={[s.searchInput, { color: text }]}

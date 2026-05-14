@@ -38,11 +38,11 @@ export default function AdminVendorsScreen() {
   const [rejectionAppId,        setRejectionAppId]        = useState<string | null>(null);
   const [rejectionReason,       setRejectionReason]       = useState('');
 
-  const card    = isDark ? '#1E293B' : '#FFFFFF';
-  const border  = isDark ? '#334155' : '#E2E8F0';
+  const card    = isDark ? '#1E1E1E' : '#FFFFFF';
+  const border  = isDark ? '#2A2A2A' : '#E2E8F0';
   const text    = isDark ? '#F1F5F9' : '#0F172A';
   const sub     = isDark ? '#94A3B8' : '#64748B';
-  const inputBg = isDark ? '#0F172A' : '#F8FAFC';
+  const inputBg = isDark ? '#121212' : '#F8FAFC';
 
   // ── Approve ──────────────────────────────────────────────────────────────
   const handleApprove = async (app: any) => {
