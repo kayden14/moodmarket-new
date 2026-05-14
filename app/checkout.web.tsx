@@ -564,9 +564,29 @@ const makeGlobalStyles = (bg: string, bord: string) => `
     overflow-y: auto;
     width: 100%;
     margin: 0 auto;
-    /* Default: centered narrow column for checkout steps */
-    max-width: 560px;
-    padding: 20px 24px 60px;
+    max-width: 1200px;
+    padding: 24px 24px 60px;
+  }
+  
+  .co-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  @media (min-width: 960px) {
+    .co-layout {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+    .co-main-col {
+      flex: 1.5;
+    }
+    .co-side-col {
+      flex: 1;
+      position: sticky;
+      top: 24px;
+    }
   }
 
   /* Success page: slightly wider */
@@ -956,56 +976,62 @@ export default function CheckoutWeb() {
           <div style={{ width: 52 }} />
         </nav>
         <div className="co-content">
-          <div className="co-sum-strip" style={{
-            background: isDark ? '#2D1820' : '#FFF0F2',
-            border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-              📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
-              GH₵ {total.toFixed(2)}
-            </div>
-          </div>
-
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
-            Choose Payment Method
-          </div>
-          <PayMethodCard method="card"         selected={payMethod === 'card'}         onSelect={() => setPayMethod('card')}         theme={theme} isDark={isDark} />
-          <PayMethodCard method="mobile_money" selected={payMethod === 'mobile_money'} onSelect={() => setPayMethod('mobile_money')} theme={theme} isDark={isDark} />
-
-          {payMethod === 'mobile_money' && (
-            <MomoSelector
-              selected={momoProvider}
-              onSelect={setMomoProvider}
-              momoNumber={momoNumber}
-              onNumberChange={setMomoNumber}
-              theme={theme}
-              isDark={isDark}
-            />
-          )}
-
-          <button
-            className="co-pay-btn"
-            style={{ background: pri, color: '#fff', opacity: !payMethod ? 0.45 : 1 }}
-            onClick={initiatePayment}
-            disabled={!payMethod}
-          >
-            <span style={{ fontSize: 14 }}>{payMethod === 'mobile_money' ? '📱' : '💳'}</span>
-            Pay GH₵ {total.toFixed(2)}
-            {payMethod === 'card' ? ' with Card' : payMethod === 'mobile_money' ? ' with MoMo' : ''}
-            <span>›</span>
-          </button>
-
-          <div className="co-badges">
-            {[
-              { icon: '🔒', text: '256-bit SSL'         },
-              { icon: '⚡', text: 'Powered by Paystack' },
-            ].map(({ icon, text }) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-                <span>{icon}</span> {text}
+          <div className="co-layout">
+            <div className="co-main-col">
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
+                Choose Payment Method
               </div>
-            ))}
+              <PayMethodCard method="card"         selected={payMethod === 'card'}         onSelect={() => setPayMethod('card'}         theme={theme} isDark={isDark} />
+              <PayMethodCard method="mobile_money" selected={payMethod === 'mobile_money'} onSelect={() => setPayMethod('mobile_money')} theme={theme} isDark={isDark} />
+
+              {payMethod === 'mobile_money' && (
+                <MomoSelector
+                  selected={momoProvider}
+                  onSelect={setMomoProvider}
+                  momoNumber={momoNumber}
+                  onNumberChange={setMomoNumber}
+                  theme={theme}
+                  isDark={isDark}
+                />
+              )}
+            </div>
+
+            <div className="co-side-col">
+              <div className="co-sum-strip" style={{
+                background: isDark ? '#2D1820' : '#FFF0F2',
+                border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                  📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
+                  GH₵ {total.toFixed(2)}
+                </div>
+              </div>
+
+              <button
+                className="co-pay-btn"
+                style={{ background: pri, color: '#fff', opacity: !payMethod ? 0.45 : 1 }}
+                onClick={initiatePayment}
+                disabled={!payMethod}
+              >
+                <span style={{ fontSize: 14 }}>{payMethod === 'mobile_money' ? '📱' : '💳'}</span>
+                Pay GH₵ {total.toFixed(2)}
+                {payMethod === 'card' ? ' with Card' : payMethod === 'mobile_money' ? ' with MoMo' : ''}
+                <span>›</span>
+              </button>
+
+              <div className="co-badges">
+                {[
+                  { icon: '🔒', text: '256-bit SSL'         },
+                  { icon: '⚡', text: 'Powered by Paystack' },
+                ].map(({ icon, text }) => (
+                  <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                    <span>{icon}</span> {text}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1030,67 +1056,70 @@ export default function CheckoutWeb() {
         </nav>
 
         <div className="co-content">
-          <div className="co-sum-strip" style={{
-            background: isDark ? '#2D1820' : '#FFF0F2',
-            border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-              📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
-              GH₵ {total.toFixed(2)}
-            </div>
-          </div>
-
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
-            Delivery Details
-          </div>
-
-          {/* Two-column layout on wider screens, single on mobile */}
-          <div className="co-fields-grid">
-            <div className="co-field-full">
-              <Field icon="👤" label="Full Name"      value={name}    onChange={setName}    placeholder="e.g. Ama Owusu" />
-            </div>
-            <div className="co-field-full">
-              <Field icon="📞" label="Phone Number"   value={phone}   onChange={setPhone}   placeholder="e.g. 0244000000" type="tel" />
-            </div>
-            <div className="co-field-full">
-              <Field icon="📍" label="Street Address" value={address} onChange={setAddress} placeholder="e.g. 14 Osu Badu Street" />
-            </div>
-            <div className="co-field-full">
-              <Field icon="🏙️" label="City"           value={city}    onChange={setCity}    placeholder="e.g. Accra" />
-            </div>
-          </div>
-
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 16, marginBottom: 10 }}>
-            Order Summary
-          </div>
-          <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 14, padding: 15, marginBottom: 16 }}>
-            {[
-              { label: `Subtotal (${cartCount} items)`, value: `GH₵ ${cartTotal.toFixed(2)}`, green: false },
-              { label: 'Delivery', value: shipping === 0 ? 'FREE' : `GH₵ ${shipping.toFixed(2)}`, green: shipping === 0 },
-            ].map(r => (
-              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-                <span style={{ fontSize: 12, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.label}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: r.green ? SUCCESS_GREEN : tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.value}</span>
+          <div className="co-layout">
+            <div className="co-main-col">
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: 'uppercase', color: inact, fontFamily: '"Plus Jakarta Sans", sans-serif', marginBottom: 11 }}>
+                Delivery Details
               </div>
-            ))}
-            <div style={{ height: 1, background: bord, margin: '9px 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Total</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.6 }}>
-                GH₵ {total.toFixed(2)}
-              </span>
+
+              {/* Two-column layout on wider screens, single on mobile */}
+              <div className="co-fields-grid">
+                <div className="co-field-full">
+                  <Field icon="👤" label="Full Name"      value={name}    onChange={setName}    placeholder="e.g. Ama Owusu" />
+                </div>
+                <div className="co-field-full">
+                  <Field icon="📞" label="Phone Number"   value={phone}   onChange={setPhone}   placeholder="e.g. 0244000000" type="tel" />
+                </div>
+                <div className="co-field-full">
+                  <Field icon="📍" label="Street Address" value={address} onChange={setAddress} placeholder="e.g. 14 Osu Badu Street" />
+                </div>
+                <div className="co-field-full">
+                  <Field icon="🏙️" label="City"           value={city}    onChange={setCity}    placeholder="e.g. Accra" />
+                </div>
+              </div>
+            </div>
+
+            <div className="co-side-col">
+              <div className="co-sum-strip" style={{
+                background: isDark ? '#2D1820' : '#FFF0F2',
+                border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                  📦 {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.4 }}>
+                  GH₵ {total.toFixed(2)}
+                </div>
+              </div>
+
+              <div style={{ background: card, border: `1px solid ${bord}`, borderRadius: 14, padding: 15, marginBottom: 16 }}>
+                {[
+                  { label: `Subtotal (${cartCount} items)`, value: `GH₵ ${cartTotal.toFixed(2)}`, green: false },
+                  { label: 'Delivery', value: shipping === 0 ? 'FREE' : `GH₵ ${shipping.toFixed(2)}`, green: shipping === 0 },
+                ].map(r => (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span style={{ fontSize: 12, color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: r.green ? SUCCESS_GREEN : tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{r.value}</span>
+                  </div>
+                ))}
+                <div style={{ height: 1, background: bord, margin: '9px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: tp, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Total</span>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: -0.6 }}>
+                    GH₵ {total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                className="co-pay-btn"
+                style={{ background: pri, color: '#fff' }}
+                onClick={() => { if (validateDetails()) setStep('payment'); }}
+              >
+                Continue to Payment <span>›</span>
+              </button>
             </div>
           </div>
-
-          <button
-            className="co-pay-btn"
-            style={{ background: pri, color: '#fff' }}
-            onClick={() => { if (validateDetails()) setStep('payment'); }}
-          >
-            Continue to Payment <span>›</span>
-          </button>
         </div>
       </div>
     </>

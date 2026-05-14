@@ -28,13 +28,13 @@ function statusColor(s: string) {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { loading, refreshing, setRefreshing, stats, recentOrders, fetchStats } = useAdminData();
 
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const sub = isDark ? '#64748B' : '#64748B';
-  const card = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
+  const text = theme.textPrimary;
+  const sub = theme.textSecondary;
+  const card = theme.card;
+  const border = theme.border;
 
   const STAT_ITEMS = [
     { icon: '📦', label: 'Products',     value: String(stats.totalProducts),           color: '#38BDF8', bg: '#38BDF818' },
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
   ];
 
   if (loading) return (
-    <View style={[s.center, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+    <View style={[s.center, { backgroundColor: theme.background }]}>
       <ActivityIndicator size="large" color={PRIMARY} />
     </View>
   );

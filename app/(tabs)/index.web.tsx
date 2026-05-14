@@ -11,9 +11,10 @@ import { ScoredProduct } from '@/types/recommendations';
 import { NotificationService } from '@/services/notifications';
 import { useStorefront } from '@/contexts/StorefrontContext';
 import {
-  Heart, Star, ShoppingCart, ArrowRight, Search, ChevronRight
+  Heart, Star, ShoppingCart, ArrowRight, Search, ChevronRight, Sparkles, Camera
 } from 'lucide-react';
 import WebShell from '@/components/WebShell';
+import { useResponsive } from '@/hooks/useResponsive';
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -287,6 +288,75 @@ function CartToast({ count, total, visible, onPress }: {
   );
 }
 
+function MoodScannerPromo({ onScan }: { onScan: () => void }) {
+  const { theme } = useTheme();
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`,
+      borderRadius: 20, padding: '32px 40px', color: '#fff',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: 48, boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+      overflow: 'hidden', position: 'relative',
+    }}>
+      <div style={{ position: 'absolute', top: -20, right: -20, opacity: 0.1 }}>
+        <Camera size={180} color="#fff" />
+      </div>
+      <div style={{ zIndex: 1, flex: 1 }}>
+        <h3 style={{ margin: '0 0 10px', fontSize: 24, fontWeight: 800, fontFamily: '"Playfair Display", serif' }}>
+          Mood Scanner AI
+        </h3>
+        <p style={{ margin: '0 0 24px', fontSize: 15, opacity: 0.9, maxWidth: 400, lineHeight: 1.5 }}>
+          Not sure what you need? Let our AI analyze your vibe and recommend the perfect products for your current state.
+        </p>
+        <button
+          onClick={onScan}
+          style={{
+            background: '#fff', color: theme.primary, border: 'none',
+            padding: '12px 24px', borderRadius: 12, fontWeight: 700,
+            fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Sparkles size={16} /> Try it now
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HeroSection({ moodEmoji, moodLabel, userName }: { moodEmoji: string; moodLabel: string; userName: string | null }) {
+  const { theme } = useTheme();
+  return (
+    <div style={{ padding: '40px 0 60px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10,
+          background: theme.tint, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, border: `1px solid ${theme.secondary}`,
+        }}>
+          {moodEmoji}
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 700, color: theme.primary, letterSpacing: 1, textTransform: 'uppercase' }}>
+          Feeling {moodLabel}
+        </span>
+      </div>
+      <h1 style={{
+        margin: 0, fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900,
+        color: theme.textPrimary, fontFamily: '"Playfair Display", serif',
+        lineHeight: 1.1, letterSpacing: -1.5,
+      }}>
+        {userName ? `Welcome back, ${userName.split(' ')[0]}` : 'Discover your mood'}
+      </h1>
+      <p style={{
+        marginTop: 20, fontSize: 'clamp(15px, 2vw, 18px)', color: theme.textSecondary,
+        maxWidth: 600, lineHeight: 1.6,
+      }}>
+        Curated collections designed to match your emotional state. From self-care to soulful snacks, we've got you covered.
+      </p>
+    </div>
+  );
+}
+
 /* ─────────────────────────────── main page ─────────────────────────────── */
 
 export default function HomeScreenWeb() {
@@ -370,6 +440,7 @@ export default function HomeScreenWeb() {
   const ts = theme.textSecondary;
   const bord = theme.border;
   const pri = theme.primary;
+  const { isWide } = useResponsive();
 
   if (loading) {
     return (
@@ -413,6 +484,12 @@ export default function HomeScreenWeb() {
         }
       `}</style>
 
+      <HeroSection
+        moodEmoji={selectedMood.emoji}
+        moodLabel={selectedMood.label}
+        userName={profile?.name ?? null}
+      />
+
       <div className="mm-breadcrumb">
         <span>Home</span>
         {selectedCategory !== 'all' && (
@@ -450,6 +527,8 @@ export default function HomeScreenWeb() {
           </div>
         </section>
       )}
+
+      <MoodScannerPromo onScan={() => router.push('/camera')} />
 
       {/* Recommendations */}
       {recommended.length > 0 && (

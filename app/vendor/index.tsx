@@ -16,13 +16,13 @@ const PRIMARY = '#FF7A8A';
 
 export default function VendorDashboard() {
   const router = useRouter();
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { stats, loading, refreshing, setRefreshing, fetchStats } = useVendorData();
 
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const sub = isDark ? '#94A3B8' : '#64748B';
-  const card = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
+  const text = theme.textPrimary;
+  const sub = theme.textSecondary;
+  const card = theme.card;
+  const border = theme.border;
 
   const STAT_ITEMS = [
     { icon: <Package size={20} color="#38BDF8" />, label: 'Active Products', value: String(stats?.activeProducts || 0), color: '#38BDF8', bg: '#38BDF815' },
@@ -32,7 +32,7 @@ export default function VendorDashboard() {
   ];
 
   if (loading) return (
-    <View style={[s.center, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+    <View style={[s.center, { backgroundColor: theme.background }]}>
       <ActivityIndicator size="large" color={PRIMARY} />
     </View>
   );

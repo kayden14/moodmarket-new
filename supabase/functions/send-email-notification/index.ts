@@ -20,7 +20,11 @@ type NotifType =
   | 'payout_processed'
   | 'vendor_approved'
   | 'vendor_rejected'
-  | 'welcome';
+  | 'welcome'
+  | 'vendor_suspended'
+  | 'vendor_unsuspended'
+  | 'vendor_removed'
+  | 'account_deleted';
 
 function buildEmailHTML(type: NotifType, payload: Record<string, any>): { subject: string; html: string } {
   const brand = `<span style="color:#FF7A8A;font-weight:900;">MoodMarket</span>`;
@@ -247,6 +251,98 @@ function buildEmailHTML(type: NotifType, payload: Record<string, any>): { subjec
             <p style="margin:0;font-size:16px;font-weight:700;color:#1e293b;">✨ Scan your mood to get started</p>
             <p style="margin:6px 0 0;font-size:13px;color:#64748b;">Use the camera feature to detect your mood and discover matching products.</p>
           </div>
+        `),
+      };
+
+    /* ─── NEW TEMPLATES ─────────────────────────────────────────────────────── */
+
+    case 'vendor_suspended':
+      return {
+        subject: `⚠️ Your MoodMarket Vendor Account Has Been Suspended`,
+        html: wrapper(`
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Your vendor account has been suspended ⚠️</h2>
+          <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.6;">
+            Hi ${payload.storeName ?? payload.name ?? 'Vendor'}, your vendor account on ${brand} has been temporarily suspended.
+          </p>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:0.5px;">Reason</p>
+            <p style="margin:0;color:#1e293b;">${payload.reason ?? 'Violation of MoodMarket vendor terms and conditions.'}</p>
+          </div>
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 12px;">
+            During this period, your store and products will not be visible to customers and you will not be able to process orders.
+          </p>
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">
+            If you believe this is a mistake or would like to appeal, please contact our support team at
+            <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;">support@moodmarket.com</a>.
+          </p>
+        `),
+      };
+
+    case 'vendor_unsuspended':
+      return {
+        subject: `✅ Your MoodMarket Vendor Account Has Been Reinstated`,
+        html: wrapper(`
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">You're back! Account reinstated ✅</h2>
+          <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.6;">
+            Hi ${payload.storeName ?? payload.name ?? 'Vendor'}, great news! Your vendor account on ${brand} has been reinstated.
+            Your store is now live again and visible to customers.
+          </p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0;font-size:16px;font-weight:700;color:#16a34a;">🎉 Your store is now active again!</p>
+          </div>
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 12px;">
+            You can log in to your vendor dashboard and resume selling immediately.
+          </p>
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">
+            Please ensure your store complies with our
+            <a href="https://moodmarket.vercel.app/vendor/terms" style="color:#FF7A8A;">vendor terms and conditions</a>
+            to avoid future suspensions. Thank you for your patience.
+          </p>
+        `),
+      };
+
+    case 'vendor_removed':
+      return {
+        subject: `❌ Your MoodMarket Vendor Status Has Been Removed`,
+        html: wrapper(`
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Vendor status removed</h2>
+          <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.6;">
+            Hi ${payload.name ?? 'there'}, your vendor status on ${brand} has been permanently removed.
+            You will no longer have access to the vendor dashboard or be able to sell on the platform.
+          </p>
+          ${payload.reason ? `
+          <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:0.5px;">Reason</p>
+            <p style="margin:0;color:#1e293b;">${payload.reason}</p>
+          </div>` : ''}
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 12px;">
+            Your customer account remains active and you can continue shopping on MoodMarket.
+          </p>
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">
+            If you have questions, please contact us at
+            <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;">support@moodmarket.com</a>.
+          </p>
+        `),
+      };
+
+    case 'account_deleted':
+      return {
+        subject: `👋 Your MoodMarket Account Has Been Deleted`,
+        html: wrapper(`
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Account deleted</h2>
+          <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.6;">
+            Hi ${payload.name ?? 'there'}, your MoodMarket account has been permanently deleted by our admin team.
+            All your data, orders, and profile information have been removed from our platform.
+          </p>
+          ${payload.reason ? `
+          <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:0.5px;">Reason</p>
+            <p style="margin:0;color:#1e293b;">${payload.reason}</p>
+          </div>` : ''}
+          <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">
+            If you believe this was a mistake, please contact us immediately at
+            <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;">support@moodmarket.com</a>.
+          </p>
         `),
       };
 

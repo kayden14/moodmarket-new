@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
-import { Store, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { Store, Mail, Lock, Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 
 const PRIMARY = '#FF7A8A';
 const BG = '#0F172A';
@@ -58,6 +59,7 @@ async function attemptVendorLogin(
 
 function VendorLoginWeb() {
   const router = useRouter();
+  const { refreshProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,6 +80,7 @@ function VendorLoginWeb() {
       setLoading(false);
       return;
     }
+    await refreshProfile();
     router.replace('/vendor' as any);
   };
 
@@ -323,7 +326,7 @@ function VendorLoginWeb() {
           <div className="vl-form-wrap">
             <button
               className="vl-back"
-              onClick={() => router.push('/' as any)}
+              onClick={() => router.replace('/')}
             >
               ← Back to store
             </button>
@@ -414,6 +417,7 @@ function VendorLoginWeb() {
 
 function VendorLoginMobile() {
   const router = useRouter();
+  const { refreshProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -433,6 +437,7 @@ function VendorLoginMobile() {
       setLoading(false);
       return;
     }
+    await refreshProfile();
     router.replace('/vendor' as any);
   };
 
@@ -443,6 +448,15 @@ function VendorLoginMobile() {
     >
       <StatusBar barStyle="light-content" />
       <View style={s.inner}>
+        {/* Back button */}
+        <TouchableOpacity
+          style={s.backBtn}
+          onPress={() => router.replace('/')}
+        >
+          <ChevronLeft size={20} color={SUB} />
+          <Text style={s.backBtnTxt}>Back to Store</Text>
+        </TouchableOpacity>
+
         {/* Logo */}
         <View style={s.logoWrap}>
           <View style={s.logoCircle}>
@@ -546,6 +560,21 @@ export default function VendorLoginScreen() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG },
   inner: { flex: 1, justifyContent: 'center', padding: 24 },
+  backBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: CARD,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: BORDER,
+    zIndex: 10,
+  },
+  backBtnTxt: { color: SUB, fontSize: 12, fontWeight: '600', marginLeft: 4 },
   logoWrap: { alignItems: 'center', marginBottom: 32 },
   logoCircle: {
     width: 72,

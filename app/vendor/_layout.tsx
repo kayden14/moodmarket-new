@@ -80,7 +80,7 @@ export default function VendorLayout() {
       navItems={VENDOR_NAV}
       primaryColor="#FF7A8A"
     >
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="products" />
         <Stack.Screen name="orders" />

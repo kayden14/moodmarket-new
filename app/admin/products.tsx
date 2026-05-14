@@ -22,7 +22,7 @@ const PRIMARY = '#FF7A8A';
 const EMPTY: Omit<AdminProduct, 'id'> = { name: '', description: '', price: 0, image: '', mood_tags: [], rating: 4.5, vendor_id: null, vendor_name: null };
 
 export default function AdminProductsScreen() {
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { products, loading, fetchProducts } = useProductsData();
   const [search,    setSearch]    = useState('');
   const [formOpen,  setFormOpen]  = useState(false);
@@ -33,10 +33,10 @@ export default function AdminProductsScreen() {
   const [deleteConfirm, setDeleteConfirm] = useState<AdminProduct | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const card   = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
-  const text   = isDark ? '#F1F5F9' : '#0F172A';
-  const sub    = isDark ? '#94A3B8' : '#64748B';
+  const card   = theme.card;
+  const border = theme.border;
+  const text   = theme.textPrimary;
+  const sub    = theme.textSecondary;
 
   const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 

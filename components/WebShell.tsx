@@ -189,11 +189,12 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
           display: flex;
           flex-direction: column;
           overflow: hidden;
+          transition: background 0.3s ease;
         }
 
         .mm-topnav {
           position: sticky; top: 0; z-index: 300;
-          height: 60px;
+          height: 64px;
           background: ${card};
           border-bottom: 1px solid ${bord};
           display: flex; align-items: center;
@@ -201,6 +202,10 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
           flex-shrink: 0;
           backdrop-filter: blur(20px) saturate(1.4);
           -webkit-backdrop-filter: blur(20px) saturate(1.4);
+          transition: all 0.3s ease;
+        }
+        @media (max-width: 600px) {
+          .mm-topnav { padding: 0 16px; height: 60px; }
         }
 
         .mm-logo {
@@ -368,8 +373,9 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
         .mm-sidebar {
           background: ${card}; border-right: 1px solid ${bord};
           overflow-y: auto; overflow-x: hidden; z-index: 401; flex-shrink: 0;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mm-sidebar-inner { width: ${sidebarWidth}px; padding: 20px 0 80px; }
+        .mm-sidebar-inner { width: ${sidebarWidth}px; padding: 24px 0 80px; }
 
         @media (min-width: 900px) {
           .mm-sidebar { transition: width 0.25s ease; height: 100%; position: sticky; top: 0; }
@@ -414,8 +420,16 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
         .mm-cat-label { font-size: 12.5px; font-weight: 500; color: ${ts}; }
         .mm-cat-item.active .mm-cat-label { color: ${pri}; font-weight: 600; }
 
-        .mm-main { flex: 1; min-width: 0; overflow-y: auto; height: 100%; }
-        .mm-main-inner { padding: 24px 24px 60px; width: 100%; max-width: 1600px; margin: 0 auto; }
+        .mm-main { flex: 1; min-width: 0; overflow-y: auto; height: 100%; scroll-behavior: smooth; }
+        .mm-main-inner { padding: 32px 32px 80px; width: 100%; max-width: 1400px; margin: 0 auto; transition: padding 0.3s ease; }
+
+        @media (max-width: 1024px) {
+          .mm-main-inner { padding: 24px 24px 60px; }
+        }
+
+        @media (max-width: 640px) {
+          .mm-main-inner { padding: 20px 16px 40px; }
+        }
 
         @media (max-width: 700px) {
           .mm-topnav-search { display: none; }
@@ -423,6 +437,10 @@ export default function WebShell({ children, activeNav, title, showSidebar = tru
           .mm-desktop-only { display: none !important; }
           .mm-mobile-only  { display: flex; }
           .mm-btn-label { display: none; }
+          .mm-logo-text { font-size: 17px; }
+        }
+        @media (max-width: 480px) {
+          .mm-logo-text { display: none; }
         }
       `}</style>
 

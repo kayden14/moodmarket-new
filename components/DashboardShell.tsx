@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Platform, useWindowDimensions
 import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Menu, X, LogOut, Sun, Moon, Bell, Search, User } from 'lucide-react-native';
+import { Menu, X, LogOut, Sun, Moon, Bell, Search, User, ArrowLeft } from 'lucide-react-native';
 
 export interface NavItem {
   icon: string;
@@ -34,7 +34,7 @@ export default function DashboardShell({
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const { profile, signOut } = useAuth();
-  const { isDark, toggleDark } = useTheme();
+  const { theme, isDark, toggleDark } = useTheme();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(width >= 1024);
   const isDesktop = width >= 1024;
@@ -43,12 +43,12 @@ export default function DashboardShell({
     setIsSidebarOpen(width >= 1024);
   }, [width]);
 
-  const bg = isDark ? '#0F172A' : '#F8FAFC';
-  const sidebarBg = isDark ? '#111827' : '#FFFFFF';
-  const headerBg = isDark ? '#111827' : '#FFFFFF';
-  const border = isDark ? '#1E293B' : '#E2E8F0';
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const subtext = isDark ? '#94A3B8' : '#64748B';
+  const bg = theme.background;
+  const sidebarBg = theme.card;
+  const headerBg = theme.card;
+  const border = theme.border;
+  const text = theme.textPrimary;
+  const subtext = theme.textSecondary;
 
   const handleSignOut = async () => {
     await signOut();
@@ -110,6 +110,18 @@ export default function DashboardShell({
       {/* Footer */}
       <View style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 24, gap: 12 }}>
         <TouchableOpacity 
+          onPress={() => router.replace('/')}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+        >
+          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#334155' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+            <ArrowLeft size={16} color={primaryColor} />
+          </View>
+          <Text style={{ color: text, fontWeight: '700', fontSize: 13 }}>
+            Back to Store
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
           onPress={toggleDark}
           style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
         >
@@ -156,10 +168,15 @@ export default function DashboardShell({
       {!isDesktop && isSidebarOpen && (
         <View style={{ position: 'absolute', inset: 0, zIndex: 1000, flexDirection: 'row' }}>
           <TouchableOpacity 
-            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)' }} 
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' } as any} 
             onPress={() => setIsSidebarOpen(false)} 
           />
-          <View style={{ width: 300, backgroundColor: sidebarBg, height: '100%' }}>
+          <View style={{ 
+            width: Math.min(width * 0.85, 300), 
+            backgroundColor: sidebarBg, 
+            height: '100%',
+            shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 20
+          }}>
             <SidebarContent />
           </View>
         </View>
@@ -173,10 +190,9 @@ export default function DashboardShell({
           backgroundColor: headerBg, 
           borderBottomWidth: 1, 
           borderBottomColor: border, 
-          flexDirection: 'row', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          paddingHorizontal: 24,
+          paddingHorizontal: isDesktop ? 24 : 16,
           zIndex: 100,
           ...Platform.select({
             ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10 },
@@ -189,9 +205,9 @@ export default function DashboardShell({
                 <Menu size={22} color={text} />
               </TouchableOpacity>
             )}
-            <View>
-              {subtitle && <Text style={{ fontSize: 10, fontWeight: '800', color: primaryColor, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>{subtitle}</Text>}
-              <Text style={{ fontSize: 22, fontWeight: '900', color: text, letterSpacing: -0.5 }}>{title}</Text>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              {subtitle && <Text style={{ fontSize: 9, fontWeight: '800', color: primaryColor, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }} numberOfLines={1}>{subtitle}</Text>}
+              <Text style={{ fontSize: isDesktop ? 22 : 18, fontWeight: '900', color: text, letterSpacing: -0.5 }} numberOfLines={1}>{title}</Text>
             </View>
           </View>
 

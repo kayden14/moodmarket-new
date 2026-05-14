@@ -1,6 +1,7 @@
+// app/admin/_layout.tsx
 import { Stack, useSegments } from 'expo-router';
 import DashboardShell from '@/components/DashboardShell';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ADMIN_NAV = [
   { icon: '🏠', label: 'Dashboard', path: '/admin' },
@@ -23,8 +24,6 @@ export default function AdminLayout() {
     'users': 'Users',
   };
 
-
-
   if (isLoginPage) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
@@ -41,7 +40,7 @@ export default function AdminLayout() {
       navItems={ADMIN_NAV}
       primaryColor="#FF7A8A"
     >
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
         <Stack.Screen name="index"    options={{ headerShown: false }} />
         <Stack.Screen name="orders"   options={{ headerShown: false }} />
         <Stack.Screen name="products" options={{ headerShown: false }} />

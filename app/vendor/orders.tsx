@@ -27,15 +27,15 @@ function statusColor(s: string) {
 }
 
 export default function VendorOrders() {
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { orders, loading, refreshing, setRefreshing, fetchOrders } = useVendorOrdersData();
   const [selected, setSelected] = useState<VendorOrder | null>(null);
   const [updating, setUpdating] = useState(false);
 
-  const card = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
-  const text = isDark ? '#F1F5F9' : '#0F172A';
-  const sub = isDark ? '#94A3B8' : '#64748B';
+  const card = theme.card;
+  const border = theme.border;
+  const text = theme.textPrimary;
+  const sub = theme.textSecondary;
 
   const handleUpdateStatus = async (orderId: string, status: string) => {
     setUpdating(true);
@@ -74,7 +74,7 @@ export default function VendorOrders() {
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
-        <View style={s.center}>
+        <View style={[s.center, { backgroundColor: theme.background }]}>
           <ActivityIndicator size="large" color={PRIMARY} />
         </View>
       ) : (

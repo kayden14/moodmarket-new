@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useResponsive } from '@/hooks/useResponsive';
 import {
   Trash2, Plus, Minus, ShoppingBag,
   ArrowRight, Truck, ShoppingCart, Lock, Zap,
@@ -251,10 +252,34 @@ export default function CartScreen() {
   const { user }  = useAuth();
   const { theme, isDark } = useTheme();
   const { cartItems, cartCount, cartTotal, loading, removeFromCart, updateQuantity } = useCart();
+  const { isWide } = useResponsive();
 
   if (!user) return <Empty title="Sign in first" sub="Log in to view your cart and check out." cta="Sign In" onCta={() => router.push('/login')} />;
   if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}><ActivityIndicator size="large" color={theme.primary} /></View>;
   if (cartItems.length === 0) return <Empty title="Cart is empty" sub="Browse our collection and add items that match your mood." cta="Start Shopping" onCta={() => router.push('/(tabs)')} />;
+
+  if (Platform.OS === 'web' && isWide) {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <View style={s.webContainer}>
+          <View style={s.webLeftCol}>
+            <Text style={[s.webTitle, { color: theme.textPrimary }]}>Shopping Cart</Text>
+            <DeliveryBanner subtotal={cartTotal} />
+            <View style={{ gap: 12, marginTop: 12 }}>
+              {cartItems.map((item, index) => (
+                <CartRow key={item.id} item={item} index={index} onQtyChange={updateQuantity} onRemove={removeFromCart} />
+              ))}
+            </View>
+          </View>
+          <View style={s.webRightCol}>
+            <View style={[s.stickySummary, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <CheckoutBlock subtotal={cartTotal} onCheckout={() => router.push('/checkout')} />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -289,4 +314,9 @@ const s = StyleSheet.create({
   cartBadge:    { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
   cartBadgeTxt: { fontSize: 14, fontWeight: '800' },
   list:         { padding: 16, paddingBottom: 120 },
+  webContainer: { flexDirection: 'row', maxWidth: 1200, alignSelf: 'center', width: '100%', gap: 32, padding: 32 },
+  webLeftCol:   { flex: 1.6 },
+  webRightCol:  { flex: 1, minWidth: 350 },
+  webTitle:     { fontSize: 32, fontWeight: '900', marginBottom: 24, letterSpacing: -0.8 },
+  stickySummary: { position: 'sticky' as any, top: 20, padding: 24, borderRadius: 24, borderWidth: 1 },
 });

@@ -29,16 +29,16 @@ const STATUS_FILTERS = ['all', 'pending', 'paid', 'shipped', 'delivered', 'cance
 type StatusFilter = typeof STATUS_FILTERS[number];
 
 export default function AdminOrdersScreen() {
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { orders, loading, refreshing, setRefreshing, fetchOrders } = useOrdersData();
   const [selected,     setSelected]     = useState<AdminOrder | null>(null);
   const [filterStatus, setFilterStatus] = useState<StatusFilter>('all');
 
-  const card   = isDark ? '#1E293B' : '#FFFFFF';
-  const border = isDark ? '#334155' : '#E2E8F0';
-  const text   = isDark ? '#F1F5F9' : '#0F172A';
-  const sub    = isDark ? '#94A3B8' : '#64748B';
-  const bg     = isDark ? '#0F172A' : '#F1F5F9';
+  const card   = theme.card;
+  const border = theme.border;
+  const text   = theme.textPrimary;
+  const sub    = theme.textSecondary;
+  const bg     = theme.background;
 
   const filtered = filterStatus === 'all'
     ? orders

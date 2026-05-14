@@ -57,7 +57,7 @@ const STATUS_CONFIG = {
 ───────────────────────────────────────────────────────────────────────── */
 
 function VendorApplyWeb() {
-  const { user, isVendor } = useAuth();
+  const { user, isVendor, refreshProfile } = useAuth();
   const router = useRouter();
   const [application, setApplication] = useState<VendorApplication | null>(
     null,
@@ -298,7 +298,7 @@ function VendorApplyWeb() {
             <div className="va-back-row">
               <button
                 className="va-back"
-                onClick={() => router.push('/(tabs)' as any)}
+                onClick={() => router.replace('/')}
               >
                 ← Back to Store
               </button>
@@ -348,7 +348,10 @@ function VendorApplyWeb() {
                 {application.status === 'approved' && (
                   <button
                     className="va-btn"
-                    onClick={() => router.replace('/vendor' as any)}
+                    onClick={async () => {
+                      await refreshProfile();
+                      router.replace('/vendor' as any);
+                    }}
                     style={{ marginTop: 24 }}
                   >
                     Go to Dashboard →
@@ -476,7 +479,7 @@ function VendorApplyWeb() {
 ───────────────────────────────────────────────────────────────────────── */
 
 function VendorApplyMobile() {
-  const { user, isVendor } = useAuth();
+  const { user, isVendor, refreshProfile } = useAuth();
   const router = useRouter();
   const [application, setApplication] = useState<VendorApplication | null>(
     null,
@@ -551,7 +554,7 @@ function VendorApplyMobile() {
         <View style={s.header}>
           <TouchableOpacity
             style={s.backBtn}
-            onPress={() => router.replace('/(tabs)' as any)}
+            onPress={() => router.replace('/')}
           >
             <ChevronLeft size={20} color={SUB} />
             <Text style={s.backBtnTxt}>Back to Store</Text>
@@ -593,7 +596,10 @@ function VendorApplyMobile() {
             {application.status === 'approved' && (
               <TouchableOpacity
                 style={s.primaryBtn}
-                onPress={() => router.replace('/vendor' as any)}
+                onPress={async () => {
+                  await refreshProfile();
+                  router.replace('/vendor' as any);
+                }}
               >
                 <Text style={s.primaryBtnTxt}>Go to Dashboard →</Text>
               </TouchableOpacity>
