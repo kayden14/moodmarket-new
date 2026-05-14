@@ -85,7 +85,7 @@ interface WebShellProps {
 
 export default function WebShell({ children, activeNav, title, subtitle, showSidebar = true }: WebShellProps) {
   const { theme, mood, setMood, moodPalette, isDark, toggleDark } = useTheme();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin, isVendor } = useAuth();
   const { cartCount } = useCart();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useStorefront();
   const router = useRouter();
