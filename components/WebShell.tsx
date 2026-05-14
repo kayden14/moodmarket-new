@@ -518,6 +518,16 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
                   <button className="mm-more-item" onClick={() => { router.push('/profile'); setMoreMenuOpen(false); }}>
                     <User size={18} style={{ marginRight: 11 }} /> Profile
                   </button>
+                  {isVendor && (
+                    <button className="mm-more-item" onClick={() => { router.push('/vendor'); setMoreMenuOpen(false); }} style={{ color: pri, fontWeight: '700' }}>
+                      <LayoutGrid size={18} style={{ marginRight: 11 }} /> Vendor Dashboard
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button className="mm-more-item" onClick={() => { router.push('/admin'); setMoreMenuOpen(false); }} style={{ color: pri, fontWeight: '700' }}>
+                      <LayoutGrid size={18} style={{ marginRight: 11 }} /> Admin Dashboard
+                    </button>
+                  )}
                   <button className="mm-more-item" onClick={() => { router.push('/notifications'); setMoreMenuOpen(false); }}>
                     <Bell size={18} style={{ marginRight: 11 }} /> Notifications
                     {unreadCount > 0 && <span className="mm-more-badge">{unreadCount}</span>}

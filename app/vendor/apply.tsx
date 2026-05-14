@@ -302,12 +302,22 @@ function VendorApplyWeb() {
               >
                 ← Back to Store
               </button>
-              <button
-                className="va-vendor-link"
-                onClick={() => router.push('/vendor/login' as any)}
-              >
-                Already a vendor? Login
-              </button>
+              {isVendor ? (
+                <button
+                  className="va-vendor-link"
+                  onClick={() => router.push('/vendor' as any)}
+                  style={{ color: PRIMARY, fontWeight: '800' }}
+                >
+                  Go to Vendor Dashboard →
+                </button>
+              ) : (
+                <button
+                  className="va-vendor-link"
+                  onClick={() => router.push('/vendor/login' as any)}
+                >
+                  Already a vendor? Login
+                </button>
+              )}
             </div>
 
             {application ? (
@@ -694,6 +704,15 @@ function VendorApplyMobile() {
         >
           <Text style={s.footerLinkTxt}>← Back to Consumer Store</Text>
         </TouchableOpacity>
+
+        {isVendor && (
+          <TouchableOpacity
+            style={[s.primaryBtn, { marginTop: 12, backgroundColor: 'transparent', borderWidth: 1.5, borderColor: PRIMARY }]}
+            onPress={() => router.push('/vendor' as any)}
+          >
+            <Text style={[s.primaryBtnTxt, { color: PRIMARY }]}>Go to Vendor Dashboard →</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
