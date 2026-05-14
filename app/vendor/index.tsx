@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
-  Package, ShoppingBag, DollarSign, TrendingUp, 
+  Package, ShoppingBag, ShoppingCart, DollarSign, TrendingUp, 
   Bell, ChevronRight, LayoutGrid, ArrowUpRight,
   PlusCircle, CreditCard
 } from 'lucide-react-native';
@@ -24,10 +24,10 @@ export default function VendorDashboard() {
   const border = theme.border;
 
   const STAT_ITEMS = [
-    { icon: Package, label: 'Active Products', value: String(stats?.activeProducts || 0), color: '#38BDF8' },
-    { icon: ShoppingBag, label: 'Pending Orders', value: String(stats?.pendingOrders || 0), color: '#4ADE80' },
-    { icon: DollarSign, label: 'Month Revenue', value: `GH₵${stats?.monthRevenue.toFixed(0) || 0}`, color: PRIMARY },
-    { icon: TrendingUp, label: 'Total Sales', value: String(stats?.totalOrders || 0), color: '#A78BFA' },
+    { icon: Package, label: 'Active Products', value: String(stats?.activeProducts ?? 0), color: '#38BDF8' },
+    { icon: ShoppingBag, label: 'Pending Orders', value: String(stats?.pendingOrders ?? 0), color: '#4ADE80' },
+    { icon: DollarSign, label: 'Month Revenue', value: `GH₵${(stats?.monthRevenue ?? 0).toFixed(0)}`, color: PRIMARY },
+    { icon: TrendingUp, label: 'Total Sales', value: String(stats?.totalOrders ?? 0), color: '#A78BFA' },
   ];
 
   if (loading) return (
