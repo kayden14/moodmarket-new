@@ -47,9 +47,16 @@ serve(async (req) => {
       email: vendorEmail,
       options: { redirectTo: vendorLoginUrl },
     });
-    if (linkError) throw new Error(`Failed to generate reset link: ${linkError.message}`);
+    
+    if (linkError) {
+      console.error('[vendor-approval] Error generating link:', linkError);
+      throw new Error(`Failed to generate reset link: ${linkError.message}`);
+    }
 
-    const actionLink = linkData.properties?.action_link ?? vendorLoginUrl;
+    // Safely extract the action link
+    const actionLink = linkData?.properties?.action_link || vendorLoginUrl;
+
+    console.log(`[vendor-approval] Generated link for ${vendorEmail}. Dispatching email...`);
 
     // 2. Hand off to send-email-notification (same mailer used across the app)
     const { error: sendError } = await supabaseAdmin.functions.invoke(
@@ -62,7 +69,11 @@ serve(async (req) => {
         },
       },
     );
-    if (sendError) throw new Error(`Email send failed: ${sendError.message}`);
+
+    if (sendError) {
+      console.error('[vendor-approval] send-email-notification error:', sendError);
+      throw new Error(`Email send failed: ${sendError.message}`);
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Vendor approved and email sent.' }),
