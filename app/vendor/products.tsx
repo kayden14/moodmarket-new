@@ -156,16 +156,43 @@ export default function VendorProducts() {
             </View>
 
             <ScrollView style={s.modalBody}>
-              <TouchableOpacity style={[s.imageUpload, { borderColor: border, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]} onPress={pickImage}>
-                {uploading ? <ActivityIndicator color={PRIMARY} /> : form.image ? (
-                  <Image source={{ uri: form.image }} style={s.uploadPreview} />
+              <View style={[s.imageUpload, { borderColor: border, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+                {uploading ? (
+                  <ActivityIndicator color={PRIMARY} />
+                ) : form.image ? (
+                  <View style={{ width: '100%', height: '100%' }}>
+                    <Image source={{ uri: form.image }} style={s.uploadPreview} />
+                    <TouchableOpacity 
+                      style={s.removeImgBtn} 
+                      onPress={() => setForm(f => ({ ...f, image: '' }))}
+                    >
+                      <X size={16} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
                 ) : (
-                  <View style={{ alignItems: 'center' }}>
+                  <TouchableOpacity style={s.uploadPlaceholder} onPress={pickImage}>
                     <ImageIcon size={32} color={sub} />
                     <Text style={{ color: sub, marginTop: 8, fontSize: 13, fontWeight: '600' }}>Tap to upload image</Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
-              </TouchableOpacity>
+              </View>
+
+              <View style={s.dividerRow}>
+                <View style={[s.divider, { backgroundColor: border }]} />
+                <Text style={[s.dividerText, { color: sub }]}>OR USE URL</Text>
+                <View style={[s.divider, { backgroundColor: border }]} />
+              </View>
+
+              <View style={s.field}>
+                <Text style={[s.label, { color: sub }]}>IMAGE URL</Text>
+                <TextInput 
+                  style={[s.input, { color: text, borderColor: border }]} 
+                  placeholder="https://example.com/image.jpg"
+                  placeholderTextColor={sub}
+                  value={form.image} 
+                  onChangeText={v => setForm(f => ({ ...f, image: v }))} 
+                />
+              </View>
 
               <View style={s.field}>
                 <Text style={[s.label, { color: sub }]}>NAME *</Text>
@@ -237,6 +264,11 @@ const s = StyleSheet.create({
   modalBody: { padding: 20, maxHeight: 500 },
   imageUpload: { height: 140, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', marginBottom: 20, overflow: 'hidden' },
   uploadPreview: { width: '100%', height: '100%' },
+  uploadPlaceholder: { flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' },
+  removeImgBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+  divider: { flex: 1, height: 1 },
+  dividerText: { fontSize: 10, fontWeight: '800' },
   field: { marginBottom: 16 },
   fieldRow: { flexDirection: 'row', marginBottom: 16 },
   label: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
