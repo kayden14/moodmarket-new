@@ -361,7 +361,7 @@ function HeroSection({ moodEmoji, moodLabel, userName }: { moodEmoji: string; mo
 
 export default function HomeScreenWeb() {
   const router = useRouter();
-  const { user }                            = useAuth();
+  const { user, profile }                   = useAuth();
   const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood }                     = useTheme();
   const { searchQuery, selectedCategory, setSelectedCategory } = useStorefront();
