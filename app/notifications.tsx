@@ -22,6 +22,7 @@ import {
   ArrowLeft, Bell, ShoppingCart, Heart,
   Zap, Package, CheckCheck, Sparkles,
 } from 'lucide-react-native';
+import WebShell from '@/components/WebShell';
 
 /* ─────────────────────────────────────────────────────────────────────────
    SHARED TYPES + HELPERS
@@ -471,9 +472,8 @@ function NotificationsScreenWeb() {
   const inact = theme.inactive;
 
   const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     @keyframes notif-in {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -531,12 +531,9 @@ function NotificationsScreenWeb() {
         style={{ animationDelay: `${index * 40}ms` }}
         onClick={() => handleTap(notif, router.push.bind(router))}
       >
-        {/* unread dot */}
         {!notif.read && (
           <div style={{ position: 'absolute', top: 14, right: 14, width: 8, height: 8, borderRadius: 4, background: pri }} />
         )}
-
-        {/* icon */}
         <div style={{
           width: 48, height: 48, borderRadius: 15, flexShrink: 0,
           background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -544,8 +541,6 @@ function NotificationsScreenWeb() {
         }}>
           {cfg.emoji}
         </div>
-
-        {/* content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
             <span style={{
@@ -574,188 +569,150 @@ function NotificationsScreenWeb() {
   };
 
   return (
-    <>
+    <WebShell 
+      title={`Notifications ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
+      subtitle="Manage your alerts and activity"
+    >
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp }}>
-
-        {/* ── PAGE HEADER ── */}
-        <div style={{ background: card, borderBottom: `1px solid ${bord}`, padding: '32px 0 0' }}>
-          <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 24px' }}>
-
-            {/* breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, fontSize: 13, color: ts }}>
-              <button
-                onClick={() => router.push('/(tabs)' as any)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13 }}
-              >
-                Home
-              </button>
-              <span style={{ color: inact }}>›</span>
-              <span style={{ color: tp, fontWeight: 600 }}>Notifications</span>
-            </div>
-
-            {/* title row */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, color: pri, textTransform: 'uppercase', marginBottom: 6 }}>INBOX</p>
-                <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 900, color: tp, letterSpacing: -0.8, lineHeight: 1.1 }}>
-                  Notifications
-                  {unreadCount > 0 && (
-                    <span style={{
-                      marginLeft: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      background: pri, color: '#fff', borderRadius: 12, minWidth: 28, height: 28,
-                      fontSize: 13, fontWeight: 900, padding: '0 6px', verticalAlign: 'middle',
-                      boxShadow: `0 4px 12px ${pri}44`,
-                    }}>
-                      {unreadCount}
+      <div style={{ background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp }}>
+        
+        {/* Actions Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {FILTER_TABS.map(tab => {
+              const count = tab.key === 'all'
+                ? notifications.length
+                : notifications.filter(n => n.type === tab.key).length;
+              return (
+                <button
+                  key={tab.key}
+                  className={`filter-tab${activeFilter === tab.key ? ' active' : ''}`}
+                  onClick={() => setActiveFilter(tab.key)}
+                >
+                  {tab.label}
+                  {count > 0 && (
+                    <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: activeFilter === tab.key ? pri : inact }}>
+                      {count}
                     </span>
                   )}
-                </h1>
-              </div>
-              <button
-                className="mark-all-btn"
-                onClick={() => user?.id && markAllRead(user.id)}
-                disabled={unreadCount === 0 || markingAll}
-              >
-                {markingAll ? <div className="spinner" /> : <span>✓✓</span>}
-                Mark all read
-              </button>
-            </div>
-
-            {/* unread banner */}
-            {unreadCount > 0 && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
-                background: isDark ? '#2D1820' : '#FFF5F6', borderRadius: '12px 12px 0 0',
-                border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, borderBottom: 'none',
-              }}>
-                <div style={{ width: 7, height: 7, borderRadius: 4, background: pri, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: pri }}>
-                  {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
-                </span>
-                <button
-                  onClick={() => user?.id && markAllRead(user.id)}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
-                >
-                  Mark all read →
                 </button>
+              );
+            })}
+          </div>
+          
+          <button
+            className="mark-all-btn"
+            onClick={() => user?.id && markAllRead(user.id)}
+            disabled={unreadCount === 0 || markingAll}
+          >
+            {markingAll ? <div className="spinner" /> : <span>✓✓</span>}
+            Mark all read
+          </button>
+        </div>
+
+        {/* Unread banner */}
+        {unreadCount > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+            background: isDark ? '#2D1820' : '#FFF5F6', borderRadius: '12px',
+            border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
+            marginBottom: 24
+          }}>
+            <div style={{ width: 7, height: 7, borderRadius: 4, background: pri, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: pri }}>
+              {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
+            </span>
+            <button
+              onClick={() => user?.id && markAllRead(user.id)}
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
+            >
+              Mark all read →
+            </button>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 16 }}>
+            <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
+            <p style={{ color: ts, fontSize: 14 }}>Loading notifications…</p>
+          </div>
+        )}
+
+        {/* Not signed in */}
+        {!loading && !user && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 16 }}>
+            <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
+              🔒
+            </div>
+            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>Sign in to see notifications</h2>
+            <p style={{ fontSize: 14, color: ts, maxWidth: 320, lineHeight: 1.65 }}>Your notifications will appear here once you're signed in to your MoodMarket account.</p>
+            <button
+              onClick={() => router.push('/login' as any)}
+              style={{ background: pri, border: 'none', borderRadius: 14, padding: '13px 32px', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', boxShadow: `0 6px 20px ${pri}44`, marginTop: 8 }}
+            >
+              Sign In →
+            </button>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && user && filtered.length === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 12 }}>
+            <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
+              🔔
+            </div>
+            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>
+              {activeFilter === 'all' ? 'All caught up!' : `No ${activeFilter} notifications`}
+            </h2>
+            <p style={{ fontSize: 14, color: ts, maxWidth: 340, lineHeight: 1.65 }}>
+              {activeFilter === 'all'
+                ? "You have no notifications yet. We'll let you know when something happens."
+                : `You have no ${activeFilter} notifications. Try a different filter.`}
+            </p>
+            {activeFilter !== 'all' && (
+              <button
+                onClick={() => setActiveFilter('all')}
+                style={{ background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '8px 20px', color: tp, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 8 }}
+              >
+                View all notifications
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Notification list */}
+        {!loading && user && filtered.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {filteredToday.length > 0 && (
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Today</span>
+                  <div style={{ flex: 1, height: 1, background: bord }} />
+                  <span style={{ fontSize: 11, color: inact }}>{filteredToday.length} notification{filteredToday.length > 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {filteredToday.map((n, i) => renderCard(n, i))}
+                </div>
               </div>
             )}
 
-            {/* filter tabs */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 16, overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {FILTER_TABS.map(tab => {
-                const count = tab.key === 'all'
-                  ? notifications.length
-                  : notifications.filter(n => n.type === tab.key).length;
-                return (
-                  <button
-                    key={tab.key}
-                    className={`filter-tab${activeFilter === tab.key ? ' active' : ''}`}
-                    onClick={() => setActiveFilter(tab.key)}
-                  >
-                    {tab.label}
-                    {count > 0 && (
-                      <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: activeFilter === tab.key ? pri : inact }}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {filteredEarlier.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Earlier</span>
+                  <div style={{ flex: 1, height: 1, background: bord }} />
+                  <span style={{ fontSize: 11, color: inact }}>{filteredEarlier.length} notification{filteredEarlier.length > 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {filteredEarlier.map((n, i) => renderCard(n, filteredToday.length + i))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* ── CONTENT ── */}
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '28px 24px 80px' }}>
-
-          {/* loading */}
-          {loading && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 16 }}>
-              <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
-              <p style={{ color: ts, fontSize: 14 }}>Loading notifications…</p>
-            </div>
-          )}
-
-          {/* not signed in */}
-          {!loading && !user && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 16 }}>
-              <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
-                🔒
-              </div>
-              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>Sign in to see notifications</h2>
-              <p style={{ fontSize: 14, color: ts, maxWidth: 320, lineHeight: 1.65 }}>Your notifications will appear here once you're signed in to your MoodMarket account.</p>
-              <button
-                onClick={() => router.push('/login' as any)}
-                style={{ background: pri, border: 'none', borderRadius: 14, padding: '13px 32px', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', boxShadow: `0 6px 20px ${pri}44`, marginTop: 8 }}
-              >
-                Sign In →
-              </button>
-            </div>
-          )}
-
-          {/* empty state */}
-          {!loading && user && filtered.length === 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 12 }}>
-              <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
-                🔔
-              </div>
-              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>
-                {activeFilter === 'all' ? 'All caught up!' : `No ${activeFilter} notifications`}
-              </h2>
-              <p style={{ fontSize: 14, color: ts, maxWidth: 340, lineHeight: 1.65 }}>
-                {activeFilter === 'all'
-                  ? "You have no notifications yet. We'll let you know when something happens."
-                  : `You have no ${activeFilter} notifications. Try a different filter.`}
-              </p>
-              {activeFilter !== 'all' && (
-                <button
-                  onClick={() => setActiveFilter('all')}
-                  style={{ background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '8px 20px', color: tp, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 8 }}
-                >
-                  View all notifications
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* notification list */}
-          {!loading && user && filtered.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-
-              {/* TODAY */}
-              {filteredToday.length > 0 && (
-                <div style={{ marginBottom: 28 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Today</span>
-                    <div style={{ flex: 1, height: 1, background: bord }} />
-                    <span style={{ fontSize: 11, color: inact }}>{filteredToday.length} notification{filteredToday.length > 1 ? 's' : ''}</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {filteredToday.map((n, i) => renderCard(n, i))}
-                  </div>
-                </div>
-              )}
-
-              {/* EARLIER */}
-              {filteredEarlier.length > 0 && (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Earlier</span>
-                    <div style={{ flex: 1, height: 1, background: bord }} />
-                    <span style={{ fontSize: 11, color: inact }}>{filteredEarlier.length} notification{filteredEarlier.length > 1 ? 's' : ''}</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {filteredEarlier.map((n, i) => renderCard(n, filteredToday.length + i))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
-    </>
+    </WebShell>
   );
 }
 

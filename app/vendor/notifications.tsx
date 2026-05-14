@@ -13,7 +13,7 @@ import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { VendorNotification } from '@/services/vendorService';
 
 const P = '#FF7A8A';
-const BG = '#0F172A', CARD = '#1E293B', BORDER = '#334155', TEXT = '#F1F5F9', SUB = '#94A3B8';
+const BG = 'transparent', CARD = '#1E1E1E', BORDER = '#2A2A2A', TEXT = '#F1F5F9', SUB = '#A0A0A0';
 
 function typeIcon(t: string) {
   const m: Record<string, string> = { order: '🛒', payout: '💸', warning: '⚠️', approval: '🎉', info: 'ℹ️' };
@@ -63,21 +63,13 @@ export default function VendorNotifications() {
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="light-content" />
-      <View style={[s.header, { backgroundColor: CARD, borderBottomColor: BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
-          <Text style={{ color: TEXT, fontSize: 22 }}>←</Text>
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 10, fontWeight: '800', color: P, letterSpacing: 3 }}>VENDOR</Text>
-          <Text style={{ fontSize: 20, fontWeight: '900', color: TEXT }}>Notifications {unreadCount > 0 ? `(${unreadCount})` : ''}</Text>
-        </View>
-        {unreadCount > 0 && (
-          <TouchableOpacity onPress={markAllRead} style={{ backgroundColor: P + '22', borderRadius: 9, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: P + '44' }}>
+      {unreadCount > 0 && (
+        <View style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: BORDER }}>
+          <TouchableOpacity onPress={markAllRead} style={{ alignSelf: 'flex-end', backgroundColor: P + '22', borderRadius: 9, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: P + '44' }}>
             <Text style={{ fontSize: 11, fontWeight: '800', color: P }}>Mark all read</Text>
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
 
       {loading
         ? <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={P} size="large" /></View>
