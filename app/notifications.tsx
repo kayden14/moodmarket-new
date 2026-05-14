@@ -483,7 +483,7 @@ function NotificationsScreenWeb() {
         }}
       >
         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Icon size={20} color={color} />
+          {Icon ? <Icon size={20} color={color} /> : <span style={{ fontSize: '20px' }}>🔔</span>}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>

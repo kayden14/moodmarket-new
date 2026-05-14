@@ -133,9 +133,9 @@ export default function DashboardShell({
       <View style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 24, gap: 12 }}>
         <TouchableOpacity 
           onPress={() => router.replace('/')}
-          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9' }}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#262626' : '#F1F5F9' }}
         >
-          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#333333' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
             <ArrowLeft size={16} color={primaryColor} />
           </View>
           <Text style={{ color: text, fontWeight: '700', fontSize: 13 }}>
@@ -145,9 +145,9 @@ export default function DashboardShell({
 
         <TouchableOpacity 
           onPress={toggleDark}
-          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9' }}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderRadius: 12, backgroundColor: isDark ? '#262626' : '#F1F5F9' }}
         >
-          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: isDark ? '#333333' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
             {isDark ? <Sun size={16} color="#FBBF24" /> : <Moon size={16} color="#475569" />}
           </View>
           <Text style={{ color: text, fontWeight: '700', fontSize: 13 }}>
@@ -200,7 +200,7 @@ export default function DashboardShell({
         <View style={{ position: 'absolute', inset: 0, zIndex: 1000, flexDirection: 'row' }}>
           <TouchableOpacity 
             activeOpacity={1}
-            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' } as any} 
+            style={{ position: 'absolute', inset: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' } as any} 
             onPress={() => setIsSidebarOpen(false)} 
           />
           <View style={{ 

@@ -41,7 +41,7 @@ export default function VendorLayout() {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#0B0F1A',
+          backgroundColor: theme.background,
           justifyContent: 'center',
           alignItems: 'center',
         }}
@@ -80,7 +80,7 @@ export default function VendorLayout() {
       navItems={VENDOR_NAV}
       primaryColor="#FF7A8A"
     >
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.background } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="products" />
         <Stack.Screen name="orders" />

@@ -162,7 +162,7 @@ const s = StyleSheet.create({
   actionIconWrap: { marginRight: 14 },
   actionLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
   bellIconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#FF7A8A15', alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  badge: { position: 'absolute', top: 0, right: 0, backgroundColor: PRIMARY, borderRadius: 10, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#fff' },
+  badge: { position: 'absolute', top: 0, right: 0, backgroundColor: PRIMARY, borderRadius: 10, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1A1A1A' },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '900' },
 });
 
