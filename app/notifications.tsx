@@ -445,125 +445,56 @@ const FILTER_TABS = [
 ] as const;
 
 function NotificationsScreenWeb() {
-  const router = useRouter();
-  const { user } = useAuth();
   const { theme, isDark } = useTheme();
+  const { user } = useAuth();
   const {
     notifications, loading, fetchNotifications,
     handleTap, markAllRead, markingAll,
     unreadCount, todayNotifs, earlierNotifs,
   } = useNotifications();
-  const [activeFilter, setActiveFilter] = useState<'all' | 'mood' | 'order' | 'deal' | 'system'>('all');
 
-  const filtered = activeFilter === 'all'
-    ? notifications
-    : notifications.filter(n => n.type === activeFilter);
+  const [activeTab, setActiveTab] = useState<'all' | 'mood' | 'order' | 'deal' | 'system'>('all');
 
+  const tp = theme.textPrimary;
+  const ts = theme.textSecondary;
+  const pri = theme.primary;
+  const bord = theme.border;
+  const card = theme.card;
+  const tint = theme.tint;
+
+  const filtered = notifications.filter(n => activeTab === 'all' || n.type === activeTab);
   const filteredToday   = filtered.filter(n => new Date(n.created_at).toDateString() === new Date().toDateString());
   const filteredEarlier = filtered.filter(n => new Date(n.created_at).toDateString() !== new Date().toDateString());
 
-  const pri   = theme.primary;
-  const bg    = theme.background;
-  const card  = theme.card;
-  const bord  = theme.border;
-  const tp    = theme.textPrimary;
-  const ts    = theme.textSecondary;
-  const tint  = theme.tint;
-  const inact = theme.inactive;
-
-  const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    @keyframes notif-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .notif-card {
-      display: flex; gap: 14px; padding: 16px 18px;
-      border-radius: 16px; border-width: 1px; border-style: solid;
-      cursor: pointer; position: relative;
-      animation: notif-in 0.3s ease both;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    .notif-card:hover {
-      transform: translateY(-2px);
-      box-shadow: ${isDark ? '0 8px 28px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.08)'};
-    }
-    .notif-card.unread { background: ${isDark ? '#1E1215' : '#FFFBFB'}; border-color: ${isDark ? '#3D2030' : '#FFD6DE'}; }
-    .notif-card.read   { background: ${card}; border-color: ${bord}; }
-
-    .filter-tab {
-      padding: 7px 16px; border-radius: 20px; border: 1.5px solid ${bord};
-      background: none; cursor: pointer; font-size: 13px; font-weight: 600;
-      font-family: 'Plus Jakarta Sans', sans-serif; color: ${ts};
-      transition: all 0.15s ease; white-space: nowrap;
-    }
-    .filter-tab:hover { border-color: ${pri}; color: ${pri}; }
-    .filter-tab.active { background: ${tint}; border-color: ${pri}; color: ${pri}; font-weight: 800; }
-
-    .mark-all-btn {
-      display: flex; align-items: center; gap: 7px;
-      padding: 8px 16px; border-radius: 20px;
-      border: 1.5px solid ${bord}; background: none; cursor: pointer;
-      font-size: 12px; font-weight: 700; color: ${ts};
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: all 0.15s ease;
-    }
-    .mark-all-btn:hover:not(:disabled) { border-color: ${pri}; color: ${pri}; }
-    .mark-all-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid ${bord}; border-top-color: ${pri};
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-    }
-  `;
-
   const renderCard = (notif: AppNotification, index: number) => {
-    const cfg = getTypeConfig(notif.type, isDark);
+    const { bg, color, icon: Icon } = getIconConfig(notif.type, isDark);
+    
     return (
-      <div
+      <div 
         key={notif.id}
-        className={`notif-card ${notif.read ? 'read' : 'unread'}`}
-        style={{ animationDelay: `${index * 40}ms` }}
-        onClick={() => handleTap(notif, router.push.bind(router))}
+        onClick={() => handleTap(notif, (p) => (window.location.href = p))}
+        style={{
+          display: 'flex', gap: '16px', padding: '16px', borderRadius: '12px',
+          background: notif.read ? 'transparent' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+          border: `1px solid ${notif.read ? bord : pri + '33'}`,
+          cursor: 'pointer', marginBottom: '12px', transition: 'all 0.2s',
+          position: 'relative', overflow: 'hidden',
+          animation: `notif-in 0.3s ease both ${index * 0.05}s`
+        }}
       >
+        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justify-content: 'center', flexShrink: 0 }}>
+          <Icon size={20} color={color} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+            <span style={{ fontWeight: 700, color: tp, fontSize: '15px' }}>{notif.title}</span>
+            <span style={{ fontSize: '11px', color: ts, fontWeight: 500 }}>{timeAgo(notif.created_at)}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: '13.5px', color: ts, lineHeight: '1.5' }}>{notif.body}</p>
+        </div>
         {!notif.read && (
-          <div style={{ position: 'absolute', top: 14, right: 14, width: 8, height: 8, borderRadius: 4, background: pri }} />
+          <div style={{ position: 'absolute', top: '16px', right: '16px', width: '8px', height: '8px', borderRadius: '50%', background: pri }} />
         )}
-        <div style={{
-          width: 48, height: 48, borderRadius: 15, flexShrink: 0,
-          background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 22,
-        }}>
-          {cfg.emoji}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: 14, fontWeight: notif.read ? 600 : 800,
-              color: notif.read ? ts : tp, lineHeight: 1.3,
-            }}>{notif.title}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, background: cfg.bg, padding: '2px 8px', borderRadius: 8, flexShrink: 0 }}>
-              {cfg.label}
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: ts, lineHeight: 1.55, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
-            {notif.body}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 11, color: inact, fontWeight: 500 }}>{timeAgo(notif.created_at)}</span>
-            {notif.screen && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: pri, cursor: 'pointer' }}>View →</span>
-            )}
-            {!notif.read && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: pri }}>● New</span>
-            )}
-          </div>
-        </div>
       </div>
     );
   };
@@ -571,142 +502,77 @@ function NotificationsScreenWeb() {
   return (
     <WebShell 
       title={`Notifications ${unreadCount > 0 ? `(${unreadCount})` : ''}`}
-      subtitle="Manage your alerts and activity"
+      subtitle="Stay updated with your latest alerts and activity"
     >
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div style={{ background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp }}>
-        
-        {/* Actions Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {FILTER_TABS.map(tab => {
-              const count = tab.key === 'all'
-                ? notifications.length
-                : notifications.filter(n => n.type === tab.key).length;
-              return (
-                <button
-                  key={tab.key}
-                  className={`filter-tab${activeFilter === tab.key ? ' active' : ''}`}
-                  onClick={() => setActiveFilter(tab.key)}
-                >
-                  {tab.label}
-                  {count > 0 && (
-                    <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: activeFilter === tab.key ? pri : inact }}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes notif-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes notif-spin { to { transform: rotate(360deg); } }
+      `}} />
+
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Tabs & Mark All */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: `1px solid ${bord}`, paddingBottom: '16px', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {FILTER_TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: '8px 16px', borderRadius: '20px', border: activeTab === tab.key ? `1.5px solid ${pri}` : `1.5px solid ${bord}`,
+                  background: activeTab === tab.key ? tint : 'transparent',
+                  color: activeTab === tab.key ? pri : ts,
+                  fontSize: '13px', fontWeight: activeTab === tab.key ? 800 : 600, cursor: 'pointer', transition: 'all 0.2s', white-space: 'nowrap'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          
-          <button
-            className="mark-all-btn"
-            onClick={() => user?.id && markAllRead(user.id)}
-            disabled={unreadCount === 0 || markingAll}
-          >
-            {markingAll ? <div className="spinner" /> : <span>✓✓</span>}
-            Mark all read
-          </button>
+          {user && unreadCount > 0 && (
+            <button 
+              onClick={() => markAllRead(user.id)}
+              disabled={markingAll}
+              style={{ background: 'none', border: 'none', color: pri, fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: markingAll ? 0.5 : 1 }}
+            >
+              {markingAll ? 'Marking...' : 'Mark all read'}
+            </button>
+          )}
         </div>
 
-        {/* Unread banner */}
-        {unreadCount > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
-            background: isDark ? '#2D1820' : '#FFF5F6', borderRadius: '12px',
-            border: `1px solid ${isDark ? '#3D2030' : '#FFD6DE'}`,
-            marginBottom: 24
-          }}>
-            <div style={{ width: 7, height: 7, borderRadius: 4, background: pri, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: pri }}>
-              {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
-            </span>
-            <button
-              onClick={() => user?.id && markAllRead(user.id)}
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: pri, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
+        {loading ? (
+          <div style={{ padding: '100px 0', textAlign: 'center' }}>
+            <div style={{ width: '40px', height: '40px', border: `3px solid ${bord}`, borderTopColor: pri, borderRadius: '50%', animation: 'notif-spin 0.8s linear infinite', margin: '0 auto' }} />
+          </div>
+        ) : !user ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', background: card, borderRadius: '24px', border: `1px solid ${bord}`, animation: 'notif-in 0.4s ease both' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔒</div>
+            <h2 style={{ color: tp, margin: '0 0 8px' }}>Sign in to see notifications</h2>
+            <p style={{ color: ts, margin: '0 0 24px' }}>Join the community to get updates on your orders and mood alerts.</p>
+            <button 
+              onClick={() => (window.location.href = '/login')}
+              style={{ padding: '12px 32px', borderRadius: '12px', background: pri, color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer' }}
             >
-              Mark all read →
+              Sign In
             </button>
           </div>
-        )}
-
-        {/* Loading state */}
-        {loading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 16 }}>
-            <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
-            <p style={{ color: ts, fontSize: 14 }}>Loading notifications…</p>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', animation: 'notif-in 0.4s ease both' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>✨</div>
+            <h2 style={{ color: tp, margin: '0 0 8px' }}>All caught up!</h2>
+            <p style={{ color: ts, margin: 0 }}>No notifications found in this category.</p>
           </div>
-        )}
-
-        {/* Not signed in */}
-        {!loading && !user && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 16 }}>
-            <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
-              🔒
-            </div>
-            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>Sign in to see notifications</h2>
-            <p style={{ fontSize: 14, color: ts, maxWidth: 320, lineHeight: 1.65 }}>Your notifications will appear here once you're signed in to your MoodMarket account.</p>
-            <button
-              onClick={() => router.push('/login' as any)}
-              style={{ background: pri, border: 'none', borderRadius: 14, padding: '13px 32px', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', boxShadow: `0 6px 20px ${pri}44`, marginTop: 8 }}
-            >
-              Sign In →
-            </button>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && user && filtered.length === 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, textAlign: 'center', gap: 12 }}>
-            <div style={{ width: 88, height: 88, borderRadius: 26, background: isDark ? '#2D1820' : '#FFF0F2', border: `1.5px solid ${isDark ? '#3D2030' : '#FFD6DE'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, marginBottom: 8 }}>
-              🔔
-            </div>
-            <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, color: tp, letterSpacing: -0.4 }}>
-              {activeFilter === 'all' ? 'All caught up!' : `No ${activeFilter} notifications`}
-            </h2>
-            <p style={{ fontSize: 14, color: ts, maxWidth: 340, lineHeight: 1.65 }}>
-              {activeFilter === 'all'
-                ? "You have no notifications yet. We'll let you know when something happens."
-                : `You have no ${activeFilter} notifications. Try a different filter.`}
-            </p>
-            {activeFilter !== 'all' && (
-              <button
-                onClick={() => setActiveFilter('all')}
-                style={{ background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '8px 20px', color: tp, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: '"Plus Jakarta Sans", sans-serif', marginTop: 8 }}
-              >
-                View all notifications
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Notification list */}
-        {!loading && user && filtered.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        ) : (
+          <div>
             {filteredToday.length > 0 && (
-              <div style={{ marginBottom: 28 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Today</span>
-                  <div style={{ flex: 1, height: 1, background: bord }} />
-                  <span style={{ fontSize: 11, color: inact }}>{filteredToday.length} notification{filteredToday.length > 1 ? 's' : ''}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {filteredToday.map((n, i) => renderCard(n, i))}
-                </div>
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '10px', fontWeight: 800, color: theme.inactive, letterSpacing: '2px', marginBottom: '16px', textTransform: 'uppercase' }}>Today</h3>
+                {filteredToday.map((n, i) => renderCard(n, i))}
               </div>
             )}
-
             {filteredEarlier.length > 0 && (
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2.5, color: inact, textTransform: 'uppercase' }}>Earlier</span>
-                  <div style={{ flex: 1, height: 1, background: bord }} />
-                  <span style={{ fontSize: 11, color: inact }}>{filteredEarlier.length} notification{filteredEarlier.length > 1 ? 's' : ''}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {filteredEarlier.map((n, i) => renderCard(n, filteredToday.length + i))}
-                </div>
+                <h3 style={{ fontSize: '10px', fontWeight: 800, color: theme.inactive, letterSpacing: '2px', marginBottom: '16px', textTransform: 'uppercase' }}>Earlier</h3>
+                {filteredEarlier.map((n, i) => renderCard(n, filteredToday.length + i))}
               </div>
             )}
           </div>
