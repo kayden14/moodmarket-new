@@ -11,14 +11,17 @@ serve(async (req) => {
   }
 
   try {
-    const { message, profileName } = await req.json();
+    const body = await req.json();
+    const { message, profileName } = body;
+    console.log(`[Chatbot] Request from ${profileName}: ${message}`);
 
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
+      console.error('[Chatbot] GEMINI_API_KEY is missing');
       throw new Error('GEMINI_API_KEY not set in Supabase secrets');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const prompt = `You are an empathetic AI assistant for MoodMarket, a mood-aware marketplace. 
     The user's name is ${profileName || 'User'}. 
@@ -33,14 +36,11 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: 250,
-          temperature: 0.7,
-        },
       }),
     });
 
     const data = await res.json();
+    console.log('[Chatbot] Gemini Response:', JSON.stringify(data));
     
     if (data.error) {
       throw new Error(data.error.message);
