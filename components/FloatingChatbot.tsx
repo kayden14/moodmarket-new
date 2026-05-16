@@ -90,6 +90,7 @@ export const FloatingChatbot = () => {
     try {
       // Use Supabase Edge Function to avoid CORS on web and centralize logic
       // Adding a 10s timeout to prevent "stuck loading" state
+      console.log('Invoking chatbot-proxy...');
       const invokePromise = supabase.functions.invoke('chatbot-proxy', {
         body: { 
           message: input.trim(),
@@ -101,9 +102,13 @@ export const FloatingChatbot = () => {
         setTimeout(() => reject(new Error('TIMEOUT')), 10000)
       );
 
-      const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
+      const response = await Promise.race([invokePromise, timeoutPromise]) as any;
+      const { data, error } = response;
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Edge Function error, falling back:', error);
+        throw error;
+      }
       
       const botResponse = data?.text || "I'm here for you! How can I help?";
 
@@ -116,25 +121,29 @@ export const FloatingChatbot = () => {
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (error: any) {
-      console.error('Chatbot error:', error);
+      console.error('Chatbot primary failed:', error);
       
-      // Fallback to direct client-side call if function isn't deployed or timed out
+      // Fallback to direct client-side call
       try {
         const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-        if (!apiKey) throw new Error('API Key missing');
-
+        console.log('Gemini API Key found:', !!apiKey);
+        if (!apiKey) throw new Error('API Key missing (EXPO_PUBLIC_GEMINI_API_KEY)');
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: input.trim() }] }],
+              contents: [{ parts: [{ text: `You are an AI assistant for MoodMarket. Keep it concise. User: ${input.trim()}` }] }],
             }),
           }
         );
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          const errBody = await response.text();
+          console.error('Gemini API error body:', errBody);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const fallbackData = await response.json();
         const fallbackText = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
