@@ -160,14 +160,18 @@ export const FloatingChatbot = () => {
             timestamp: new Date(),
           }]);
           return;
+        } else {
+          throw new Error('Malformed AI response (missing text)');
         }
       } catch (innerErr: any) {
         console.error('Fallback failed:', innerErr);
-        let errorMessage = "I'm having a bit of trouble thinking right now. Could you try again in a moment?";
+        let errorMessage = "I'm having a bit of trouble processing your request. Please try again in a moment.";
         if (innerErr?.message?.includes('Network request failed') || innerErr?.message?.includes('Failed to fetch') || innerErr?.message?.includes('NetworkError')) {
           errorMessage = "It looks like you're offline or having network issues. Please check your connection and try again.";
-        } else if (innerErr?.message?.includes('429')) {
-          errorMessage = "I'm getting a lot of requests right now! Please wait a moment and try again.";
+        } else if (innerErr?.message?.includes('429') || innerErr?.message?.includes('Quota')) {
+          errorMessage = "I'm getting a lot of requests right now! Please wait about 60 seconds and try again.";
+        } else if (innerErr?.message?.includes('Malformed')) {
+          errorMessage = "I received an empty response from the AI. Let's try saying that again?";
         }
 
         setMessages((prev) => [
@@ -179,19 +183,8 @@ export const FloatingChatbot = () => {
             timestamp: new Date(),
           },
         ]);
-        return; // Ensure we exit
+        return; 
       }
-
-      // If we got here but didn't return, add generic error
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: "I'm having a bit of trouble thinking right now. Could you try again in a moment?",
-          sender: 'bot',
-          timestamp: new Date(),
-        },
-      ]);
     } finally {
       setIsTyping(false);
       setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
