@@ -130,7 +130,7 @@ export const FloatingChatbot = () => {
         console.log('Gemini API Key found:', !!apiKey);
         if (!apiKey) throw new Error('API Key missing (EXPO_PUBLIC_GEMINI_API_KEY)');
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -143,6 +143,9 @@ export const FloatingChatbot = () => {
         if (!response.ok) {
           const errBody = await response.text();
           console.error('Gemini API error body:', errBody);
+          if (response.status === 429) {
+            throw new Error('API Quota Exceeded (429). Too many requests.');
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
