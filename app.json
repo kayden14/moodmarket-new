@@ -2,7 +2,7 @@
   "expo": {
     "name": "MoodMarket",
     "slug": "MoodMarket",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moodmarket",
@@ -10,21 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moodmarket.app",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Allow MoodMarket to use your camera to detect your mood.",
-        "NSPhotoLibraryUsageDescription": "Allow MoodMarket to access your photos to detect your mood.",
-        "UIBackgroundModes": [
-          "fetch",
-          "remote-notification",
-          "fetch",
-          "remote-notification"
-        ],
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.moodmarket.app"
     },
     "android": {
       "package": "com.moodmarket.app",
+      "versionCode": 10,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

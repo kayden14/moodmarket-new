@@ -29,8 +29,11 @@ interface Message {
 
 export const FloatingChatbot = () => {
   const { theme } = useTheme();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
+
+  // Removed auth check so user can see it immediately for verification
+  // if (!user) return null;
   
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -156,9 +159,10 @@ export const FloatingChatbot = () => {
             s.floatingBtn,
             { 
               backgroundColor: theme.primary, 
-              bottom: insets.bottom + (Platform.OS === 'ios' ? 70 : 80),
+              bottom: insets.bottom + (Platform.OS === 'ios' ? 88 : 96),
               right: 20,
               shadowColor: theme.primary,
+              zIndex: 9999,
             }
           ]}
           onPress={toggleChat}
@@ -296,6 +300,12 @@ const s = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     zIndex: 1000,
+    // Web shadow
+    ...Platform.select({
+      web: {
+        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+      }
+    }),
   },
   badge: {
     position: 'absolute',
@@ -322,6 +332,12 @@ const s = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
     marginBottom: 10,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+        marginBottom: 20,
+      }
+    }),
   },
   header: {
     padding: 16,

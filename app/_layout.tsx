@@ -38,6 +38,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { StorefrontProvider } from '@/contexts/StorefrontContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { FloatingChatbot } from '@/components/FloatingChatbot';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,8 +73,8 @@ function InnerLayout() {
         <Stack.Screen name="vendor"        options={{ headerShown: false }} />
         <Stack.Screen name="+not-found"    options={{ headerShown: false }} />
       </Stack>
-    </>
-  );
+      <FloatingChatbot />
+    </>  );
 }
 
 export default function RootLayout() {
