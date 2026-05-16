@@ -108,24 +108,24 @@ export const MOOD_META: Record<
   string,
   { label: string; color: string; lightBg: string; darkBg: string; emoji: string }
 > = {
-  happy:       { label: 'Happy',       color: '#F59E0B', lightBg: '#FFFBEB', darkBg: '#2D2200', emoji: '😊' },
-  calm:        { label: 'Calm',        color: '#3B82F6', lightBg: '#EFF6FF', darkBg: '#0D1F3C', emoji: '😌' },
-  excited:     { label: 'Excited',     color: '#EF4444', lightBg: '#FFF1F1', darkBg: '#2D0D0D', emoji: '🤩' },
-  sad:         { label: 'Sad',         color: '#6366F1', lightBg: '#EEF2FF', darkBg: '#1C1040', emoji: '😢' },
-  angry:       { label: 'Angry',       color: '#DC2626', lightBg: '#FEF2F2', darkBg: '#2D0D0D', emoji: '😠' },
-  tired:       { label: 'Tired',       color: '#8B5CF6', lightBg: '#F5F3FF', darkBg: '#1C1040', emoji: '😴' },
-  anxious:     { label: 'Anxious',     color: '#10B981', lightBg: '#ECFDF5', darkBg: '#052830', emoji: '😰' },
-  neutral:     { label: 'Neutral',     color: '#FF7A8A', lightBg: '#FFF0F2', darkBg: '#1A1C1E', emoji: '😐' },
+  happy:       { label: 'Happy',       color: '#F59E0B', lightBg: '#FFFBEB', darkBg: '#3A2D00', emoji: '😊' },
+  calm:        { label: 'Calm',        color: '#3B82F6', lightBg: '#EFF6FF', darkBg: '#162B4E', emoji: '😌' },
+  excited:     { label: 'Excited',     color: '#EF4444', lightBg: '#FFF1F1', darkBg: '#3D1616', emoji: '🤩' },
+  sad:         { label: 'Sad',         color: '#6366F1', lightBg: '#EEF2FF', darkBg: '#2A1B5A', emoji: '😢' },
+  angry:       { label: 'Angry',       color: '#DC2626', lightBg: '#FEF2F2', darkBg: '#3D1616', emoji: '😠' },
+  tired:       { label: 'Tired',       color: '#8B5CF6', lightBg: '#F5F3FF', darkBg: '#2A1B5A', emoji: '😴' },
+  anxious:     { label: 'Anxious',     color: '#10B981', lightBg: '#ECFDF5', darkBg: '#0F3B44', emoji: '😰' },
+  neutral:     { label: 'Neutral',     color: '#FF7A8A', lightBg: '#FFF0F2', darkBg: '#24272A', emoji: '😐' },
   
   // Emoji keys
-  '😊': { label: 'Happy',       color: '#F59E0B', lightBg: '#FFFBEB', darkBg: '#2D2200', emoji: '😊' },
-  '😌': { label: 'Calm',        color: '#3B82F6', lightBg: '#EFF6FF', darkBg: '#0D1F3C', emoji: '😌' },
-  '🤩': { label: 'Excited',     color: '#EF4444', lightBg: '#FFF1F1', darkBg: '#2D0D0D', emoji: '🤩' },
-  '😢': { label: 'Sad',         color: '#6366F1', lightBg: '#EEF2FF', darkBg: '#1C1040', emoji: '😢' },
-  '😠': { label: 'Angry',       color: '#DC2626', lightBg: '#FEF2F2', darkBg: '#2D0D0D', emoji: '😠' },
-  '😴': { label: 'Tired',       color: '#8B5CF6', lightBg: '#F5F3FF', darkBg: '#1C1040', emoji: '😴' },
-  '😰': { label: 'Anxious',     color: '#10B981', lightBg: '#ECFDF5', darkBg: '#052830', emoji: '😰' },
-  '😐': { label: 'Neutral',     color: '#FF7A8A', lightBg: '#FFF0F2', darkBg: '#1A1C1E', emoji: '😐' },
+  '😊': { label: 'Happy',       color: '#F59E0B', lightBg: '#FFFBEB', darkBg: '#3A2D00', emoji: '😊' },
+  '😌': { label: 'Calm',        color: '#3B82F6', lightBg: '#EFF6FF', darkBg: '#162B4E', emoji: '😌' },
+  '🤩': { label: 'Excited',     color: '#EF4444', lightBg: '#FFF1F1', darkBg: '#3D1616', emoji: '🤩' },
+  '😢': { label: 'Sad',         color: '#6366F1', lightBg: '#EEF2FF', darkBg: '#2A1B5A', emoji: '😢' },
+  '😠': { label: 'Angry',       color: '#DC2626', lightBg: '#FEF2F2', darkBg: '#3D1616', emoji: '😠' },
+  '😴': { label: 'Tired',       color: '#8B5CF6', lightBg: '#F5F3FF', darkBg: '#2A1B5A', emoji: '😴' },
+  '😰': { label: 'Anxious',     color: '#10B981', lightBg: '#ECFDF5', darkBg: '#0F3B44', emoji: '😰' },
+  '😐': { label: 'Neutral',     color: '#FF7A8A', lightBg: '#FFF0F2', darkBg: '#24272A', emoji: '😐' },
 };
 
 export const MOOD_EMOJI: Record<string, string> = {

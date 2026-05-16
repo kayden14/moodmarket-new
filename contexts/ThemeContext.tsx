@@ -36,12 +36,12 @@ const LIGHT: BaseTheme = {
 };
 
 const DARK: BaseTheme = {
-  background:    '#0F0F0F',
-  card:          '#1A1A1A',
-  border:        '#2A2A2A',
+  background:    '#121212', // Lighter than 0F0F0F
+  card:          '#1E1E1E', // Lighter than 1A1A1A
+  border:        '#333333', // More visible
   textPrimary:   '#FFFFFF',
-  textSecondary: '#AAAAAA',
-  inactive:      '#555555',
+  textSecondary: '#BBBBBB',
+  inactive:      '#666666',
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
