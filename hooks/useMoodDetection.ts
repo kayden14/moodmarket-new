@@ -158,8 +158,15 @@ export function useMoodDetection({
 
       const result = await detectMoodFromImage(capturedImages);
 
+      if (!result) {
+        console.warn('[useMoodDetection] AI returned no result, falling back to neutral');
+        hasDetected.current = true;
+        onMoodDetected('neutral');
+        return;
+      }
+
       console.log(
-        `[useMoodDetection] Detected: ${result.mood} (${Math.round(result.confidence * 100)}%)`
+        `[useMoodDetection] ✅ Detection success! Result: ${result.mood} (${Math.round(result.confidence * 100)}%)`
       );
 
       hasDetected.current = true;

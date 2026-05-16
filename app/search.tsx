@@ -13,13 +13,18 @@ import { supabase } from '@/services/supabase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Product } from '@/types/database';
 import { ArrowLeft, Search, X, Star } from 'lucide-react-native';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const POPULAR = ['Skincare', 'Relaxing', 'Energy', 'Happy', 'Self-care', 'Cozy'];
 
 export default function SearchScreen() {
   const router   = useRouter();
   const { theme, isDark } = useTheme();
+  const { isWide, isDesktop, width: windowWidth } = useResponsive();
   const inputRef = useRef<TextInput>(null);
+
+  const numColumns = isWide ? 2 : 1;
+  const cardWidth = isWide ? (Math.min(windowWidth, 1200) - 48) / 2 : windowWidth;
 
   const [query,    setQuery]    = useState('');
   const [results,  setResults]  = useState<Product[]>([]);
@@ -80,6 +85,7 @@ export default function SearchScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <View style={s.container}>
 
       {/* ── Header ── */}
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
@@ -141,13 +147,16 @@ export default function SearchScreen() {
 
       ) : (
         <FlatList
+          key={numColumns}
           data={results}
           keyExtractor={i => i.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 60 }}
+          numColumns={numColumns}
+          columnWrapperStyle={numColumns > 1 ? s.columnWrapper : undefined}
+          contentContainerStyle={[s.list, isWide && s.listWide]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: theme.border, marginLeft: 92 }} />}
+          ItemSeparatorComponent={() => numColumns === 1 ? <View style={{ height: 1, backgroundColor: theme.border, marginLeft: 92 }} /> : null}
           ListHeaderComponent={
             <Text style={[s.count, { color: theme.textSecondary }]}>
               {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
@@ -155,12 +164,13 @@ export default function SearchScreen() {
           }
         />
       )}
+      </View>
     </View>
   );
 }
 
 const r = StyleSheet.create({
-  item:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
+  item:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12, flex: 1 },
   img:   { width: 64, height: 64, borderRadius: 12 },
   info:  { flex: 1, gap: 4 },
   name:  { fontSize: 14, fontWeight: '600', lineHeight: 20 },
@@ -171,6 +181,7 @@ const r = StyleSheet.create({
 });
 
 const s = StyleSheet.create({
+  container:   { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   header:      { paddingTop: 56, paddingBottom: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1 },
   backBtn:     { width: 36, height: 36, borderRadius: 18, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
   searchBox:   { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 12, gap: 8, height: 42 },
@@ -185,4 +196,7 @@ const s = StyleSheet.create({
   noTitle:     { fontSize: 16, fontWeight: '700' },
   noSub:       { fontSize: 13 },
   count:       { fontSize: 12, fontWeight: '500', paddingHorizontal: 16, paddingVertical: 12 },
+  list:        { paddingBottom: 60 },
+  listWide:    { paddingHorizontal: 8 },
+  columnWrapper: { gap: 12, paddingHorizontal: 8, marginBottom: 8 },
 });

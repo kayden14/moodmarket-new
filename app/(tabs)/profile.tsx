@@ -18,6 +18,7 @@ import {
   ShoppingBag, Clock, CheckCircle, Truck, XCircle,
   ArrowRight, Settings, Bell, Shield, Edit3, Store,
 } from 'lucide-react-native';
+import { useResponsive } from '@/hooks/useResponsive';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, profile, signOut, isVendor, isAdmin } = useAuth();
   const { theme, isDark } = useTheme();
+  const { isWide, isDesktop } = useResponsive();
   const [orders,  setOrders]  = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -190,7 +192,8 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
+      <View style={s.container}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
@@ -362,6 +365,7 @@ export default function ProfileScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      </View>
     </View>
   );
 }
@@ -377,6 +381,7 @@ const g = StyleSheet.create({
 });
 
 const s = StyleSheet.create({
+  container:     { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   header:        { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 18, paddingHorizontal: 20, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   headerEye:     { fontSize: 10, fontWeight: '800', letterSpacing: 3, marginBottom: 2 },
   headerTitle:   { fontSize: 32, fontWeight: '900', letterSpacing: -1 },

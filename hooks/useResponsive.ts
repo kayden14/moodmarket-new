@@ -1,4 +1,4 @@
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, Platform } from 'react-native';
 
 export function useResponsive() {
   const { width } = useWindowDimensions();
@@ -19,5 +19,7 @@ export function useResponsive() {
     isDesktop,
     isWide,
     isNarrow,
+    isWeb: Platform.OS === 'web',
+    isNative: Platform.OS !== 'web',
   };
 }

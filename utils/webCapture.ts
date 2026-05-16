@@ -6,6 +6,12 @@
 
 export async function captureFromWebCamera(): Promise<string | null> {
   try {
+    console.log('[webCapture] Requesting camera stream...');
+    
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('Camera API not available (check if using HTTPS)');
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user' },
       audio: false,
@@ -16,29 +22,62 @@ export async function captureFromWebCamera(): Promise<string | null> {
     video.autoplay = true;
     video.playsInline = true;
 
-    // Wait for video metadata to load
-    await new Promise<void>((resolve) => {
-      video.onloadedmetadata = () => resolve();
+    // Wait for video metadata to load with a timeout
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        if (video.readyState >= 1) {
+          console.log('[webCapture] Metadata timeout but readyState >= 1, proceeding');
+          resolve();
+        } else {
+          reject(new Error('Camera metadata timeout'));
+        }
+      }, 5000);
+
+      video.onloadedmetadata = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      
+      // If already loaded
+      if (video.readyState >= 1) {
+        clearTimeout(timeout);
+        resolve();
+      }
     });
 
     await video.play();
 
     // Let the camera settle (auto-exposure, etc.)
-    await new Promise((res) => setTimeout(res, 1200));
+    await new Promise((res) => setTimeout(res, 800));
 
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d')!.drawImage(video, 0, 0);
+    
+    // Resize to reasonable dimensions for AI (max 640px)
+    const MAX_DIM = 640;
+    let width = video.videoWidth;
+    let height = video.videoHeight;
+    
+    if (width > MAX_DIM) {
+      height = Math.round((height * MAX_DIM) / width);
+      width = MAX_DIM;
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not get canvas context');
+    
+    ctx.drawImage(video, 0, 0, width, height);
 
     // Release the camera
     stream.getTracks().forEach((t) => t.stop());
 
     // Return raw base64 (strip the data:image/jpeg;base64, prefix)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
     return dataUrl.split(',')[1];
   } catch (err: any) {
-    console.error('[webCapture] Failed to capture from web camera:', err.message);
+    console.error('[webCapture] ❌ Failed to capture from web camera:', err.message);
     return null;
   }
 }

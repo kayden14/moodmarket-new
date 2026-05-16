@@ -16,6 +16,7 @@ import {
   Clock, Hash, MapPin, Phone, CreditCard,
   Smartphone, ShoppingBag, XCircle, RefreshCw,
 } from 'lucide-react-native';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const SUCCESS_GREEN = '#22C55E';
 
@@ -122,6 +123,7 @@ export default function OrderTrackingScreen() {
   const router  = useRouter();
   const { id }  = useLocalSearchParams<{ id: string }>();
   const { theme, isDark } = useTheme();
+  const { isWide, isDesktop } = useResponsive();
 
   const [order,     setOrder]     = useState<Order | null>(null);
   const [loading,   setLoading]   = useState(true);
@@ -179,7 +181,8 @@ export default function OrderTrackingScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <View style={s.container}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
       {/* ── Header ── */}
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
@@ -330,6 +333,7 @@ export default function OrderTrackingScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      </View>
     </View>
   );
 }
@@ -337,6 +341,7 @@ export default function OrderTrackingScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
+  container:    { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   header:       { flexDirection: 'row', alignItems: 'flex-end', paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 16, paddingHorizontal: 20, borderBottomWidth: 1 },
   backBtn:      { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   refreshBtn:   { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },

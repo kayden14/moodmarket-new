@@ -588,14 +588,23 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
 
                 <div className="mm-sidebar-section">
                   <span className="mm-sidebar-label">Mood Detection</span>
-                  <div style={{ padding: 10, background: bg, border: `1px solid ${bord}`, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: moodPalette.tint, border: `1px solid ${moodPalette.secondary}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {detecting ? <div className="mm-spinner" /> : <WebEmoji style={{ fontSize: 18 }}>{selectedMood.emoji}</WebEmoji>}
+                  <div style={{ padding: 12, background: bg, border: `1px solid ${bord}`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: moodPalette.tint, border: `1px solid ${moodPalette.secondary}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {detecting ? <div className="mm-spinner" /> : <WebEmoji style={{ fontSize: 20 }}>{selectedMood.emoji}</WebEmoji>}
                     </div>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600 }}>{detecting ? 'Detecting…' : selectedMood.label}</p>
-                      <p style={{ fontSize: 10, color: inact }}>Auto-detected</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: tp, margin: 0 }}>{detecting ? 'Analyzing…' : selectedMood.label}</p>
+                      <p style={{ fontSize: 10, color: inact, margin: '2px 0 0' }}>AI Powered Scan</p>
                     </div>
+                    {!detecting && (
+                      <button 
+                        onClick={rescan}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, color: ts }}
+                        title="Re-scan mood"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
 

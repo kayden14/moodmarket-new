@@ -50,6 +50,7 @@ import {
   CheckCircle, Package, Truck, ShieldCheck,
   Smartphone, ChevronRight, Clock, Hash, Home,
 } from 'lucide-react-native';
+import { useResponsive } from '@/hooks/useResponsive';
 
 /* ── platform detection ── */
 const IS_WEB = Platform.OS === 'web';
@@ -499,6 +500,7 @@ export default function CheckoutScreen() {
   const { user, profile } = useAuth();
   const { cartItems, cartTotal, cartCount, clearCart } = useCart();
   const { theme, isDark } = useTheme();
+  const { isWide, isDesktop } = useResponsive();
 
   const [step,           setStep]           = useState<Step>('details');
   const [processing,     setProcessing]     = useState(false);
@@ -687,16 +689,18 @@ export default function CheckoutScreen() {
   if (step === 'success' && confirmedOrder) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <StatusBar
-          barStyle={isDark ? 'light-content' : 'dark-content'}
-          backgroundColor={theme.background}
-          translucent={false}
-        />
-        <OrderConfirmation
-          order={confirmedOrder}
-          onGoHome={() => router.replace('/(tabs)')}
-          onViewOrders={() => router.replace('/(tabs)/profile')}
-        />
+        <View style={s.container}>
+          <StatusBar
+            barStyle={isDark ? 'light-content' : 'dark-content'}
+            backgroundColor={theme.background}
+            translucent={false}
+          />
+          <OrderConfirmation
+            order={confirmedOrder}
+            onGoHome={() => router.replace('/(tabs)')}
+            onViewOrders={() => router.replace('/(tabs)/profile')}
+          />
+        </View>
       </View>
     );
   }
@@ -728,10 +732,12 @@ export default function CheckoutScreen() {
     if (IS_WEB) {
       return (
         <View style={{ flex: 1, backgroundColor: theme.background }}>
-          {header}
-          {processing ? spinner : (
-            <WebPaystackFrame html={paystackHTML} onMessage={handlePaymentMessage} />
-          )}
+          <View style={s.container}>
+            {header}
+            {processing ? spinner : (
+              <WebPaystackFrame html={paystackHTML} onMessage={handlePaymentMessage} />
+            )}
+          </View>
         </View>
       );
     }
@@ -749,51 +755,53 @@ export default function CheckoutScreen() {
     const WebViewNative = require('react-native-webview').WebView;
     return (
       <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
-        {header}
-        {processing ? spinner : (
-          <WebViewNative
-            source={{ html: paystackHTML }}
-            style={{ flex: 1 }}
-            // ── KEY: this is the ONLY onMessage prop that fires for native ──
-            onMessage={(e: any) => handlePaymentMessage(e.nativeEvent.data)}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState
-            // Ensures window.ReactNativeWebView is ready before Paystack
-            // calls window.onload and tries to use it
-            injectedJavaScriptBeforeContentLoaded={`
-              (function(){
-                if(!window.ReactNativeWebView){
-                  window.ReactNativeWebView = {
-                    postMessage: function(msg){ window.originalPostMessage && window.originalPostMessage(msg,'*'); }
-                  };
-                }
-              })();
-              true;
-            `}
-            renderLoading={() => (
-              <View style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                justifyContent: 'center', alignItems: 'center',
-                backgroundColor: theme.background,
-              }}>
-                <ActivityIndicator size="large" color={theme.primary} />
-              </View>
-            )}
-          />
-        )}
+        <View style={s.container}>
+          <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
+          {header}
+          {processing ? spinner : (
+            <WebViewNative
+              source={{ html: paystackHTML }}
+              style={{ flex: 1 }}
+              // ── KEY: this is the ONLY onMessage prop that fires for native ──
+              onMessage={(e: any) => handlePaymentMessage(e.nativeEvent.data)}
+              javaScriptEnabled
+              domStorageEnabled
+              startInLoadingState
+              // Ensures window.ReactNativeWebView is ready before Paystack
+              // calls window.onload and tries to use it
+              injectedJavaScriptBeforeContentLoaded={`
+                (function(){
+                  if(!window.ReactNativeWebView){
+                    window.ReactNativeWebView = {
+                      postMessage: function(msg){ window.originalPostMessage && window.originalPostMessage(msg,'*'); }
+                    };
+                  }
+                })();
+                true;
+              `}
+              renderLoading={() => (
+                <View style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  justifyContent: 'center', alignItems: 'center',
+                  backgroundColor: theme.background,
+                }}>
+                  <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+              )}
+            />
+          )}
+        </View>
       </View>
     );
   }
 
-  /* ── Payment step ── */
   if (step === 'payment') return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
+      <View style={s.container}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <TouchableOpacity style={[s.backBtn, { backgroundColor: isDark ? '#2D1820' : '#FFF0F2' }]} onPress={() => setStep('details')}>
           <ChevronLeft size={20} color={theme.textPrimary} strokeWidth={2.2} />
@@ -849,6 +857,7 @@ export default function CheckoutScreen() {
           ))}
         </View>
       </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 
@@ -858,7 +867,8 @@ export default function CheckoutScreen() {
       style={{ flex: 1, backgroundColor: theme.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
+      <View style={s.container}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.card} />
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <TouchableOpacity style={[s.backBtn, { backgroundColor: isDark ? '#2D1820' : '#FFF0F2' }]} onPress={() => router.back()}>
           <ChevronLeft size={20} color={theme.textPrimary} strokeWidth={2.2} />
@@ -912,11 +922,13 @@ export default function CheckoutScreen() {
           <ChevronRight size={16} color="rgba(255,255,255,0.7)" strokeWidth={2.5} />
         </TouchableOpacity>
       </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
+  container:   { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   header:      {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     // Android: use StatusBar.currentHeight so content clears the status bar

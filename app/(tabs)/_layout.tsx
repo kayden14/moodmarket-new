@@ -23,6 +23,7 @@ import { NotificationService } from '@/services/notifications';
 import * as Notifications from 'expo-notifications';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import MobileHeader from '@/components/MobileHeader';
+import { useResponsive } from '@/hooks/useResponsive';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -114,9 +115,14 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { cartCount } = useCart();
   const { theme } = useTheme();
   const { bottom } = useSafeAreaInsets();
+  const { isDesktop, isTablet } = useResponsive();
 
   return (
-    <View style={[b.root, { backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' }]}>
+    <View style={[
+      b.root, 
+      { backgroundColor: theme.isDark ? 'rgba(26,26,26,0.97)' : 'rgba(255,255,255,0.97)' },
+      (isDesktop || isTablet) && b.rootWide
+    ]}>
       <View style={[b.hairline, { backgroundColor: theme.border }]} />
       <View style={b.bar}>
         {state.routes.map((route, index) => {
@@ -149,6 +155,18 @@ const b = StyleSheet.create({
       ios:     { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.10, shadowRadius: 20 },
       android: { elevation: 24 },
     }),
+  },
+  rootWide: {
+    maxWidth: 600,
+    alignSelf: 'center',
+    left: 'auto',
+    right: 'auto',
+    width: '100%',
+    bottom: 20,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    overflow: 'hidden',
   },
   hairline: { height: StyleSheet.hairlineWidth },
   bar:      { flexDirection: 'row', height: BAR_HEIGHT, alignItems: 'center', paddingHorizontal: 4 },

@@ -18,6 +18,7 @@ import {
   TouchableWithoutFeedback, RefreshControl, ScrollView,
   Dimensions, Animated, Platform, ActivityIndicator,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -43,10 +44,10 @@ import { getLazyCamera } from '@/utils/lazyModules';
 import MoodShareCard from '@/components/MoodShareCard';
 import { voiceService } from '@/utils/voice';
 import * as Haptics from 'expo-haptics';
+import { useResponsive } from '@/hooks/useResponsive';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH          = (width - 48) / 2;
-const TRENDING_CARD_WIDTH = width * 0.44;
+// Default values for SSR or initial load
+const DEFAULT_CARD_WIDTH = 160;
 
 const CATEGORIES = [
   { id: 'all',         label: 'All',         emoji: '🏠', keywords: [] as string[] },
@@ -69,9 +70,10 @@ function getProductImage(product: Product, size = 400): string {
   return `https://picsum.photos/seed/${seed}/${size}/${size}`;
 }
 
-function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
+function ProductCard({ item, onPress, onAddToCart, index = 0, cardWidth = DEFAULT_CARD_WIDTH }: {
   item: ScoredProduct | Product; onPress: () => void;
   onAddToCart: (product: Product) => void; index?: number;
+  cardWidth?: number;
 }) {
   const { theme } = useTheme();
   const [liked, setLiked]   = useState(false);
@@ -100,7 +102,7 @@ function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
   };
 
   return (
-    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], width: CARD_WIDTH, marginBottom: 14 }}>
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], width: cardWidth, marginBottom: 14 }}>
       <TouchableWithoutFeedback onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
         <View style={[s.productCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={s.imageContainer}>
@@ -138,8 +140,9 @@ function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
   );
 }
 
-function TrendingCard({ item, onPress, onAddToCart }: {
+function TrendingCard({ item, onPress, onAddToCart, cardWidth }: {
   item: ScoredProduct; onPress: () => void; onAddToCart: (p: Product) => void;
+  cardWidth: number;
 }) {
   const { theme } = useTheme();
   const [adding, setAdding] = useState(false);
@@ -150,7 +153,7 @@ function TrendingCard({ item, onPress, onAddToCart }: {
       onPressIn={() => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 200, friction: 10 }).start()}
       onPressOut={() => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 200, friction: 10 }).start()}
     >
-      <Animated.View style={[s.trendingCard, { backgroundColor: theme.card, borderColor: theme.border, transform: [{ scale: scaleAnim }] }]}>
+      <Animated.View style={[s.trendingCard, { backgroundColor: theme.card, borderColor: theme.border, transform: [{ scale: scaleAnim }], width: cardWidth }]}>
         <Image source={{ uri: getProductImage(item) }} style={s.trendingImage} placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }} contentFit="cover" transition={300} />
         <View style={[s.trendingBadge, { backgroundColor: theme.tint, borderColor: theme.secondary }]}>
           <Flame size={10} color={theme.primary} strokeWidth={2.5} />
@@ -245,6 +248,13 @@ export default function HomeScreen() {
   const { profile, user } = useAuth();
   const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood, setMood, moodPalette } = useTheme();
+  const { width: windowWidth, isDesktop, isTablet, isWide } = useResponsive();
+
+  const numColumns = isDesktop ? 4 : isTablet ? 3 : 2;
+  const horizontalPadding = 32;
+  const gap = 16;
+  const cardWidth = (Math.min(windowWidth, 1200) - horizontalPadding - (gap * (numColumns - 1))) / numColumns;
+  const trendingCardWidth = isDesktop ? 280 : isTablet ? 220 : windowWidth * 0.44;
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [snapVisible, setSnapVisible]           = useState(false);
@@ -379,7 +389,7 @@ export default function HomeScreen() {
       {/* ── Header ── */}
       <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <View style={s.headerTop}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={[s.greeting, { color: theme.inactive, fontFamily: theme.fontHeading }]}>{greeting.toUpperCase()}, {firstName?.toUpperCase() || 'THERE'} 👋</Text>
             <Text style={[s.userName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Find your vibe</Text>
           </View>
@@ -516,7 +526,7 @@ export default function HomeScreen() {
         <View style={s.trendingSection}>
           <SectionHeader icon={<Flame size={16} color={theme.primary} strokeWidth={2} />} title="Trending Now" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.trendingScroll}>
-            {trending.map(item => <TrendingCard key={item.id} item={item} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />)}
+            {trending.map(item => <TrendingCard key={item.id} item={item} cardWidth={trendingCardWidth} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />)}
           </ScrollView>
         </View>
       )}
@@ -530,8 +540,8 @@ export default function HomeScreen() {
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recommendedScroll}>
             {recommended.map((item, idx) => (
-              <View key={item.id} style={{ width: CARD_WIDTH, marginRight: 12 }}>
-                <ProductCard item={item} index={idx} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
+              <View key={item.id} style={{ width: cardWidth, marginRight: 12 }}>
+                <ProductCard item={item} index={idx} cardWidth={cardWidth} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
               </View>
             ))}
           </ScrollView>
@@ -568,7 +578,7 @@ export default function HomeScreen() {
       )}
     </>
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [theme, mood, detecting, permissionDenied, selectedCategory, trending, recommended, filteredProducts, selectedMood, moodPalette]);
+  ), [theme, mood, detecting, permissionDenied, selectedCategory, trending, recommended, filteredProducts, selectedMood, moodPalette, cardWidth, trendingCardWidth]);
 
   return (
     <View style={[s.container, { backgroundColor: theme.background }]}>
@@ -585,16 +595,17 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
+          key={numColumns} // Force re-render when columns change
           data={vibeResults || filteredProducts}
           keyExtractor={item => item.id}
-          numColumns={2}
+          numColumns={numColumns}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.primary} />}
           contentContainerStyle={s.listContent}
-          columnWrapperStyle={s.row}
+          columnWrapperStyle={[s.row, isWide && s.rowWide]}
           ListHeaderComponent={ListHeader}
           renderItem={({ item, index }) => (
-            <ProductCard item={item as ScoredProduct} index={index} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
+            <ProductCard item={item as ScoredProduct} index={index} cardWidth={cardWidth} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
           )}
           // Performance optimizations
           initialNumToRender={6}
@@ -610,7 +621,7 @@ export default function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  container:    { flex: 1 },
+  container:    { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   hiddenCamera: { position: 'absolute', width: 1, height: 1, opacity: 0, top: 0, left: 0 },
   loadingWrap:  { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText:  { fontSize: 14, fontWeight: '500' },
@@ -628,7 +639,8 @@ const s = StyleSheet.create({
   vibeInput:           { flex: 1, fontSize: 14, fontWeight: '600' },
   vibeResultCount:     { fontSize: 11, fontWeight: '700', marginTop: 10, textAlign: 'center' },
   listContent: { paddingBottom: 120 },
-  row:         { paddingHorizontal: 12, justifyContent: 'space-between' },
+  row:         { paddingHorizontal: 16, justifyContent: 'flex-start', gap: 16 },
+  rowWide:     { paddingHorizontal: 0 },
   moodBanner:     { marginHorizontal: 16, marginTop: 16, marginBottom: 4, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1 },
   moodBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   moodEmojiCircle:{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
@@ -646,7 +658,7 @@ const s = StyleSheet.create({
   moodChipLabel:       { fontSize: 12 },
   trendingSection: { marginBottom: 8 },
   trendingScroll:  { paddingHorizontal: 16, gap: 12 },
-  trendingCard:    { width: TRENDING_CARD_WIDTH, borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
+  trendingCard:    { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
   trendingImage:   { width: '100%', height: 120 },
   trendingBadge:   { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1 },
   trendingBadgeTxt:{ fontSize: 11, fontWeight: '800' },

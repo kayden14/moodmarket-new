@@ -23,6 +23,7 @@ import EmojiText from '@/components/EmojiText';
 import { getProductImage } from '@/utils/images';
 import { notifyUser } from '@/services/notifyUser';
 import ProductRecommendations from '@/components/ProductRecommendations';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const SUCCESS_GREEN = '#22C55E';
 
@@ -38,14 +39,6 @@ interface Review {
   reviewer_name: string;
 }
 
-// ─── Responsive hook ──────────────────────────────────────────────────────────
-
-function useResponsive() {
-  const { width } = useWindowDimensions();
-  const isWeb  = Platform.OS === 'web';
-  const isWide = width > 900;
-  return { isWeb, isWide, windowWidth: width };
-}
 
 // ─── Star Rating Input ────────────────────────────────────────────────────────
 
@@ -341,7 +334,7 @@ export default function ProductDetailScreen() {
   const { user, profile } = useAuth();
   const { addToCart, cartCount } = useCart();
   const { theme, isDark } = useTheme();
-  const { isWeb, isWide, windowWidth } = useResponsive();
+  const { isWeb, isWide, width: windowWidth } = useResponsive();
 
   const [product,      setProduct]      = useState<Product | null>(null);
   const [loading,      setLoading]      = useState(true);
