@@ -17,6 +17,7 @@ import { MessageSquare, X, Send, Sparkles, Brain } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { supabase } from '@/services/supabase';
 
 const { width, height } = Dimensions.get('window');
 
