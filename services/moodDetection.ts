@@ -69,7 +69,7 @@ export const compressImageForDetection = async (uri: string): Promise<string> =>
 
 async function callGeminiModel(
   model: string,
-  base64Image: string,
+  images: string | string[],
   geminiKey: string,
   attempt = 0
 ): Promise<any> {
@@ -78,18 +78,17 @@ async function callGeminiModel(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20000);
 
+  const imageArray = Array.isArray(images) ? images : [images];
+  const parts = imageArray.map(data => ({ inline_data: { mime_type: 'image/jpeg', data } }));
+  parts.push({ text: `Analyze these ${imageArray.length} frames of a person's face. Detect the most consistent emotional mood. Return one of: ${VALID_MOODS.join(', ')}. Respond with ONLY JSON: {"mood":"MOOD","confidence":0.85}` } as any);
+
   try {
     const response = await throttledFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
       body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: 'image/jpeg', data: base64Image } },
-            { text: `Detect emotional mood from this face. Return one of: ${VALID_MOODS.join(', ')}. Respond with ONLY JSON: {"mood":"MOOD","confidence":0.85}` }
-          ]
-        }],
+        contents: [{ parts }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 256 },
       }),
     });
@@ -98,7 +97,7 @@ async function callGeminiModel(
 
     if (response.status === 429 && attempt < 2) {
       await sleep(backoffMs(attempt));
-      return callGeminiModel(model, base64Image, geminiKey, attempt + 1);
+      return callGeminiModel(model, images, geminiKey, attempt + 1);
     }
 
     if (!response.ok) throw new Error(`Gemini API ${response.status}`);
@@ -112,13 +111,13 @@ async function callGeminiModel(
   }
 }
 
-async function detectWithGeminiFallback(base64Image: string): Promise<MoodDetectionResult> {
+async function detectWithGeminiFallback(images: string | string[]): Promise<MoodDetectionResult> {
   const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
   if (!geminiKey) throw new Error('Gemini API key missing');
 
   for (const model of GEMINI_MODELS) {
     try {
-      const result = await callGeminiModel(model, base64Image, geminiKey);
+      const result = await callGeminiModel(model, images, geminiKey);
       return {
         mood: result.mood.toLowerCase() as MoodKey,
         emoji: MOOD_EMOJI_MAP[result.mood.toLowerCase() as MoodKey] ?? '😐',
@@ -134,7 +133,7 @@ async function detectWithGeminiFallback(base64Image: string): Promise<MoodDetect
 // ─── Core detection ───────────────────────────────────────────────────────────
 
 export const detectMoodFromImage = async (
-  base64Image: string,
+  images: string | string[],
   imageUri?: string
 ): Promise<MoodDetectionResult> => {
   if (MOCK_MOOD_DETECTION) {
@@ -142,17 +141,13 @@ export const detectMoodFromImage = async (
     return { mood, emoji: MOOD_EMOJI_MAP[mood], confidence: 0.9 };
   }
 
-  let imageToSend = base64Image;
-  if (imageUri) {
-    const compressed = await compressImageForDetection(imageUri);
-    if (compressed) imageToSend = compressed;
-  }
+  const imageArray = Array.isArray(images) ? images : [images];
 
   // 1. Try Supabase Edge Function (Primary)
   try {
-    console.log('[MoodDetection] Calling Edge Function (Anthropic)...');
+    console.log(`[MoodDetection] Calling Edge Function (Anthropic) with ${imageArray.length} images...`);
     const { data, error } = await supabase.functions.invoke('detect-mood', {
-      body: { image: imageToSend }
+      body: { images: imageArray }
     });
 
     if (error) throw error;
@@ -171,7 +166,7 @@ export const detectMoodFromImage = async (
 
   // 2. Fallback to Gemini Direct
   try {
-    return await detectWithGeminiFallback(imageToSend);
+    return await detectWithGeminiFallback(imageArray);
   } catch (err: any) {
     console.error('[MoodDetection] ❌ All methods failed:', err.message);
     return { mood: 'neutral', emoji: '😐', confidence: 0.5 };

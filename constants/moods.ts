@@ -14,6 +14,8 @@ export interface MoodPalette {
   tint:       string;  // card backgrounds
   label:      string;  // display name
   emoji:      string;
+  fontHeading: string;
+  fontBody:    string;
 }
 
 export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
@@ -23,6 +25,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#FFFBEB',
     label:     'Happy',
     emoji:     '😊',
+    fontHeading: 'Sora_700Bold',
+    fontBody:    'Sora_400Regular',
   },
   calm: {
     primary:   '#3B82F6',
@@ -30,6 +34,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#EFF6FF',
     label:     'Calm',
     emoji:     '😌',
+    fontHeading: 'Lora_700Bold',
+    fontBody:    'Lora_400Regular',
   },
   excited: {
     primary:   '#EF4444',
@@ -37,6 +43,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#FFF1F1',
     label:     'Excited',
     emoji:     '🤩',
+    fontHeading: 'PlusJakartaSans_800ExtraBold',
+    fontBody:    'PlusJakartaSans_500Medium',
   },
   sad: {
     primary:   '#6366F1',
@@ -44,6 +52,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#EEF2FF',
     label:     'Sad',
     emoji:     '😢',
+    fontHeading: 'PlayfairDisplay_700Bold',
+    fontBody:    'PlayfairDisplay_500Medium',
   },
   angry: {
     primary:   '#DC2626',
@@ -51,6 +61,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#FEF2F2',
     label:     'Angry',
     emoji:     '😠',
+    fontHeading: 'PlusJakartaSans_700Bold',
+    fontBody:    'PlusJakartaSans_400Regular',
   },
   tired: {
     primary:   '#8B5CF6',
@@ -58,6 +70,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#F5F3FF',
     label:     'Tired',
     emoji:     '😴',
+    fontHeading: 'Lora_600SemiBold',
+    fontBody:    'Lora_400Regular',
   },
   anxious: {
     primary:   '#10B981',
@@ -65,6 +79,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#ECFDF5',
     label:     'Anxious',
     emoji:     '😰',
+    fontHeading: 'Sora_600SemiBold',
+    fontBody:    'Sora_400Regular',
   },
   neutral: {
     primary:   '#FF7A8A',
@@ -72,6 +88,8 @@ export const MOOD_PALETTES: Record<MoodKey, MoodPalette> = {
     tint:      '#FFF0F2',
     label:     'Neutral',
     emoji:     '😐',
+    fontHeading: 'PlusJakartaSans_700Bold',
+    fontBody:    'PlusJakartaSans_400Regular',
   },
 };
 

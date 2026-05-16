@@ -12,10 +12,12 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TouchableWithoutFeedback, RefreshControl, ScrollView,
   Dimensions, Animated, Platform, ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -28,7 +30,9 @@ import { ThemeToggleIcon } from '@/components/ThemeToggle';
 import {
   Sparkles, Star, Bell, Search, TrendingUp,
   Heart, ShoppingCart, ArrowRight, Flame, RefreshCw,
+  Mic, X, User, MessageSquare,
 } from 'lucide-react-native';
+import { VibeSearchService } from '@/services/vibeSearch';
 import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
 import { getRecommendations, getTrending } from '@/services/recommendations';
@@ -36,6 +40,9 @@ import { ScoredProduct } from '@/types/recommendations';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
 import { MOODS } from '@/constants/moods';
 import { getLazyCamera } from '@/utils/lazyModules';
+import MoodShareCard from '@/components/MoodShareCard';
+import { voiceService } from '@/utils/voice';
+import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH          = (width - 48) / 2;
@@ -50,10 +57,16 @@ const CATEGORIES = [
   { id: 'relaxation',  label: 'Relaxation',  emoji: '🧘', keywords: ['relaxation','relax','calm','candle','aromatherapy','diffuser','essential oil','massage','yoga','meditation','pillow','blanket','sleep','rest','stress','anxiety','zen','peaceful','spa','bath bomb','incense','music','sound','breathing'] },
 ];
 
-function getProductImage(product: Product): string {
-  if (product.image && product.image.startsWith('http')) return product.image;
+function getProductImage(product: Product, size = 400): string {
+  if (product.image && product.image.startsWith('http')) {
+    // If it's a Supabase storage URL, append transformation parameters
+    if (product.image.includes('supabase.co/storage/v1/object/public')) {
+      return `${product.image}?width=${size}&height=${size}&resize=contain&quality=80`;
+    }
+    return product.image;
+  }
   const seed = product.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 1000;
-  return `https://picsum.photos/seed/${seed}/400/400`;
+  return `https://picsum.photos/seed/${seed}/${size}/${size}`;
 }
 
 function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
@@ -103,7 +116,7 @@ function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
                 <Text style={[s.reasonText, { color: theme.primary }]} numberOfLines={1}>{(item as ScoredProduct).reason}</Text>
               </View>
             )}
-            <Text style={[s.productName, { color: theme.textPrimary }]} numberOfLines={2}>{item.name}</Text>
+            <Text style={[s.productName, { color: theme.textPrimary, fontFamily: theme.fontBody }]} numberOfLines={2}>{item.name}</Text>
             <View style={s.starsRow}>
               {[1,2,3,4,5].map((i) => (
                 <Star key={i} size={10} color={theme.primary} fill={i <= stars ? theme.primary : 'transparent'} />
@@ -111,7 +124,7 @@ function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
               <Text style={[s.ratingText, { color: theme.textSecondary }]}>{(item as Product).rating?.toFixed(1)}</Text>
             </View>
             <View style={s.priceRow}>
-              <Text style={[s.productPrice, { color: theme.primary }]}>GH₵{(item as Product).price.toFixed(2)}</Text>
+              <Text style={[s.productPrice, { color: theme.primary, fontFamily: theme.fontHeading }]}>GH₵{(item as Product).price.toFixed(2)}</Text>
               <Animated.View style={{ transform: [{ scale: cartBounce }] }}>
                 <TouchableOpacity style={[s.addBtn, { backgroundColor: theme.primary }, adding && s.addBtnActive]} onPress={handleAdd} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} activeOpacity={0.8}>
                   <ShoppingCart size={13} color="#fff" strokeWidth={2.5} />
@@ -233,15 +246,66 @@ export default function HomeScreen() {
   const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood, setMood, moodPalette } = useTheme();
 
-  const [allProducts, setAllProducts]           = useState<Product[]>([]);
-  const [recommended, setRecommended]           = useState<ScoredProduct[]>([]);
-  const [trending, setTrending]                 = useState<ScoredProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [loading, setLoading]                   = useState(true);
-  const [refreshing, setRefreshing]             = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [snapVisible, setSnapVisible]           = useState(false);
   const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryClient = useQueryClient();
+
+  /* ── Vibe Search State ────────────────────────────────────────── */
+  const [isVibeSearch, setIsVibeSearch] = useState(false);
+  const [vibeQuery,    setVibeQuery]    = useState('');
+  const [vibeSearching, setVibeSearching] = useState(false);
+  const [vibeResults,  setVibeResults]  = useState<Product[] | null>(null);
+  const [isListening,  setIsListening]  = useState(false);
+
+  const handleVibeSearch = async () => {
+    if (!vibeQuery.trim()) return;
+    setVibeSearching(true);
+    try {
+      const vibeData = await VibeSearchService.interpretQuery(vibeQuery);
+      const filtered = VibeSearchService.filterByVibe(allProducts, vibeData);
+      setVibeResults(filtered);
+      if (vibeData.mood) {
+        const found = MOODS.find(m => m.key === vibeData.mood?.toLowerCase());
+        if (found) setMood(found.key as any);
+      }
+    } catch (err) {
+      console.error('Vibe search failed:', err);
+    } finally {
+      setVibeSearching(false);
+    }
+  };
+
+  const clearVibeSearch = () => {
+    setVibeQuery('');
+    setVibeResults(null);
+    setIsVibeSearch(false);
+  };
+
+  const toggleVoiceSearch = () => {
+    if (isListening) {
+      voiceService.stop();
+      setIsListening(false);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      handleVibeSearch();
+    } else {
+      setIsListening(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      voiceService.start(
+        (res) => {
+          setVibeQuery(res.text);
+          if (res.isFinal) {
+            setIsListening(false);
+            handleVibeSearch();
+          }
+        },
+        (err) => {
+          console.error('[Voice] Error:', err);
+          setIsListening(false);
+        }
+      );
+    }
+  };
 
   /* ── Passive mood detection ─────────────────────────────────────── */
   const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
@@ -263,45 +327,48 @@ export default function HomeScreen() {
     onMoodDetected: handleMoodDetected,
   });
 
-  /* ── Products ───────────────────────────────────────────────────── */
+  /* ── Products (TanStack Query) ───────────────────────────────────── */
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
 
-  const fetchProducts = useCallback(async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setAllProducts(data);
-      setFilteredProducts(data);
-      const [recs, trend] = await Promise.all([
-        getRecommendations(user?.id, mood, data),
-        getTrending(data),
-      ]);
-      setRecommended(recs);
-      setTrending(trend);
-    }
-    setLoading(false);
-    setRefreshing(false);
-  }, [user?.id, mood]);
+  const { data: allProducts = [], isLoading: loadingProducts, isRefetching } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      return data || [];
+    },
+  });
 
-  useEffect(() => { fetchProducts(); }, []);
+  const { data: recommended = [], isLoading: loadingRecs } = useQuery({
+    queryKey: ['recommendations', mood, allProducts.length],
+    queryFn: () => getRecommendations(user?.id, mood, allProducts),
+    enabled: allProducts.length > 0,
+  });
 
-  useEffect(() => {
-    if (allProducts.length === 0) return;
-    getRecommendations(user?.id, mood, allProducts).then(setRecommended);
-  }, [mood, allProducts]);
+  const { data: trending = [], isLoading: loadingTrending } = useQuery({
+    queryKey: ['trending', allProducts.length],
+    queryFn: () => getTrending(allProducts),
+    enabled: allProducts.length > 0,
+  });
 
-  useEffect(() => {
-    if (selectedCategory === 'all') { setFilteredProducts(allProducts); return; }
+  const loading = loadingProducts || (allProducts.length > 0 && (loadingRecs || loadingTrending));
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'all') return allProducts;
     const cat = CATEGORIES.find(c => c.id === selectedCategory);
     const keywords = cat?.keywords ?? [selectedCategory];
-    setFilteredProducts(allProducts.filter(p => {
+    return allProducts.filter(p => {
       const name = p.name.toLowerCase();
       const desc = ((p as any).description ?? '').toLowerCase();
       const tags = (p.mood_tags ?? []).map((t: string) => t.toLowerCase());
-      return keywords.some(kw => name.includes(kw) || desc.includes(kw) || tags.some(tag => tag.includes(kw)));
-    }));
+      return keywords.some(kw => name.includes(kw) || desc.includes(kw) || tags.some((tag: string) => tag.includes(kw)));
+    });
   }, [selectedCategory, allProducts]);
 
-  const onRefresh = () => { setRefreshing(true); fetchProducts(); };
+  const onRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+  };
+
+
 
   const handleAddToCart = async (product: Product) => {
     await addToCart(product.id, 1);
@@ -319,6 +386,72 @@ export default function HomeScreen() {
 
   const ListHeader = useMemo(() => (
     <>
+      {/* ── Header ── */}
+      <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+        <View style={s.headerTop}>
+          <View>
+            <Text style={[s.greeting, { color: theme.inactive, fontFamily: theme.fontHeading }]}>{greeting.toUpperCase()}, {firstName?.toUpperCase() || 'THERE'} 👋</Text>
+            <Text style={[s.userName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Find your vibe</Text>
+          </View>
+          <View style={s.headerIcons}>
+            <TouchableOpacity 
+              style={[s.headerIconBtn, { backgroundColor: isVibeSearch ? theme.primary : theme.border, borderColor: theme.border }]}
+              onPress={() => setIsVibeSearch(!isVibeSearch)}
+            >
+              <Sparkles size={20} color={isVibeSearch ? '#fff' : theme.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[s.headerIconBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              onPress={() => router.push('/chat' as any)}
+            >
+              <MessageSquare size={20} color={theme.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[s.headerIconBtn, { backgroundColor: theme.primary, borderColor: theme.border }]}
+              onPress={() => router.push('/(tabs)/profile')}
+            >
+              <User size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* ── AI Vibe Search Input ── */}
+      {(isVibeSearch || vibeResults) && (
+        <View style={[s.vibeSearchContainer, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <View style={[s.vibeInputWrapper, { backgroundColor: theme.background, borderColor: isListening ? theme.primary : theme.border }]}>
+            <TouchableOpacity onPress={toggleVoiceSearch}>
+              <Mic size={18} color={isListening ? theme.primary : theme.textSecondary} style={s.vibeIcon} />
+            </TouchableOpacity>
+            <TextInput
+              style={[s.vibeInput, { color: theme.textPrimary, fontFamily: theme.fontBody }]}
+              placeholder="How are you feeling? (e.g. I need to relax)"
+              placeholderTextColor={theme.inactive}
+              value={vibeQuery}
+              onChangeText={setVibeQuery}
+              onSubmitEditing={handleVibeSearch}
+              returnKeyType="search"
+            />
+            {vibeSearching ? (
+              <ActivityIndicator size="small" color={theme.primary} />
+            ) : vibeResults ? (
+              <TouchableOpacity onPress={clearVibeSearch}>
+                <X size={18} color={theme.inactive} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={handleVibeSearch}>
+                <ArrowRight size={18} color={theme.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
+          {vibeResults && (
+            <Text style={[s.vibeResultCount, { color: theme.textSecondary }]}>
+              Found {vibeResults.length} items for your vibe ✨
+            </Text>
+          )}
+        </View>
+      )}
+
       {/* ── Mood Banner ── */}
       <View style={[s.moodBanner, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <View style={s.moodBannerLeft}>
@@ -329,8 +462,8 @@ export default function HomeScreen() {
             }
           </View>
           <View>
-            <Text style={[s.moodBannerLabel, { color: theme.textSecondary }]}>CURRENT MOOD</Text>
-            <Text style={[s.moodBannerName, { color: theme.textPrimary }]}>
+            <Text style={[s.moodBannerLabel, { color: theme.textSecondary, fontFamily: theme.fontHeading }]}>CURRENT MOOD</Text>
+            <Text style={[s.moodBannerName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>
               {detecting ? 'Detecting…' : selectedMood.label}
             </Text>
             <Text style={[s.moodBannerHint, { color: theme.inactive }]}>
@@ -356,9 +489,16 @@ export default function HomeScreen() {
         )}
       </View>
 
+      {/* ── Mood Share Card (Viral) ── */}
+      {!detecting && !permissionDenied && (
+        <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+          <MoodShareCard mood={selectedMood.label} userName={firstName || undefined} />
+        </View>
+      )}
+
       {/* ── Mood Selector ── */}
       <View style={s.moodSelectorSection}>
-        <Text style={[s.sectionLabel, { color: theme.inactive }]}>HOW ARE YOU FEELING?</Text>
+        <Text style={[s.sectionLabel, { color: theme.inactive, fontFamily: theme.fontHeading }]}>HOW ARE YOU FEELING?</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.moodScroll}>
           {MOODS.map((m) => {
             const active  = mood === m.key;
@@ -410,7 +550,7 @@ export default function HomeScreen() {
 
       {/* ── Category Filter ── */}
       <View style={s.categorySection}>
-        <Text style={[s.sectionLabel, { color: theme.inactive }]}>BROWSE BY CATEGORY</Text>
+        <Text style={[s.sectionLabel, { color: theme.inactive, fontFamily: theme.fontHeading }]}>BROWSE BY CATEGORY</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryScroll}>
           {CATEGORIES.map(cat => {
             const active = selectedCategory === cat.id;
@@ -455,11 +595,11 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          data={filteredProducts}
+          data={vibeResults || filteredProducts}
           keyExtractor={item => item.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.primary} />}
           contentContainerStyle={s.listContent}
           columnWrapperStyle={s.row}
           ListHeaderComponent={ListHeader}
@@ -491,6 +631,12 @@ const s = StyleSheet.create({
   headerIcons:   { flexDirection: 'row', gap: 8 },
   headerIconBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   notifDot:      { position: 'absolute', top: 9, right: 9, width: 7, height: 7, borderRadius: 3.5, borderWidth: 1.5 },
+  
+  vibeSearchContainer: { padding: 16, borderBottomWidth: 1 },
+  vibeInputWrapper:    { flexDirection: 'row', alignItems: 'center', height: 50, borderRadius: 25, borderWidth: 1, paddingHorizontal: 16 },
+  vibeIcon:            { marginRight: 10 },
+  vibeInput:           { flex: 1, fontSize: 14, fontWeight: '600' },
+  vibeResultCount:     { fontSize: 11, fontWeight: '700', marginTop: 10, textAlign: 'center' },
   listContent: { paddingBottom: 120 },
   row:         { paddingHorizontal: 12, justifyContent: 'space-between' },
   moodBanner:     { marginHorizontal: 16, marginTop: 16, marginBottom: 4, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1 },

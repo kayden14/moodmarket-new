@@ -196,17 +196,31 @@ export const NotificationService = {
       { mood }
     );
 
-    // Optional: store mood history
     try {
+      // 1. Fetch current history
+      const { data: profile, error: fetchErr } = await supabase
+        .from('profiles')
+        .select('mood_history')
+        .eq('id', userId)
+        .single();
+
+      if (fetchErr) throw fetchErr;
+
+      // 2. Append new entry
+      const history = Array.isArray(profile?.mood_history) ? profile.mood_history : [];
+      const newHistory = [
+        ...history,
+        { date: new Date().toISOString(), mood, emoji }
+      ].slice(-50); // Keep last 50 entries
+
+      // 3. Save back
       await supabase
         .from('profiles')
-        .update({
-          mood_history: supabase.rpc('append_mood', {
-            mood_key: mood,
-          }),
-        })
+        .update({ mood_history: newHistory })
         .eq('id', userId);
-    } catch {}
+    } catch (err) {
+      console.warn('[Notifications] Failed to save mood history:', err);
+    }
   },
 };
 

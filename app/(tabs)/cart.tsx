@@ -30,7 +30,7 @@ function CartRow({ item, index, onQtyChange, onRemove }: {
 
   return (
     <View style={[row.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[row.indexNum, { color: theme.inactive }]}>
+      <Text style={[row.indexNum, { color: theme.inactive, fontFamily: theme.fontHeading }]}>
         {String(index + 1).padStart(2, '0')}
       </Text>
 
@@ -39,10 +39,10 @@ function CartRow({ item, index, onQtyChange, onRemove }: {
       </View>
 
       <View style={row.body}>
-        <Text style={[row.name, { color: theme.textPrimary }]} numberOfLines={2}>
+        <Text style={[row.name, { color: theme.textPrimary, fontFamily: theme.fontHeading }]} numberOfLines={2}>
           {item.products.name}
         </Text>
-        <Text style={[row.unit, { color: theme.textSecondary }]}>
+        <Text style={[row.unit, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>
           GH₵ {item.products.price.toFixed(2)} / unit
         </Text>
 
@@ -58,7 +58,7 @@ function CartRow({ item, index, onQtyChange, onRemove }: {
             >
               <Minus size={10} strokeWidth={3} color={atMin ? theme.inactive : theme.primary} />
             </TouchableOpacity>
-            <Text style={[row.qty, { color: theme.textPrimary }]}>{item.quantity}</Text>
+            <Text style={[row.qty, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{item.quantity}</Text>
             <TouchableOpacity
               style={[row.stepBtnAdd, { backgroundColor: theme.primary }]}
               onPress={() => onQtyChange(item.id, item.quantity + 1)}
@@ -66,7 +66,7 @@ function CartRow({ item, index, onQtyChange, onRemove }: {
               <Plus size={10} strokeWidth={3} color="#fff" />
             </TouchableOpacity>
           </View>
-          <Text style={[row.lineTotal, { color: theme.primary }]}>GH₵ {line}</Text>
+          <Text style={[row.lineTotal, { color: theme.primary, fontFamily: theme.fontHeading }]}>GH₵ {line}</Text>
         </View>
       </View>
 
@@ -120,7 +120,7 @@ function DeliveryBanner({ subtotal }: { subtotal: number }) {
         }]}>
           <Truck size={13} color={free ? '#00A86B' : theme.primary} strokeWidth={2.5} />
         </View>
-        <Text style={[del.txt, { color: free ? '#00A86B' : theme.textSecondary }]}>
+        <Text style={[del.txt, { color: free ? '#00A86B' : theme.textSecondary, fontFamily: theme.fontBody }]}>
           {free
             ? '🎉 Free delivery unlocked!'
             : `GH₵ ${(200 - subtotal).toFixed(2)} away from free delivery`}
@@ -155,7 +155,7 @@ function CheckoutBlock({ subtotal, onCheckout }: { subtotal: number; onCheckout:
     <View style={[chk.wrap, { marginBottom: Platform.OS === 'ios' ? 110 : 90 }]}>
       <View style={chk.labelRow}>
         <View style={[chk.line, { backgroundColor: theme.border }]} />
-        <Text style={[chk.labelTxt, { color: theme.inactive }]}>ORDER SUMMARY</Text>
+        <Text style={[chk.labelTxt, { color: theme.inactive, fontFamily: theme.fontHeading }]}>ORDER SUMMARY</Text>
         <View style={[chk.line, { backgroundColor: theme.border }]} />
       </View>
 
@@ -165,19 +165,19 @@ function CheckoutBlock({ subtotal, onCheckout }: { subtotal: number; onCheckout:
           { label: 'Delivery', value: shipping === 0 ? 'FREE' : `GH₵ ${shipping.toFixed(2)}`, color: shipping === 0 ? '#00A86B' : theme.textPrimary },
         ].map(r => (
           <View key={r.label} style={chk.row}>
-            <Text style={[chk.rowLbl, { color: theme.textSecondary }]}>{r.label}</Text>
-            <Text style={[chk.rowVal, { color: r.color }]}>{r.value}</Text>
+            <Text style={[chk.rowLbl, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{r.label}</Text>
+            <Text style={[chk.rowVal, { color: r.color, fontFamily: theme.fontHeading }]}>{r.value}</Text>
           </View>
         ))}
         <View style={[chk.totalRow, { borderTopColor: theme.border }]}>
-          <Text style={[chk.totalLbl, { color: theme.textPrimary }]}>Total</Text>
-          <Text style={[chk.totalVal, { color: theme.primary }]}>GH₵ {total.toFixed(2)}</Text>
+          <Text style={[chk.totalLbl, { color: theme.textPrimary, fontFamily: theme.fontBody }]}>Total</Text>
+          <Text style={[chk.totalVal, { color: theme.primary, fontFamily: theme.fontHeading }]}>GH₵ {total.toFixed(2)}</Text>
         </View>
       </View>
 
       <TouchableOpacity style={[chk.btn, { backgroundColor: theme.primary }]} onPress={onCheckout} activeOpacity={0.88}>
         <Zap size={16} color="#fff" strokeWidth={2.5} fill="#fff" />
-        <Text style={chk.btnTxt}>Checkout Now</Text>
+        <Text style={[chk.btnTxt, { fontFamily: theme.fontHeading }]}>Checkout Now</Text>
         <View style={chk.btnArrow}>
           <ArrowRight size={14} color={theme.primary} strokeWidth={2.5} />
         </View>
@@ -226,10 +226,10 @@ function Empty({ title, sub, cta, onCta }: {
       }]}>
         <ShoppingBag size={36} color={theme.primary} strokeWidth={1.5} />
       </View>
-      <Text style={[emp.title, { color: theme.textPrimary }]}>{title}</Text>
-      <Text style={[emp.sub,   { color: theme.textSecondary }]}>{sub}</Text>
+      <Text style={[emp.title, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{title}</Text>
+      <Text style={[emp.sub,   { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{sub}</Text>
       <TouchableOpacity style={[emp.btn, { backgroundColor: theme.primary }]} onPress={onCta} activeOpacity={0.85}>
-        <Text style={emp.btnTxt}>{cta}</Text>
+        <Text style={[emp.btnTxt, { fontFamily: theme.fontHeading }]}>{cta}</Text>
         <ArrowRight size={15} color="#fff" strokeWidth={2.5} />
       </TouchableOpacity>
     </View>
@@ -263,7 +263,7 @@ export default function CartScreen() {
       <View style={{ flex: 1, backgroundColor: theme.background }}>
         <View style={s.webContainer}>
           <View style={s.webLeftCol}>
-            <Text style={[s.webTitle, { color: theme.textPrimary }]}>Shopping Cart</Text>
+            <Text style={[s.webTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Shopping Cart</Text>
             <DeliveryBanner subtotal={cartTotal} />
             <View style={{ gap: 12, marginTop: 12 }}>
               {cartItems.map((item, index) => (

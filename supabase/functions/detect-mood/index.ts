@@ -19,11 +19,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { image } = await req.json();
+    const body = await req.json();
+    const images = Array.isArray(body.images) ? body.images : (body.image ? [body.image] : []);
 
-    if (!image) {
+    if (images.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Missing image field" }),
+        JSON.stringify({ error: "Missing image(s) field" }),
         { status: 400, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
@@ -35,6 +36,20 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
+
+    const contentParts = images.map(img => ({
+      type: "image",
+      source: { type: "base64", media_type: "image/jpeg", data: img },
+    }));
+
+    contentParts.push({
+      type: "text",
+      text: `Analyze the facial expressions in these ${images.length} frames (captured over 1.5s).
+Detect the most consistent mood.
+Respond with ONLY a JSON object:
+{"mood":"<mood>","confidence":<0.0-1.0>}
+mood must be one of: ${MOOD_LIST.join(", ")}.`,
+    });
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -48,19 +63,7 @@ Deno.serve(async (req) => {
         max_tokens: 128,
         messages: [{
           role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: "image/jpeg", data: image },
-            },
-            {
-              type: "text",
-              text: `Look at the facial expression in this image and detect the mood.
-Respond with ONLY a JSON object, nothing else:
-{"mood":"<mood>","confidence":<0.0-1.0>}
-mood must be one of: ${MOOD_LIST.join(", ")}.`,
-            },
-          ],
+          content: contentParts,
         }],
       }),
     });

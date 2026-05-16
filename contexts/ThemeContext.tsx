@@ -16,7 +16,7 @@ import React, {
   useCallback,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MoodKey, MoodPalette, MOOD_PALETTES } from '@/constants/moods';
+import { MoodKey, MoodPalette, MOOD_PALETTES, MOOD_META } from '@/constants/moods';
 import { BaseTheme, AppTheme } from '@/types/theme';
 
 // Re-export types for backward compatibility
@@ -76,14 +76,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const moodMeta = MOOD_META[mood];
+  const dynamicBackground = isDark ? moodMeta.darkBg : moodMeta.lightBg;
+
   // Web background color fix
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      const bgColor = isDark ? '#0F0F0F' : '#F7F7F7';
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.transition = 'background-color 0.3s ease';
+      document.body.style.backgroundColor = dynamicBackground;
+      document.body.style.transition = 'background-color 0.8s ease-out';
     }
-  }, [isDark]);
+  }, [dynamicBackground]);
 
   const toggleDark = useCallback(() => {
     setIsDark((prev) => {
@@ -100,12 +102,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const base = isDark ? DARK : LIGHT;
   const moodPalette = MOOD_PALETTES[mood];
-
+  
   const theme: AppTheme = {
     ...base,
+    background: dynamicBackground, // Overwrite base background with mood-tinted one
     primary:   moodPalette.primary,
     secondary: moodPalette.secondary,
     tint:      moodPalette.tint,
+    fontHeading: moodPalette.fontHeading,
+    fontBody:    moodPalette.fontBody,
     isDark,
   };
 

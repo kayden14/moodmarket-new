@@ -29,6 +29,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { MoodKey } from '@/types/mood';
 import { detectMoodFromImage } from '@/services/moodDetection';
 import { captureFromWebCamera } from '@/utils/webCapture';
@@ -106,23 +107,28 @@ export function useMoodDetection({
     isCapturing.current = true;
     setDetecting(true);
 
+    // Physical Feedback: Light pulse when scanning starts
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+
     try {
-      let base64: string | null = null;
+      const capturedImages: string[] = [];
 
       if (Platform.OS === 'web') {
-        // ── Web path: use getUserMedia directly, CameraView ref is not used ──
-        console.log('[useMoodDetection] Web platform — capturing via getUserMedia…');
-        base64 = await captureFromWebCamera();
+        // ── Web path: capture multiple frames from getUserMedia ───────────
+        console.log('[useMoodDetection] Web — capturing 3 frames…');
+        for (let i = 0; i < 3; i++) {
+          const base64 = await captureFromWebCamera();
+          if (base64) capturedImages.push(base64);
+          if (i < 2) await sleep(500); // Wait 0.5s between frames
+        }
       } else {
-        // ── Native path: use CameraView ref (Android / iOS) ──────────────────
+        // ── Native path: capture multiple frames from CameraView ──────────
         await sleep(SETTLE_DELAY_MS);
 
         if (!cameraRef.current) {
-          console.warn(
-            '[useMoodDetection] cameraRef.current is null after onCameraReady.\n' +
-            'Ensure <CameraView ref={cameraRef} onCameraReady={onCameraReady} /> ' +
-            'is rendered while hasPermission === true.'
-          );
+          console.warn('[useMoodDetection] cameraRef.current is null');
           if (!hasDetected.current) {
             hasDetected.current = true;
             onMoodDetected('neutral');
@@ -130,20 +136,21 @@ export function useMoodDetection({
           return;
         }
 
-        console.log('[useMoodDetection] Taking silent picture…');
-
-        const photo = await cameraRef.current.takePictureAsync({
-          base64: true,
-          quality: 0.7,
-          exif: false,
-          skipProcessing: false,
-        });
-
-        base64 = photo?.base64 ?? null;
+        console.log('[useMoodDetection] Native — capturing 3 silent frames…');
+        for (let i = 0; i < 3; i++) {
+          const photo = await cameraRef.current.takePictureAsync({
+            base64: true,
+            quality: 0.6, // slightly lower quality for faster multi-capture
+            exif: false,
+            skipProcessing: true,
+          });
+          if (photo?.base64) capturedImages.push(photo.base64);
+          if (i < 2) await sleep(500); // Wait 0.5s between frames
+        }
       }
 
-      if (!base64 || base64.length < 100) {
-        console.warn('[useMoodDetection] Photo capture returned empty or invalid data');
+      if (capturedImages.length === 0) {
+        console.warn('[useMoodDetection] No images captured');
         if (!hasDetected.current) {
           hasDetected.current = true;
           onMoodDetected('neutral');
@@ -151,9 +158,9 @@ export function useMoodDetection({
         return;
       }
 
-      console.log('[useMoodDetection] Sending to Gemini…');
+      console.log(`[useMoodDetection] Sending ${capturedImages.length} images to AI…`);
 
-      const result = await detectMoodFromImage(base64, undefined);
+      const result = await detectMoodFromImage(capturedImages);
 
       console.log(
         `[useMoodDetection] Detected: ${result.mood} (${Math.round(result.confidence * 100)}%)`
@@ -162,6 +169,11 @@ export function useMoodDetection({
       hasDetected.current = true;
       onMoodDetected(result.mood);
 
+      // Physical Feedback: Pulse on success
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+
     } catch (err: any) {
       const msg: string = err?.message ?? '';
       console.error('[useMoodDetection] ❌ Capture/detect failed:', msg);
@@ -169,6 +181,11 @@ export function useMoodDetection({
       if (!hasDetected.current) {
         hasDetected.current = true;
         onMoodDetected('neutral');
+
+        // Physical Feedback: Pulse on failure
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+        }
       }
     } finally {
       setDetecting(false);

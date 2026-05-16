@@ -107,7 +107,7 @@ function ReviewCard({ review, isOwn, onEdit, onDelete }: {
           <Text style={rc.avatarTxt}>{initials}</Text>
         </View>
         <View style={rc.meta}>
-          <Text style={[rc.name, { color: theme.textPrimary }]}>{review.reviewer_name || 'Anonymous'}</Text>
+          <Text style={[rc.name, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{review.reviewer_name || 'Anonymous'}</Text>
           <StarDisplay rating={review.rating} size={12} />
         </View>
         <View style={rc.right}>
@@ -125,7 +125,7 @@ function ReviewCard({ review, isOwn, onEdit, onDelete }: {
         </View>
       </View>
       {!!review.comment && (
-        <Text style={[rc.comment, { color: theme.textSecondary }]}>{review.comment}</Text>
+        <Text style={[rc.comment, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{review.comment}</Text>
       )}
     </View>
   );
@@ -216,13 +216,13 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate }: {
       <View style={rs.header}>
         <View style={rs.headerLeft}>
           <MessageSquare size={15} color={theme.primary} strokeWidth={2} />
-          <Text style={[rs.title, { color: theme.textPrimary }]}>Reviews</Text>
+          <Text style={[rs.title, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Reviews</Text>
           {reviews.length > 0 && (
             <View style={[rs.countBadge, {
               backgroundColor: isDark ? '#2D1820' : '#FFF0F2',
               borderColor:     isDark ? '#3D2030' : '#FFD6DE',
             }]}>
-              <Text style={[rs.countTxt, { color: theme.primary }]}>{reviews.length}</Text>
+              <Text style={[rs.countTxt, { color: theme.primary, fontFamily: theme.fontHeading }]}>{reviews.length}</Text>
             </View>
           )}
         </View>
@@ -236,7 +236,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate }: {
             activeOpacity={0.8}
           >
             <Pencil size={12} color={theme.primary} strokeWidth={2.5} />
-            <Text style={[rs.writeBtnTxt, { color: theme.primary }]}>
+            <Text style={[rs.writeBtnTxt, { color: theme.primary, fontFamily: theme.fontHeading }]}>
               {hasReviewed ? 'Edit yours' : 'Write a review'}
             </Text>
           </TouchableOpacity>
@@ -250,7 +250,7 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate }: {
           <StarInput value={draftRating} onChange={setDraftRating} size={34} />
           <Text style={[rs.formLabel, { color: theme.inactive, marginTop: 16 }]}>YOUR REVIEW (optional)</Text>
           <TextInput
-            style={[rs.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.textPrimary }]}
+            style={[rs.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.textPrimary, fontFamily: theme.fontBody }]}
             value={draftComment} onChangeText={setDraftComment}
             placeholder="Share your experience with this product…"
             placeholderTextColor={theme.inactive}
@@ -406,16 +406,16 @@ export default function ProductDetailScreen() {
     <>
       {/* Name + price */}
       <View style={s.nameRow}>
-        <Text style={[s.productName, { color: theme.textPrimary }]}>{product.name}</Text>
-        <Text style={[s.productPrice, { color: theme.primary }]}>GH₵{product.price.toFixed(2)}</Text>
+        <Text style={[s.productName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{product.name}</Text>
+        <Text style={[s.productPrice, { color: theme.primary, fontFamily: theme.fontHeading }]}>GH₵{product.price.toFixed(2)}</Text>
       </View>
 
       {/* Rating row */}
       <View style={s.ratingRow}>
         <View style={s.starsRow}>
           <StarDisplay rating={displayRating} size={15} />
-          <Text style={[s.ratingValue, { color: theme.textPrimary }]}>{displayRating.toFixed(1)}</Text>
-          <Text style={[s.ratingCount, { color: theme.textSecondary }]}>({displayCount} {displayCount === 1 ? 'review' : 'reviews'})</Text>
+          <Text style={[s.ratingValue, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{displayRating.toFixed(1)}</Text>
+          <Text style={[s.ratingCount, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>({displayCount} {displayCount === 1 ? 'review' : 'reviews'})</Text>
         </View>
         <View style={[s.stockBadge, { backgroundColor: isDark ? '#0D2B1A' : '#EDFBF1' }]}>
           <View style={[s.stockDot, { backgroundColor: SUCCESS_GREEN }]} />
@@ -427,8 +427,8 @@ export default function ProductDetailScreen() {
 
       {/* Description */}
       <View style={s.section}>
-        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Description</Text>
-        <Text style={[s.description, { color: theme.textSecondary }]}>{product.description}</Text>
+        <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Description</Text>
+        <Text style={[s.description, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{product.description}</Text>
       </View>
 
       {/* Mood tags */}
@@ -436,7 +436,7 @@ export default function ProductDetailScreen() {
         <View style={s.section}>
           <View style={s.sectionTitleRow}>
             <Tag size={15} color={theme.primary} />
-            <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Mood Tags</Text>
+            <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Mood Tags</Text>
           </View>
           <View style={s.tagsWrap}>
             {product.mood_tags.map((tag: string, i: number) => (
@@ -444,7 +444,7 @@ export default function ProductDetailScreen() {
                 backgroundColor: isDark ? '#2D1820' : '#FFF0F2',
                 borderColor:     isDark ? '#3D2030' : '#FFD6DE',
               }]}>
-                <Text style={[s.tagText, { color: theme.primary }]}>{tag}</Text>
+                <Text style={[s.tagText, { color: theme.primary, fontFamily: theme.fontHeading }]}>{tag}</Text>
               </View>
             ))}
           </View>
@@ -453,7 +453,7 @@ export default function ProductDetailScreen() {
 
       {/* Quantity */}
       <View style={s.section}>
-        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Quantity</Text>
+        <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Quantity</Text>
         <View style={s.qtyRow}>
           <TouchableOpacity
             style={[s.qtyBtn, { backgroundColor: theme.card, borderColor: theme.border }, quantity <= 1 && s.qtyBtnDisabled]}
@@ -461,7 +461,7 @@ export default function ProductDetailScreen() {
           >
             <Minus size={18} color={theme.textPrimary} strokeWidth={2.5} />
           </TouchableOpacity>
-          <Text style={[s.qtyValue, { color: theme.textPrimary }]}>{quantity}</Text>
+          <Text style={[s.qtyValue, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{quantity}</Text>
           <TouchableOpacity
             style={[s.qtyBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
             onPress={() => setQuantity(q => q + 1)}
@@ -509,7 +509,7 @@ export default function ProductDetailScreen() {
               ) : (
                 <ShoppingCart size={18} color="#fff" />
               )}
-              <Text style={s.addBtnTxt}>
+              <Text style={[s.addBtnTxt, { fontFamily: theme.fontHeading }]}>
                 {addingToCart ? 'Adding…' : added ? 'Added to Cart!' : 'Add to Cart'}
               </Text>
             </TouchableOpacity>

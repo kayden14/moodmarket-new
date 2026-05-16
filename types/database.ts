@@ -17,6 +17,7 @@ export type Product = {
   mood_tags: string[];
   rating: number;
   created_at: string;
+  vendor_id?: string | null;
 };
 
 export type CartItem = {
@@ -41,4 +42,14 @@ export type Mood = {
   id: string;
   mood_name: string;
   emoji: string;
+};
+
+export type Message = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  is_read: boolean;
+  product_id?: string;
 };

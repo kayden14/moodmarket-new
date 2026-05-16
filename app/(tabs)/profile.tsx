@@ -51,14 +51,14 @@ function OrderCard({ order }: { order: Order }) {
             <ShoppingBag size={14} color={theme.primary} strokeWidth={2} />
           </View>
           <View>
-            <Text style={[oc.idLabel, { color: theme.inactive }]}>ORDER</Text>
-            <Text style={[oc.id, { color: theme.textPrimary }]}>#{order.id.slice(0, 8).toUpperCase()}</Text>
+            <Text style={[oc.idLabel, { color: theme.inactive, fontFamily: theme.fontHeading }]}>ORDER</Text>
+            <Text style={[oc.id, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>#{order.id.slice(0, 8).toUpperCase()}</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <View style={[oc.badge, { backgroundColor: cfg.bg }]}>
             <StatusIcon size={11} color={cfg.color} strokeWidth={2.5} />
-            <Text style={[oc.badgeTxt, { color: cfg.color }]}>{cfg.label}</Text>
+            <Text style={[oc.badgeTxt, { color: cfg.color, fontFamily: theme.fontHeading }]}>{cfg.label}</Text>
           </View>
           <ChevronRight size={14} color={theme.inactive} strokeWidth={2} />
         </View>
@@ -67,14 +67,14 @@ function OrderCard({ order }: { order: Order }) {
       <View style={oc.bottom}>
         <View style={oc.meta}>
           <Calendar size={12} color={theme.inactive} strokeWidth={2} />
-          <Text style={[oc.date, { color: theme.inactive }]}>
+          <Text style={[oc.date, { color: theme.inactive, fontFamily: theme.fontBody }]}>
             {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </Text>
           <Text style={[oc.dot, { color: theme.border }]}>·</Text>
           <Package size={12} color={theme.inactive} strokeWidth={2} />
-          <Text style={[oc.date, { color: theme.inactive }]}>{order.products.length} items</Text>
+          <Text style={[oc.date, { color: theme.inactive, fontFamily: theme.fontBody }]}>{order.products.length} items</Text>
         </View>
-        <Text style={[oc.price, { color: theme.primary }]}>GH₵ {Number(order.total_price).toFixed(2)}</Text>
+        <Text style={[oc.price, { color: theme.primary, fontFamily: theme.fontHeading }]}>GH₵ {Number(order.total_price).toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -104,8 +104,8 @@ function StatPill({ label, value }: { label: string; value: string }) {
   const { theme } = useTheme();
   return (
     <View style={{ flex: 1, alignItems: 'center', paddingVertical: 14 }}>
-      <Text style={[sp.value, { color: theme.textPrimary }]}>{value}</Text>
-      <Text style={[sp.label, { color: theme.textSecondary }]}>{label}</Text>
+      <Text style={[sp.value, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{value}</Text>
+      <Text style={[sp.label, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{label}</Text>
     </View>
   );
 }
@@ -167,7 +167,7 @@ export default function ProfileScreen() {
         <Text style={[g.title, { color: theme.textPrimary }]}>You're not signed in</Text>
         <Text style={[g.sub, { color: theme.textSecondary }]}>Log in to view your profile, orders, and mood history.</Text>
         <TouchableOpacity style={[g.btn, { backgroundColor: primary }]} onPress={() => router.push('/login')} activeOpacity={0.85}>
-          <Text style={g.btnTxt}>Sign In</Text>
+          <Text style={[g.btnTxt, { fontFamily: theme.fontHeading }]}>Sign In</Text>
           <ArrowRight size={15} color="#fff" strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
@@ -197,18 +197,18 @@ export default function ProfileScreen() {
         {/* ── Hero ── */}
         <View style={[s.hero, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={[s.avatar, { backgroundColor: primary }]}>
-            <Text style={s.avatarTxt}>{initials}</Text>
+            <Text style={[s.avatarTxt, { fontFamily: theme.fontHeading }]}>{initials}</Text>
           </View>
           <View style={s.heroInfo}>
-            <Text style={[s.heroName,  { color: theme.textPrimary }]}>{profile?.name ?? 'User'}</Text>
-            <Text style={[s.heroEmail, { color: theme.textSecondary }]}>{profile?.email}</Text>
+            <Text style={[s.heroName,  { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{profile?.name ?? 'User'}</Text>
+            <Text style={[s.heroEmail, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{profile?.email}</Text>
             <TouchableOpacity
               style={[s.editBtn, { backgroundColor: isDark ? '#2D1820' : '#FFF0F2', borderColor: isDark ? '#3D2030' : '#FFD6DE' }]}
               onPress={() => router.push('/edit-profile')}
               activeOpacity={0.8}
             >
               <Edit3 size={12} color={primary} strokeWidth={2.5} />
-              <Text style={[s.editBtnTxt, { color: primary }]}>Edit Profile</Text>
+              <Text style={[s.editBtnTxt, { color: primary, fontFamily: theme.fontHeading }]}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -224,8 +224,8 @@ export default function ProfileScreen() {
               <Store size={22} color="#FF7A8A" strokeWidth={2} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary }]}>Vendor Dashboard</Text>
-              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary }]}>Manage your products, orders & earnings</Text>
+              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Vendor Dashboard</Text>
+              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary, fontFamily: theme.fontBody }]}>Manage your products, orders & earnings</Text>
             </View>
             <ChevronRight size={16} color="#FF7A8A" strokeWidth={2.5} />
           </TouchableOpacity>
@@ -242,8 +242,8 @@ export default function ProfileScreen() {
               <Store size={22} color={theme.textSecondary} strokeWidth={1.8} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary }]}>Sell on MoodMarket</Text>
-              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary }]}>Apply to become a vendor and reach more customers</Text>
+              <Text style={[s.vendorBannerTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Sell on MoodMarket</Text>
+              <Text style={[s.vendorBannerSub,   { color: theme.textSecondary, fontFamily: theme.fontBody }]}>Apply to become a vendor and reach more customers</Text>
             </View>
             <ChevronRight size={16} color={theme.inactive} strokeWidth={2} />
           </TouchableOpacity>
@@ -261,7 +261,7 @@ export default function ProfileScreen() {
         {/* ── Settings quick access ── */}
         <View style={s.section}>
           <View style={s.sectionHeader}>
-            <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Settings</Text>
+            <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Settings</Text>
           </View>
           {[
             { Icon: Edit3,    label: 'Edit Profile',       sub: 'Update your name and phone number'  },
@@ -279,8 +279,8 @@ export default function ProfileScreen() {
                 <item.Icon size={16} color={primary} strokeWidth={2} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.settingsRowLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                <Text style={[s.settingsRowSub,   { color: theme.textSecondary }]}>{item.sub}</Text>
+                <Text style={[s.settingsRowLabel, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{item.label}</Text>
+                <Text style={[s.settingsRowSub,   { color: theme.textSecondary, fontFamily: theme.fontBody }]}>{item.sub}</Text>
               </View>
               <ChevronRight size={15} color={theme.inactive} strokeWidth={2} />
             </TouchableOpacity>
@@ -291,17 +291,29 @@ export default function ProfileScreen() {
         {profile?.mood_history && profile.mood_history.length > 0 && (
           <View style={s.section}>
             <View style={s.sectionHeader}>
-              <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Mood History</Text>
-              <Text style={[s.sectionCount, { color: theme.inactive }]}>{profile.mood_history.length} entries</Text>
+              <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Mood History</Text>
+              <TouchableOpacity onPress={() => router.push('/mood-history')}>
+                <Text style={[s.seeAll, { color: theme.primary, fontFamily: theme.fontHeading }]}>View All</Text>
+              </TouchableOpacity>
             </View>
-            {profile.mood_history.slice(0, 5).map((item: any, i: number) => (
-              <View key={i} style={[s.moodRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            {profile.mood_history.slice(-3).reverse().map((item: any, i: number) => (
+              <TouchableOpacity 
+                key={i} 
+                style={[s.moodRow, { backgroundColor: theme.card, borderColor: theme.border }]}
+                onPress={() => router.push('/mood-history')}
+                activeOpacity={0.7}
+              >
                 <View style={s.moodLeft}>
-                  <Text style={s.moodEmoji}>{item.mood}</Text>
-                  <Text style={[s.moodDate, { color: theme.textSecondary }]}>{item.date}</Text>
+                  <Text style={s.moodEmoji}>{item.emoji || '✨'}</Text>
+                  <View>
+                    <Text style={[s.moodName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>{item.mood}</Text>
+                    <Text style={[s.moodDate, { color: theme.textSecondary, fontFamily: theme.fontBody }]}>
+                      {new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </Text>
+                  </View>
                 </View>
                 <ChevronRight size={14} color={theme.inactive} strokeWidth={2} />
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -309,18 +321,18 @@ export default function ProfileScreen() {
         {/* ── Orders ── */}
         <View style={s.section}>
           <View style={s.sectionHeader}>
-            <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Order History</Text>
-            <Text style={[s.sectionCount, { color: theme.inactive }]}>{orders.length} orders</Text>
+            <Text style={[s.sectionTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Order History</Text>
+            <Text style={[s.sectionCount, { color: theme.inactive, fontFamily: theme.fontBody }]}>{orders.length} orders</Text>
           </View>
           {orders.length === 0 ? (
             <View style={[s.emptyOrders, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <View style={[s.emptyIcon, { backgroundColor: isDark ? '#2D1820' : '#FFF0F2', borderColor: isDark ? '#3D2030' : '#FFD6DE' }]}>
                 <Package size={28} color={primary} strokeWidth={1.5} />
               </View>
-              <Text style={[s.emptyTitle, { color: theme.textPrimary }]}>No orders yet</Text>
-              <Text style={[s.emptySub,   { color: theme.textSecondary }]}>Start shopping to see your orders here.</Text>
+              <Text style={[s.emptyTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>No orders yet</Text>
+              <Text style={[s.emptySub,   { color: theme.textSecondary, fontFamily: theme.fontBody }]}>Start shopping to see your orders here.</Text>
               <TouchableOpacity style={[s.emptyBtn, { borderColor: primary }]} onPress={() => router.push('/(tabs)')} activeOpacity={0.85}>
-                <Text style={[s.emptyBtnTxt, { color: primary }]}>Browse Products</Text>
+                <Text style={[s.emptyBtnTxt, { color: primary, fontFamily: theme.fontHeading }]}>Browse Products</Text>
                 <ArrowRight size={13} color={primary} strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
@@ -336,7 +348,7 @@ export default function ProfileScreen() {
           activeOpacity={0.8}
         >
           <LogOut size={16} color="#E53E3E" strokeWidth={2} />
-          <Text style={s.logoutTxt}>Sign Out</Text>
+          <Text style={[s.logoutTxt, { fontFamily: theme.fontHeading }]}>Sign Out</Text>
         </TouchableOpacity>
 
         {/* ── Hidden admin access — tap 3 times ── */}
@@ -391,10 +403,12 @@ const s = StyleSheet.create({
   settingsRowIcon: { width: 36, height: 36, borderRadius: 11, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   settingsRowLabel:{ fontSize: 14, fontWeight: '700' },
   settingsRowSub:  { fontSize: 12, marginTop: 1 },
-  moodRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 6, borderWidth: 1 },
-  moodLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  moodEmoji: { fontSize: 22 },
-  moodDate:  { fontSize: 13, fontWeight: '500' },
+  seeAll:         { fontSize: 13, fontWeight: '700' },
+  moodRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 8, borderWidth: 1 },
+  moodLeft:  { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  moodEmoji: { fontSize: 24 },
+  moodName:  { fontSize: 14, fontWeight: '700', textTransform: 'capitalize' },
+  moodDate:  { fontSize: 11, fontWeight: '500', marginTop: 1 },
   emptyOrders:{ alignItems: 'center', borderRadius: 20, paddingVertical: 36, paddingHorizontal: 24, borderWidth: 1 },
   emptyIcon:  { width: 64, height: 64, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginBottom: 16, borderWidth: 1 },
   emptyTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },

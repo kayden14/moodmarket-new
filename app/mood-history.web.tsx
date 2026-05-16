@@ -34,6 +34,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/services/supabase';
 import { MOOD_META, MOOD_EMOJI } from '@/constants/moods';
 import { MoodEntry } from '@/types/mood';
+import { AIInsightService } from '@/services/aiInsights';
+import MoodShareCard from '@/components/MoodShareCard';
 
 function getMoodMeta(moodKey: string, isDark = false) {
   if (!moodKey) {
@@ -150,58 +152,28 @@ function parseMoodHistory(raw: unknown): MoodEntry[] {
    SHARED DATA HOOK
 ───────────────────────────────────────────────────────────────────────── */
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
 function useMoodHistory() {
-  const { user, profile } = useAuth();
-  const [moodHistory, setMoodHistory] = useState<MoodEntry[]>(
-    () => parseMoodHistory(profile?.mood_history),
-  );
-  const [loading,    setLoading]    = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error,      setError]      = useState<string | null>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const applyAndSort = (raw: unknown) => {
-    const parsed = parseMoodHistory(raw);
-    parsed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    setMoodHistory(parsed);
-  };
-
-  const fetchHistory = useCallback(async (showSpinner = false) => {
-    if (!user?.id) { setLoading(false); return; }
-    if (showSpinner) setRefreshing(true);
-    setError(null);
-    try {
+  const { data: moodHistory = [], isLoading: loading, isRefetching: refreshing, error } = useQuery({
+    queryKey: ['mood_history', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error: err } = await supabase
         .from('profiles').select('mood_history').eq('id', user.id).single();
       if (err) throw err;
-      applyAndSort(data?.mood_history);
-    } catch (e) {
-      setError('Could not load mood history. Check your connection and try again.');
-      console.error('[MoodHistory] fetch error:', e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
-
-  // Realtime subscription
-  useEffect(() => {
-    if (!user?.id) return;
-    const channel = supabase
-      .channel(`mood_history_rt:${user.id}`)
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        (payload) => { applyAndSort((payload.new as any)?.mood_history); },
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user?.id]);
+      const parsed = parseMoodHistory(data?.mood_history);
+      return parsed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    },
+    enabled: !!user?.id,
+  });
 
   const moodCounts = useMemo(() => {
     const c: Record<string, number> = {};
     moodHistory.forEach(e => {
-      // Use resolveKey so index.web.tsx entries (mood_key) are counted correctly
       const key = resolveKey(e) || 'Unknown';
       c[key] = (c[key] || 0) + 1;
     });
@@ -224,7 +196,25 @@ function useMoodHistory() {
     return count;
   }, [moodHistory]);
 
-  return { moodHistory, loading, refreshing, error, refresh: () => fetchHistory(true), moodCounts, topMood, streak };
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['mood_history', user?.id] });
+
+  const { data: insight = '' } = useQuery({
+    queryKey: ['mood_insight', user?.id, moodHistory.length],
+    queryFn: () => AIInsightService.getMoodTrendInsight(moodHistory),
+    enabled: moodHistory.length >= 3,
+  });
+
+  return { 
+    moodHistory, 
+    loading, 
+    refreshing, 
+    error: error ? 'Could not load history' : null, 
+    refresh, 
+    moodCounts, 
+    topMood, 
+    streak,
+    insight
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -235,8 +225,9 @@ function MoodHistoryScreenWeb() {
   const router            = useRouter();
   const { user }          = useAuth();
   const { theme, isDark } = useTheme();
-  const { moodHistory, loading, refreshing, error, refresh, moodCounts, topMood, streak } = useMoodHistory();
+  const { moodHistory, loading, refreshing, error, refresh, moodCounts, topMood, streak, insight } = useMoodHistory();
   const [filterMood, setFilterMood] = useState<string | null>(null);
+  const [showShare,  setShowShare]  = useState(false);
 
   const filteredHistory = useMemo(
     () => filterMood ? moodHistory.filter(e => resolveKey(e) === filterMood) : moodHistory,
@@ -355,6 +346,9 @@ function MoodHistoryScreenWeb() {
                 {refreshing ? <div className="spinner" /> : <span style={{ fontSize:16 }}>↻</span>}
                 {refreshing ? 'Refreshing…' : 'Refresh'}
               </button>
+              <button className="refresh-btn" style={{ background:pri, color:'#fff', borderColor:'transparent' }} onClick={() => setShowShare(true)}>
+                ✨ Share My Vibe
+              </button>
             </div>
           </div>
         </div>
@@ -390,6 +384,16 @@ function MoodHistoryScreenWeb() {
           {/* Data */}
           {!loading && moodHistory.length > 0 && (
             <>
+              {/* AI INSIGHT CARD */}
+              <div style={{ background:`linear-gradient(135deg, ${pri}11, ${pri}22)`, border:`1.5px solid ${pri}44`, borderRadius:24, padding:'24px 28px', marginBottom:28, display:'flex', gap:20, alignItems:'center' }}>
+                <div style={{ fontSize:42 }}>🤖</div>
+                <div style={{ flex:1 }}>
+                  <p style={{ fontSize:10, fontWeight:800, letterSpacing:2, color:pri, textTransform:'uppercase', marginBottom:6 }}>Personalized AI Insight</p>
+                  <p style={{ fontFamily:'"Lora",serif', fontSize:17, fontWeight:600, color:tp, lineHeight:1.5 }}>
+                    {insight || "Gathering insights from your journey..."}
+                  </p>
+                </div>
+              </div>
               {/* STATS ROW */}
               <div className="stats-row" style={{ display:'flex', gap:14, flexWrap:'wrap', marginBottom:28 }}>
 
@@ -568,6 +572,19 @@ function MoodHistoryScreenWeb() {
           )}
         </div>
       </div>
+
+      {showShare && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <TouchableOpacity style={{ position: 'absolute', top: 40, right: 20, zIndex: 1001 }} onPress={() => setShowShare(false)}>
+             <Text style={{ color: '#fff', fontSize: 40 }}>×</Text>
+          </TouchableOpacity>
+          <MoodShareCard 
+             mood={moodHistory[0]?.mood_key as any || 'neutral'} 
+             streak={streak} 
+             onClose={() => setShowShare(false)} 
+          />
+        </View>
+      )}
     </>
   );
 }

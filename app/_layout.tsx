@@ -20,10 +20,33 @@ import {
   PlayfairDisplay_700Bold,
   PlayfairDisplay_900Black,
 } from '@expo-google-fonts/playfair-display';
+import {
+  Lora_400Regular,
+  Lora_500Medium,
+  Lora_600SemiBold,
+  Lora_700Bold,
+} from '@expo-google-fonts/lora';
+import {
+  Sora_400Regular,
+  Sora_500Medium,
+  Sora_600SemiBold,
+  Sora_700Bold,
+  Sora_800ExtraBold,
+} from '@expo-google-fonts/sora';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { StorefrontProvider } from '@/contexts/StorefrontContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 function InnerLayout() {
   const { theme, isDark } = useTheme();
@@ -65,6 +88,15 @@ export default function RootLayout() {
     PlayfairDisplay_600SemiBold,
     PlayfairDisplay_700Bold,
     PlayfairDisplay_900Black,
+    Lora_400Regular,
+    Lora_500Medium,
+    Lora_600SemiBold,
+    Lora_700Bold,
+    Sora_400Regular,
+    Sora_500Medium,
+    Sora_600SemiBold,
+    Sora_700Bold,
+    Sora_800ExtraBold,
   });
 
   if (!fontsLoaded) {
@@ -73,15 +105,17 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <StorefrontProvider>
-              <InnerLayout />
-            </StorefrontProvider>
-          </CartProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <CartProvider>
+              <StorefrontProvider>
+                <InnerLayout />
+              </StorefrontProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }

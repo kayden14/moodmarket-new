@@ -78,6 +78,11 @@ export default function AdminUsersScreen() {
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_admin: newIsAdmin, role: newRole as any } : u));
       if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_admin: newIsAdmin, role: newRole as any } : null);
+
+      // Notify user of role change
+      if (user.email) {
+        emailService.roleUpdated(user.email, user.name || 'User', newRole);
+      }
     } catch (err: any) { Alert.alert('Error', err.message); }
     finally { setActioning(false); setConfirmAction(null); }
   };
@@ -99,9 +104,19 @@ export default function AdminUsersScreen() {
           contact_email: user.email,
         });
         if (vendorError) throw vendorError;
+
+        // Notify user of vendor approval
+        import('@/services/notifications').then(({ Notify }) => {
+          Notify.send('🎉 Vendor Status Approved!', 'Welcome to the marketplace! You can now start adding products.', { screen: '/vendor' });
+        });
       } else {
-        const { error: vendorError } = await supabase.from('vendors').delete().eq('user_id', user.id);
-        if (vendorError) throw vendorError;
+        const { error: deleteError } = await supabase.from('vendors').delete().eq('user_id', user.id);
+        if (deleteError) throw deleteError;
+
+        // Notify user of vendor removal
+        if (user.email) {
+          emailService.vendorRemoved(user.email, user.name || 'User', 'Status removed by administrator');
+        }
       }
 
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: (newRole as any) } : u));
@@ -138,6 +153,11 @@ export default function AdminUsersScreen() {
       if (error) throw error;
       setUsers(prev => prev.filter(u => u.id !== user.id));
       setSelected(null);
+
+      // Notify user of account deletion (if we have their email and want to send final goodbye before deletion)
+      if (user.email) {
+        emailService.accountDeleted(user.email, user.name || 'User', 'Requested by administrator');
+      }
     } catch (err: any) { Alert.alert('Error', err.message); }
     finally { setActioning(false); setConfirmAction(null); }
   };

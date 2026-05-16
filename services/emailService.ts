@@ -29,7 +29,8 @@ type EmailType =
   | 'vendor_suspended'
   | 'vendor_unsuspended'
   | 'vendor_removed'
-  | 'payout_processed';
+  | 'payout_processed'
+  | 'role_updated';
 
 async function send(type: EmailType, to: string, payload: Record<string, any>): Promise<void> {
   if (!to) {
@@ -127,4 +128,8 @@ export const emailService = {
     reference: string,
   ) =>
     send('payout_processed', email, { name, storeName, amount, method, reference }),
+
+  /** Sent when user's role is changed (e.g. granted admin) */
+  roleUpdated: (email: string, name: string, newRole: string) =>
+    send('role_updated', email, { name, newRole }),
 };

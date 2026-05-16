@@ -11,5 +11,7 @@ export interface AppTheme extends BaseTheme {
   primary:   string;
   secondary: string;
   tint:      string;
+  fontHeading: string;
+  fontBody:    string;
   isDark:    boolean;
 }
