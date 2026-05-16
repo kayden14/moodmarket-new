@@ -87,41 +87,17 @@ export const FloatingChatbot = () => {
     setIsTyping(true);
 
     try {
-      // Call Gemini API (using the same logic as vibe search or AI insights)
-      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) throw new Error('API Key missing');
+      // Use Supabase Edge Function to avoid CORS on web and centralize logic
+      const { data, error } = await supabase.functions.invoke('chatbot-proxy', {
+        body: { 
+          message: input.trim(),
+          profileName: profile?.name || 'User'
+        },
+      });
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `You are an empathetic AI assistant for MoodMarket, a mood-aware marketplace. 
-                    The user's name is ${profile?.name || 'User'}. 
-                    Keep your responses helpful, concise, and empathetic. 
-                    If the user is feeling low, offer comfort and perhaps suggest they scan their mood or look at "Calming" products.
-                    If they are happy, celebrate with them.
-                    
-                    User message: ${input.trim()}`,
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              maxOutputTokens: 200,
-              temperature: 0.7,
-            },
-          }),
-        }
-      );
-
-      const data = await response.json();
-      const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm here for you! How can I help?";
+      if (error) throw error;
+      
+      const botResponse = data?.text || "I'm here for you! How can I help?";
 
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -131,13 +107,46 @@ export const FloatingChatbot = () => {
       };
 
       setMessages((prev) => [...prev, botMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chatbot error:', error);
+      
+      // Fallback to direct client-side call if function isn't deployed (but use correct model)
+      try {
+        const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+        if (!apiKey) throw new Error('API Key missing');
+
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: input.trim() }] }],
+            }),
+          }
+        );
+
+        const fallbackData = await response.json();
+        const fallbackText = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (fallbackText) {
+          setMessages((prev) => [...prev, {
+            id: (Date.now() + 1).toString(),
+            text: fallbackText.trim(),
+            sender: 'bot',
+            timestamp: new Date(),
+          }]);
+          return;
+        }
+      } catch (innerErr) {
+        console.error('Fallback failed:', innerErr);
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          text: "Sorry, I'm having trouble connecting right now. Let's talk again soon!",
+          text: "I'm having a bit of trouble thinking right now. Could you try again in a moment?",
           sender: 'bot',
           timestamp: new Date(),
         },
