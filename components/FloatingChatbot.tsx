@@ -151,7 +151,7 @@ export const FloatingChatbot = () => {
 
         const fallbackData = await response.json();
         const fallbackText = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
-        
+
         if (fallbackText) {
           setMessages((prev) => [...prev, {
             id: (Date.now() + 1).toString(),
@@ -161,10 +161,28 @@ export const FloatingChatbot = () => {
           }]);
           return;
         }
-      } catch (innerErr) {
+      } catch (innerErr: any) {
         console.error('Fallback failed:', innerErr);
+        let errorMessage = "I'm having a bit of trouble thinking right now. Could you try again in a moment?";
+        if (innerErr?.message?.includes('Network request failed') || innerErr?.message?.includes('Failed to fetch') || innerErr?.message?.includes('NetworkError')) {
+          errorMessage = "It looks like you're offline or having network issues. Please check your connection and try again.";
+        } else if (innerErr?.message?.includes('429')) {
+          errorMessage = "I'm getting a lot of requests right now! Please wait a moment and try again.";
+        }
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            text: errorMessage,
+            sender: 'bot',
+            timestamp: new Date(),
+          },
+        ]);
+        return; // Ensure we exit
       }
 
+      // If we got here but didn't return, add generic error
       setMessages((prev) => [
         ...prev,
         {
