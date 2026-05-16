@@ -2,7 +2,7 @@
 // Base layout — all providers and the root Stack live here.
 
 import 'react-native-url-polyfill/auto';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -37,6 +37,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { StorefrontProvider } from '@/contexts/StorefrontContext';
+import { MoodDetectionProvider } from '@/contexts/MoodDetectionContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FloatingChatbot } from '@/components/FloatingChatbot';
 
@@ -51,6 +52,8 @@ const queryClient = new QueryClient({
 
 function InnerLayout() {
   const { theme, isDark } = useTheme();
+  const pathname = usePathname();
+  const isCustomerIndex = pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/';
 
   return (
     <>
@@ -73,7 +76,7 @@ function InnerLayout() {
         <Stack.Screen name="vendor"        options={{ headerShown: false }} />
         <Stack.Screen name="+not-found"    options={{ headerShown: false }} />
       </Stack>
-      <FloatingChatbot />
+      {isCustomerIndex && <FloatingChatbot />}
     </>  );
 }
 
@@ -111,7 +114,9 @@ export default function RootLayout() {
           <AuthProvider>
             <CartProvider>
               <StorefrontProvider>
-                <InnerLayout />
+                <MoodDetectionProvider>
+                  <InnerLayout />
+                </MoodDetectionProvider>
               </StorefrontProvider>
             </CartProvider>
           </AuthProvider>

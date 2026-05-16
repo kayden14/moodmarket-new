@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import WebShell from '@/components/WebShell';
 import { useResponsive } from '../../hooks/useResponsive';
+import { useMoodDetectionContext } from '@/contexts/MoodDetectionContext';
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -288,7 +289,7 @@ function CartToast({ count, total, visible, onPress }: {
   );
 }
 
-function MoodScannerPromo({ onScan }: { onScan: () => void }) {
+function MoodScannerPromo({ onScan, detecting }: { onScan: () => void, detecting: boolean }) {
   const { theme } = useTheme();
   return (
     <div style={{
@@ -310,14 +311,21 @@ function MoodScannerPromo({ onScan }: { onScan: () => void }) {
         </p>
         <button
           onClick={onScan}
+          disabled={detecting}
           style={{
             background: '#fff', color: theme.primary, border: 'none',
             padding: '12px 24px', borderRadius: 12, fontWeight: 700,
             fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            opacity: detecting ? 0.7 : 1,
           }}
         >
-          <Sparkles size={16} /> Try it now
+          {detecting ? (
+            <div style={{ width: 16, height: 16, border: '2px solid rgba(0,0,0,0.1)', borderTopColor: theme.primary, borderRadius: '50%', animation: 'mm-spin 0.7s linear infinite' }} />
+          ) : (
+            <Sparkles size={16} />
+          )}
+          {detecting ? 'Analyzing...' : 'Try it now'}
         </button>
       </div>
     </div>
@@ -365,6 +373,8 @@ export default function HomeScreenWeb() {
   const { addToCart, cartCount, cartTotal } = useCart();
   const { theme, mood }                     = useTheme();
   const { searchQuery, selectedCategory, setSelectedCategory } = useStorefront();
+
+  const { detecting, rescan } = useMoodDetectionContext();
 
   const [allProducts, setAllProducts]           = useState<Product[]>([]);
   const [recommended, setRecommended]           = useState<ScoredProduct[]>([]);
@@ -472,15 +482,22 @@ export default function HomeScreenWeb() {
         .mm-show-more-btn { background: ${theme.background}; border: 1px solid ${bord}; border-radius: 8px; padding: 10px 24px; color: ${ts}; font-weight: 500; font-size: 13px; cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; transition: all 0.15s; min-height: 44px; }
         .mm-show-more-btn:hover { border-color: ${pri}; color: ${pri}; background: ${theme.tint}; }
 
+        @media (max-width: 1200px) {
+          .mm-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+        }
         @media (max-width: 900px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
           .mm-section-title { font-size: 17px; }
         }
         @media (max-width: 700px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+          .mm-section { margin-bottom: 24px; }
         }
         @media (max-width: 540px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+        @media (max-width: 380px) {
+          .mm-grid { grid-template-columns: 1fr; gap: 12px; }
         }
       `}</style>
 
@@ -528,7 +545,7 @@ export default function HomeScreenWeb() {
         </section>
       )}
 
-      <MoodScannerPromo onScan={() => router.push('/camera')} />
+      <MoodScannerPromo onScan={rescan} detecting={detecting} />
 
       {/* Recommendations */}
       {recommended.length > 0 && (

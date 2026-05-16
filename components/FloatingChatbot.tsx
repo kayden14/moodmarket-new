@@ -89,12 +89,19 @@ export const FloatingChatbot = () => {
 
     try {
       // Use Supabase Edge Function to avoid CORS on web and centralize logic
-      const { data, error } = await supabase.functions.invoke('chatbot-proxy', {
+      // Adding a 10s timeout to prevent "stuck loading" state
+      const invokePromise = supabase.functions.invoke('chatbot-proxy', {
         body: { 
           message: input.trim(),
           profileName: profile?.name || 'User'
         },
       });
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+      );
+
+      const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
 
       if (error) throw error;
       
@@ -111,7 +118,7 @@ export const FloatingChatbot = () => {
     } catch (error: any) {
       console.error('Chatbot error:', error);
       
-      // Fallback to direct client-side call if function isn't deployed (but use correct model)
+      // Fallback to direct client-side call if function isn't deployed or timed out
       try {
         const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
         if (!apiKey) throw new Error('API Key missing');
@@ -126,6 +133,8 @@ export const FloatingChatbot = () => {
             }),
           }
         );
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const fallbackData = await response.json();
         const fallbackText = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;

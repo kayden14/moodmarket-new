@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Platform } from 'react-native';
+import { CameraView } from 'expo-camera';
 import { useRouter, usePathname } from 'expo-router';
 import { useTheme, MoodKey, MOOD_PALETTES } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,14 +14,13 @@ import {
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
 import { notifyUser } from '@/services/notifyUser';
-import { useMoodDetection } from '@/hooks/useMoodDetection';
+import { useMoodDetectionContext } from '@/contexts/MoodDetectionContext';
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 function HiddenCamera({ cameraRef, onCameraReady }: { cameraRef: any; onCameraReady: () => void }) {
   if (Platform.OS === 'web') return null; 
   try {
-    const { CameraView } = require('expo-camera');
     return (
       <View style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}>
         <CameraView
@@ -115,16 +115,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
     }
   };
 
-  const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
-    setMood(detectedMood);
-    const meta = MOODS.find(m => m.key === detectedMood);
-    if (profile?.id && meta) {
-      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
-      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
-    }
-  }, [setMood, profile?.id]);
-
-  const { detecting, permissionDenied, rescan, cameraRef, onCameraReady, hasPermission } = useMoodDetection({ onMoodDetected: handleMoodDetected });
+  const { detecting, permissionDenied, rescan, cameraRef, onCameraReady, hasPermission } = useMoodDetectionContext();
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 900px)');
@@ -209,6 +200,7 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
           flex-direction: column;
           overflow: hidden;
           transition: background 0.3s ease;
+          width: 100%;
         }
 
         .mm-topnav {
@@ -443,23 +435,26 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
         .mm-main-inner { padding: 32px 32px 80px; width: 100%; max-width: 1400px; margin: 0 auto; transition: padding 0.3s ease; }
 
         @media (max-width: 1024px) {
-          .mm-main-inner { padding: 24px 24px 60px; }
+          .mm-main-inner { padding: 24px 20px 60px; }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .mm-main-inner { padding: 20px 16px 40px; }
+          .mm-sidebar-inner { width: 100%; }
         }
 
         @media (max-width: 700px) {
+          .mm-topnav { padding: 0 12px; }
           .mm-topnav-search { display: none; }
           .mm-search-toggle { display: flex; }
           .mm-desktop-only { display: none !important; }
           .mm-mobile-only  { display: flex; }
           .mm-btn-label { display: none; }
-          .mm-logo-text { font-size: 17px; }
+          .mm-logo-text { font-size: 16px; }
         }
         @media (max-width: 480px) {
           .mm-logo-text { display: none; }
+          .mm-icon-btn { padding: 0 8px; min-width: 34px; height: 34px; }
         }
       `}</style>
 

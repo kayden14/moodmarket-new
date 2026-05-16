@@ -37,7 +37,7 @@ import EmojiText from '@/components/EmojiText';
 import { NotificationService } from '@/services/notifications';
 import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
-import { useMoodDetection } from '@/hooks/useMoodDetection';
+import { useMoodDetectionContext } from '@/contexts/MoodDetectionContext';
 import { MOODS } from '@/constants/moods';
 import { getLazyCamera } from '@/utils/lazyModules';
 import MoodShareCard from '@/components/MoodShareCard';
@@ -308,14 +308,6 @@ export default function HomeScreen() {
   };
 
   /* ── Passive mood detection ─────────────────────────────────────── */
-  const handleMoodDetected = useCallback((detectedMood: MoodKey) => {
-    setMood(detectedMood);
-    const meta = MOODS.find(m => m.key === detectedMood);
-    if (profile?.id && meta) {
-      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
-    }
-  }, [setMood, profile]);
-
   const {
     detecting,
     permissionDenied,
@@ -323,9 +315,7 @@ export default function HomeScreen() {
     cameraRef,
     hasPermission,
     onCameraReady,
-  } = useMoodDetection({
-    onMoodDetected: handleMoodDetected,
-  });
+  } = useMoodDetectionContext();
 
   /* ── Products (TanStack Query) ───────────────────────────────────── */
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];

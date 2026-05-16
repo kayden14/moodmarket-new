@@ -33,9 +33,11 @@ import * as Haptics from 'expo-haptics';
 import { MoodKey } from '@/types/mood';
 import { detectMoodFromImage } from '@/services/moodDetection';
 import { captureFromWebCamera } from '@/utils/webCapture';
+import { Camera } from 'expo-camera';
 
 // Small settling delay AFTER onCameraReady fires — gives auto-exposure time to settle
-const SETTLE_DELAY_MS = 1200;
+// Reduced settlement delay for faster response
+const SETTLE_DELAY_MS = 500;
 
 // If onCameraReady never fires within this many ms, fall back to neutral
 const CAMERA_READY_TIMEOUT_MS = 12000;
@@ -117,12 +119,9 @@ export function useMoodDetection({
 
       if (Platform.OS === 'web') {
         // ── Web path: capture multiple frames from getUserMedia ───────────
-        console.log('[useMoodDetection] Web — capturing 3 frames…');
-        for (let i = 0; i < 3; i++) {
-          const base64 = await captureFromWebCamera();
-          if (base64) capturedImages.push(base64);
-          if (i < 2) await sleep(500); // Wait 0.5s between frames
-        }
+        console.log('[useMoodDetection] Web — capturing frame…');
+        const base64 = await captureFromWebCamera();
+        if (base64) capturedImages.push(base64);
       } else {
         // ── Native path: capture multiple frames from CameraView ──────────
         await sleep(SETTLE_DELAY_MS);
@@ -136,17 +135,14 @@ export function useMoodDetection({
           return;
         }
 
-        console.log('[useMoodDetection] Native — capturing 3 silent frames…');
-        for (let i = 0; i < 3; i++) {
-          const photo = await cameraRef.current.takePictureAsync({
-            base64: true,
-            quality: 0.6, // slightly lower quality for faster multi-capture
-            exif: false,
-            skipProcessing: true,
-          });
-          if (photo?.base64) capturedImages.push(photo.base64);
-          if (i < 2) await sleep(500); // Wait 0.5s between frames
-        }
+        console.log('[useMoodDetection] Native — capturing silent frame…');
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+          quality: 0.6,
+          exif: false,
+          skipProcessing: true,
+        });
+        if (photo?.base64) capturedImages.push(photo.base64);
       }
 
       if (capturedImages.length === 0) {
@@ -226,9 +222,7 @@ export function useMoodDetection({
         }
 
         // ── Native permission flow (Android / iOS) ────────────────────────
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { Camera: NativeCamera } = require('expo-camera');
-        const { status } = await NativeCamera.requestCameraPermissionsAsync();
+        const { status } = await Camera.requestCameraPermissionsAsync();
 
         if (cancelled) return;
 

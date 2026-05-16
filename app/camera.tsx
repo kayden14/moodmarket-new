@@ -35,7 +35,7 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
-// expo-camera is loaded lazily inside MobileCameraScreen to avoid eager native-module init on web/Android startup
+import { CameraView } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTheme, MOOD_PALETTES, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -236,9 +236,7 @@ function MobileCameraScreen() {
   const { theme, setMood } = useTheme();
   const { profile }        = useAuth();
 
-  // Lazy-load CameraView so expo-camera doesn't initialise at module load time
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const CameraView = require('expo-camera').CameraView;
+  // expo-camera is now imported at the top level to avoid dynamic require lag
 
   const [phase,        setPhase]        = useState<Phase>('initialising');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
@@ -254,17 +252,17 @@ function MobileCameraScreen() {
 
   const handleMoodDetected = useCallback(async (moodKey: MoodKey) => {
     setDetectedMood(moodKey);
-    setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
-    try {
-      const recs = await fetchProductRecs(moodKey, meta.emoji);
-      setProductRecs(recs);
-    } catch (err: any) {
-      console.error('[MobileCameraScreen] ❌ fetchProductRecs failed:', err?.message);
-      setProductRecs([]);
+    
+    // Automatically apply mood and navigate back immediately
+    setMood(moodKey);
+    if (profile?.id) {
+      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
     }
-    setPhase('results');
-  }, []);
+    
+    router.back();
+  }, [setMood, profile, router]);
 
   // Keep the ref in sync with the latest handleMoodDetected
   useEffect(() => {
@@ -560,17 +558,17 @@ function WebCameraScreen() {
     didDetect.current = true;
     stopAll();
     setDetectedMood(moodKey);
-    setPhase('fetching_recs');
+    
+    // Automatically apply mood and navigate back immediately
+    setMood(moodKey);
     const meta = MOODS_META.find(m => m.key === moodKey)!;
-    try {
-      const recs = await fetchProductRecs(moodKey, meta.emoji);
-      setProductRecs(recs);
-    } catch (err: any) {
-      console.error('[WebCameraScreen] ❌ fetchProductRecs failed:', err?.message);
-      setProductRecs([]);
+    if (profile?.id) {
+      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
+      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
     }
-    setPhase('results');
-  }, [stopAll]);
+    
+    router.back();
+  }, [setMood, profile, router, stopAll]);
 
   /* User confirms */
   const handleConfirm = useCallback((moodKey: MoodKey) => {
@@ -601,7 +599,14 @@ function WebCameraScreen() {
 
   const loadScript = (src: string): Promise<void> =>
     new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+      if ((window as any).faceapi) { resolve(); return; }
+      if (document.querySelector(`script[src="${src}"]`)) { 
+        // Script is already in DOM, wait for it if not ready
+        const check = setInterval(() => {
+          if ((window as any).faceapi) { clearInterval(check); resolve(); }
+        }, 100);
+        return; 
+      }
       const el = document.createElement('script');
       el.src = src;
       el.onload  = () => resolve();
