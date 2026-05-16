@@ -11,7 +11,7 @@
  * trigger another detection pass after the first one completes.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TouchableWithoutFeedback, RefreshControl, ScrollView,
@@ -35,6 +35,7 @@ import { getRecommendations, getTrending } from '@/services/recommendations';
 import { ScoredProduct } from '@/types/recommendations';
 import { useMoodDetection } from '@/hooks/useMoodDetection';
 import { MOODS } from '@/constants/moods';
+import { getLazyCamera } from '@/utils/lazyModules';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH          = (width - 48) / 2;
@@ -68,7 +69,7 @@ function ProductCard({ item, onPress, onAddToCart, index = 0 }: {
   const cartBounce = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: index * 80, useNativeDriver: true }).start();
+    Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: Math.min(index * 40, 400), useNativeDriver: true }).start();
   }, []);
 
   const pressIn  = () => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 200, friction: 10 }).start();
@@ -211,22 +212,19 @@ function SectionHeader({ icon, title, onSeeAll }: { icon: React.ReactNode; title
 }
 
 // ─── Hidden camera — mounts the CameraView so cameraRef gets populated ────────
-function HiddenCamera({ cameraRef }: { cameraRef: any }) {
-  if (Platform.OS === 'web') return null;
+function HiddenCamera({ cameraRef, onCameraReady }: { cameraRef: any; onCameraReady: () => void }) {
+  const mod = getLazyCamera() as any;
+  const CameraView = mod?.CameraView;
+  if (!CameraView) return null;
 
-  try {
-    const { CameraView } = require('expo-camera');
-
-    return (
-      <CameraView
-        ref={cameraRef}
-        facing="front"
-        style={s.hiddenCamera}
-      />
-    );
-  } catch {
-    return null;
-  }
+  return (
+    <CameraView
+      ref={cameraRef}
+      facing="front"
+      onCameraReady={onCameraReady}
+      style={s.hiddenCamera}
+    />
+  );
 }
 
 export default function HomeScreen() {
@@ -255,13 +253,15 @@ export default function HomeScreen() {
   }, [setMood, profile]);
 
   const {
-  detecting,
-  permissionDenied,
-  rescan,
-  cameraRef,
-} = useMoodDetection({
-  onMoodDetected: handleMoodDetected,
-});
+    detecting,
+    permissionDenied,
+    rescan,
+    cameraRef,
+    hasPermission,
+    onCameraReady,
+  } = useMoodDetection({
+    onMoodDetected: handleMoodDetected,
+  });
 
   /* ── Products ───────────────────────────────────────────────────── */
   const selectedMood = MOODS.find(m => m.key === mood) ?? MOODS[7];
@@ -317,7 +317,7 @@ export default function HomeScreen() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-  const ListHeader = (
+  const ListHeader = useMemo(() => (
     <>
       {/* ── Mood Banner ── */}
       <View style={[s.moodBanner, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -437,13 +437,16 @@ export default function HomeScreen() {
         </View>
       )}
     </>
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [theme, mood, detecting, permissionDenied, selectedCategory, trending, recommended, filteredProducts, selectedMood, moodPalette]);
 
   return (
     <View style={[s.container, { backgroundColor: theme.background }]}>
 
-      {/* Hidden 1×1 camera — invisible to user, provides frames for mood detection */}
-      {detecting && <HiddenCamera cameraRef={cameraRef} />}
+      {/* Hidden 1×1 camera — mounted as soon as permission granted so onCameraReady fires */}
+      {Platform.OS !== 'web' && hasPermission === true && (
+        <HiddenCamera cameraRef={cameraRef} onCameraReady={onCameraReady} />
+      )}
 
       {loading ? (
         <View style={s.loadingWrap}>
@@ -463,6 +466,11 @@ export default function HomeScreen() {
           renderItem={({ item, index }) => (
             <ProductCard item={item as ScoredProduct} index={index} onPress={() => router.push(`/product/${item.id}`)} onAddToCart={handleAddToCart} />
           )}
+          // Performance optimizations
+          initialNumToRender={6}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
 

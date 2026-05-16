@@ -75,6 +75,8 @@ function LoginScreenWeb() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
   const [focusedField, setFocused] = useState<string | null>(null);
 
   const handleLogin = async () => {
@@ -96,6 +98,8 @@ function LoginScreenWeb() {
 
   const handleReset = async () => {
     if (!resetEmail.trim()) return;
+    setResetLoading(true);
+    setResetError('');
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(
         resetEmail.trim(),
@@ -106,7 +110,9 @@ function LoginScreenWeb() {
       if (error) throw error;
       setResetSent(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email');
+      setResetError(err.message || 'Failed to send reset email');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -398,6 +404,7 @@ function LoginScreenWeb() {
                     setResetEmail(email);
                     setForgotOpen(true);
                     setResetSent(false);
+                    setResetError('');
                   }}
                 >
                   Forgot password?
@@ -517,17 +524,22 @@ function LoginScreenWeb() {
                     Enter your email and we'll send you a link to reset your
                     password.
                   </div>
+                  {resetError && (
+                    <div className="auth-error" style={{ marginBottom: 16 }}>{resetError}</div>
+                  )}
                   <input
                     className="auth-modal-input"
                     type="email"
                     placeholder="you@example.com"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleReset()}
+                    onKeyDown={(e) => e.key === 'Enter' && !resetLoading && handleReset()}
                     autoFocus
                   />
-                  <button className="auth-modal-btn" onClick={handleReset}>
-                    Send Reset Link
+                  <button className="auth-modal-btn" onClick={handleReset} disabled={resetLoading}
+                    style={{ opacity: resetLoading ? 0.65 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {resetLoading ? <div className="auth-spinner" style={{ width: 16, height: 16 }} /> : null}
+                    {resetLoading ? 'Sending…' : 'Send Reset Link'}
                   </button>
                   <button
                     className="auth-modal-cancel"
@@ -562,6 +574,7 @@ function LoginScreenMobile() {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [forgotVisible, setForgotVisible] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -596,6 +609,7 @@ function LoginScreenMobile() {
       Alert.alert('Email required', 'Please enter your email address');
       return;
     }
+    setForgotLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(
         resetEmail.trim(),
@@ -607,6 +621,8 @@ function LoginScreenMobile() {
       setResetEmail('');
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to send reset email');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -756,11 +772,15 @@ function LoginScreenMobile() {
               style={ms.modalInput}
             />
             <TouchableOpacity
-              style={ms.modalButton}
+              style={[ms.modalButton, forgotLoading && { opacity: 0.65 }]}
               onPress={handleForgotSubmit}
+              disabled={forgotLoading}
               activeOpacity={0.85}
             >
-              <Text style={ms.modalButtonText}>Send Reset Link</Text>
+              {forgotLoading
+                ? <ActivityIndicator color="#fff" />
+                : <Text style={ms.modalButtonText}>Send Reset Link</Text>
+              }
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setForgotVisible(false)}>
               <Text style={ms.modalCancel}>Cancel</Text>

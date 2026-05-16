@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
+import { emailService } from '@/services/emailService';
 import {
   Search, Shield, X, Calendar, Mail, Phone, Ban, CheckCircle, Store,
 } from 'lucide-react-native';
@@ -117,6 +118,15 @@ export default function AdminUsersScreen() {
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_suspended: newSuspended } : u));
       if (selected?.id === user.id) setSelected(prev => prev ? { ...prev, is_suspended: newSuspended } : null);
+
+      // Trigger suspension email
+      if (user.email) {
+        if (newSuspended) {
+          emailService.accountSuspended(user.email, user.name || 'User', 'Violation of terms');
+        } else {
+          emailService.accountUnsuspended(user.email, user.name || 'User');
+        }
+      }
     } catch (err: any) { Alert.alert('Error', err.message); }
     finally { setActioning(false); setConfirmAction(null); }
   };

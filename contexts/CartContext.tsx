@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { emailService } from '@/services/emailService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -156,6 +157,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
       await fetchCart();
+
+      // Trigger Cart Add Email
+      if (user?.email) {
+        const { data: p } = await supabase.from('products').select('name, price').eq('id', productId).single();
+        if (p) {
+          const userName = user.user_metadata?.name || user.email.split('@')[0] || 'Customer';
+          emailService.cartAdd(user.email, userName, p.name, p.price);
+        }
+      }
     } catch (err: any) {
       console.warn('[CartContext] addToCart error:', err?.message);
     }

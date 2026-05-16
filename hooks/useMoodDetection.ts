@@ -29,7 +29,6 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
-import { Camera } from 'expo-camera';
 import { MoodKey } from '@/types/mood';
 import { detectMoodFromImage } from '@/services/moodDetection';
 import { captureFromWebCamera } from '@/utils/webCapture';
@@ -209,8 +208,10 @@ export function useMoodDetection({
           return;
         }
 
-        // ── Native permission flow (Android / iOS) ──────────────────────────
-        const { status } = await Camera.requestCameraPermissionsAsync();
+        // ── Native permission flow (Android / iOS) ────────────────────────
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { Camera: NativeCamera } = require('expo-camera');
+        const { status } = await NativeCamera.requestCameraPermissionsAsync();
 
         if (cancelled) return;
 

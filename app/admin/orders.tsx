@@ -13,6 +13,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { X, User, Package, MapPin, Phone, CreditCard, Truck, Check, AlertTriangle } from 'lucide-react-native';
 import { AdminOrder } from '@/types/admin';
 import { supabase } from '@/services/supabase';
+import { emailService } from '@/services/emailService';
 
 const PRIMARY = '#FF7A8A';
 
@@ -56,6 +57,14 @@ export default function AdminOrdersScreen() {
       fetchOrders();
       if (selected) {
         setSelected({ ...selected, status: newStatus as any });
+
+        // Trigger Email Notification
+        if (selected.profiles?.email) {
+          const userName = selected.profiles.name || 'Customer';
+          if (newStatus === 'shipped') emailService.orderShipped(selected.profiles.email, userName, selected.id);
+          if (newStatus === 'delivered') emailService.orderDelivered(selected.profiles.email, userName, selected.id);
+          if (newStatus === 'cancelled') emailService.orderCancelled(selected.profiles.email, userName, selected.id);
+        }
       }
     } catch (e: any) {
       alert('Failed to update status: ' + e.message);

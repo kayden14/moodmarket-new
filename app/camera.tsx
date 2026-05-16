@@ -35,7 +35,7 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
-import { CameraView } from 'expo-camera';
+// expo-camera is loaded lazily inside MobileCameraScreen to avoid eager native-module init on web/Android startup
 import { useRouter } from 'expo-router';
 import { useTheme, MOOD_PALETTES, MoodKey } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -235,6 +235,10 @@ function MobileCameraScreen() {
   const router             = useRouter();
   const { theme, setMood } = useTheme();
   const { profile }        = useAuth();
+
+  // Lazy-load CameraView so expo-camera doesn't initialise at module load time
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const CameraView = require('expo-camera').CameraView;
 
   const [phase,        setPhase]        = useState<Phase>('initialising');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);

@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
+import { emailService } from '@/services/emailService';
 import type { User, Session } from '@supabase/supabase-js';
 
 export type UserRole = 'customer' | 'vendor' | 'admin';
@@ -229,6 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       isNewSignup.current = true;
+
+      // Send welcome email
+      emailService.welcome(email.trim(), name.trim());
     }
 
     return data;

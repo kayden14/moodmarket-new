@@ -9,17 +9,16 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { supabase } from './supabase';
+import { getLazyNotifications } from '@/utils/lazyModules';
 
 const isWeb = Platform.OS === 'web';
 
 // ── Lazy-load expo-notifications (prevents Expo Go crash) ──
-let ExpoNotifications: typeof import('expo-notifications') | null = null;
+const ExpoNotifications = getLazyNotifications();
 
-if (!isWeb) {
+if (ExpoNotifications) {
   try {
-    ExpoNotifications = require('expo-notifications');
-
-    ExpoNotifications?.setNotificationHandler({
+    ExpoNotifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowBanner: true,
         shouldShowList: true,
@@ -27,8 +26,8 @@ if (!isWeb) {
         shouldSetBadge: true,
       }),
     });
-  } catch {
-    console.log('[Notifications] expo-notifications unavailable (Expo Go).');
+  } catch (err) {
+    console.log('[Notifications] Failed to set notification handler:', err);
   }
 }
 

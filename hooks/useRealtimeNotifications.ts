@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import { supabase } from '@/services/supabase';
 import { getVendorNotifications, markNotificationRead, markAllNotificationsRead } from '@/services/vendorService';
+import { getLazyNotifications } from '@/utils/lazyModules';
 import type { VendorNotification } from '@/services/vendorService';
 
 interface UseRealtimeNotificationsOptions {
@@ -54,13 +55,17 @@ export function useRealtimeNotifications({
       return;
     }
     // Native: lazy-load expo-notifications
-    try {
-      const EN = require('expo-notifications');
-      EN.scheduleNotificationAsync({
-        content: { title: notif.title, body: notif.body, sound: true },
-        trigger: null,
-      });
-    } catch { /* Expo Go or unavailable */ }
+    const EN = getLazyNotifications();
+    if (EN) {
+      try {
+        EN.scheduleNotificationAsync({
+          content: { title: notif.title, body: notif.body, sound: true },
+          trigger: null,
+        });
+      } catch (err) {
+        console.warn('[useRealtimeNotifications] Failed to schedule notification:', err);
+      }
+    }
   };
 
   // ── Subscribe to realtime ─────────────────────────────────────────────
