@@ -120,7 +120,7 @@ async function callGeminiModel(
 }
 
 async function detectWithGeminiFallback(images: string | string[]): Promise<MoodDetectionResult> {
-  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'AIzaSyDvRUoN2kbEsjdH_LW7TSVWO-2klYbXc_g';
+  const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
   if (!geminiKey) throw new Error('Gemini API key missing');
 
   for (const model of GEMINI_MODELS) {
