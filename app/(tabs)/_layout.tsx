@@ -23,6 +23,7 @@ import { NotificationService } from '@/services/notifications';
 import * as Notifications from 'expo-notifications';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import MobileHeader from '@/components/MobileHeader';
+import { FloatingChatbot } from '@/components/FloatingChatbot';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -231,6 +232,7 @@ function InnerTabLayout() {
         <Tabs.Screen name="product/[id]" />
         <Tabs.Screen name="order/[id]" />
       </Tabs>
+      <FloatingChatbot />
     </View>
   );
 }

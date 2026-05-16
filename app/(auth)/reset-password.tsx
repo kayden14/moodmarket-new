@@ -28,17 +28,28 @@ function ResetPasswordWeb() {
   useEffect(() => {
     const init = async () => {
       if (error_description) return;
-      if (!code) {
-        setError('No reset code provided.');
+      
+      // Check for code in URL or hash (Supabase can use both)
+      const hash = window.location.hash;
+      const hasSession = hash.includes('access_token');
+      
+      if (!code && !hasSession) {
+        setError('No reset link detected. Please request a new one from the login page.');
         return;
       }
+
+      if (hasSession) {
+        setReady(true);
+        return;
+      }
+
       try {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) throw error;
         setReady(true);
       } catch (err) {
         console.log('Reset exchange error:', err);
-        setError('Invalid or expired reset link.');
+        setError('This reset link is invalid or has already been used.');
       }
     };
     init();
@@ -49,15 +60,19 @@ function ResetPasswordWeb() {
       setError('Please enter a new password');
       return;
     }
+    if (password.trim().length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const { error } = await supabase.auth.updateUser({ password: password.trim() });
       if (error) throw error;
       setSuccess(true);
-      setTimeout(() => router.replace('/(auth)/login'), 2000);
+      setTimeout(() => router.replace('/(auth)/login'), 3000);
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || 'Failed to update password');
     } finally {
       setLoading(false);
     }
@@ -155,14 +170,20 @@ function ResetPasswordMobile() {
         router.replace('/(auth)/login');
         return;
       }
-      if (!code) return;
+      
+      // Some email clients use fragments (#) for tokens
+      if (!code) {
+        setReady(true); // Allow them to try updating if they have a session already
+        return;
+      }
+
       try {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) throw error;
         setReady(true);
       } catch (err: any) {
         console.log('Reset exchange error:', err);
-        Alert.alert('Invalid link', 'Please request a new password reset email.');
+        Alert.alert('Link Issue', 'This reset link may be invalid or expired. Please request a new one.');
         router.replace('/(auth)/login');
       }
     };
@@ -174,11 +195,15 @@ function ResetPasswordMobile() {
       Alert.alert('Error', 'Please enter a new password');
       return;
     }
+    if (password.trim().length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: password.trim() });
       if (error) throw error;
-      Alert.alert('Success', 'Password updated successfully');
+      Alert.alert('Success', 'Your password has been updated. You can now sign in.');
       router.replace('/(auth)/login');
     } catch (err: any) {
       Alert.alert('Update failed', err.message || 'Something went wrong');

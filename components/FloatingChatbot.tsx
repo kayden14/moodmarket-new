@@ -1,0 +1,431 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+} from 'react-native';
+import { MessageSquare, X, Send, Sparkles, Brain } from 'lucide-react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width, height } = Dimensions.get('window');
+
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
+  timestamp: Date;
+}
+
+export const FloatingChatbot = () => {
+  const { theme } = useTheme();
+  const { profile } = useAuth();
+  const insets = useSafeAreaInsets();
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: `Hi ${profile?.name?.split(' ')[0] || 'there'}! I'm your MoodMarket AI assistant. How are you feeling today?`,
+      sender: 'bot',
+      timestamp: new Date(),
+    },
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      fadeAnim.setValue(0);
+      scaleAnim.setValue(0.8);
+    }
+  }, [isOpen]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      text: input.trim(),
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    try {
+      // Call Gemini API (using the same logic as vibe search or AI insights)
+      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) throw new Error('API Key missing');
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `You are an empathetic AI assistant for MoodMarket, a mood-aware marketplace. 
+                    The user's name is ${profile?.name || 'User'}. 
+                    Keep your responses helpful, concise, and empathetic. 
+                    If the user is feeling low, offer comfort and perhaps suggest they scan their mood or look at "Calming" products.
+                    If they are happy, celebrate with them.
+                    
+                    User message: ${input.trim()}`,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              maxOutputTokens: 200,
+              temperature: 0.7,
+            },
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm here for you! How can I help?";
+
+      const botMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponse.trim(),
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      console.error('Chatbot error:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: "Sorry, I'm having trouble connecting right now. Let's talk again soon!",
+          sender: 'bot',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  };
+
+  const toggleChat = () => setIsOpen(!isOpen);
+
+  return (
+    <>
+      {/* Floating Button */}
+      {!isOpen && (
+        <TouchableOpacity
+          style={[
+            s.floatingBtn,
+            { 
+              backgroundColor: theme.primary, 
+              bottom: insets.bottom + (Platform.OS === 'ios' ? 70 : 80),
+              right: 20,
+              shadowColor: theme.primary,
+            }
+          ]}
+          onPress={toggleChat}
+          activeOpacity={0.9}
+        >
+          <Sparkles size={24} color="#fff" />
+          <View style={s.badge} />
+        </TouchableOpacity>
+      )}
+
+      {/* Chat Modal */}
+      <Modal
+        visible={isOpen}
+        transparent
+        animationType="none"
+        onRequestClose={toggleChat}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={s.modalOverlay}
+        >
+          <Animated.View
+            style={[
+              s.chatContainer,
+              {
+                backgroundColor: theme.background,
+                borderColor: theme.border,
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              }
+            ]}
+          >
+            {/* Header */}
+            <View style={[s.header, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
+              <View style={s.headerTitleRow}>
+                <View style={[s.botAvatar, { backgroundColor: theme.primary + '20' }]}>
+                  <Brain size={18} color={theme.primary} />
+                </View>
+                <View>
+                  <Text style={[s.headerTitle, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Mood Assistant</Text>
+                  <View style={s.onlineRow}>
+                    <View style={s.onlineDot} />
+                    <Text style={[s.onlineText, { color: theme.textSecondary }]}>Always here to listen</Text>
+                  </View>
+                </View>
+              </View>
+              <TouchableOpacity onPress={toggleChat} style={s.closeBtn}>
+                <X size={20} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Messages */}
+            <ScrollView
+              ref={scrollViewRef}
+              style={s.messageList}
+              contentContainerStyle={s.messageListContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {messages.map((msg) => (
+                <View
+                  key={msg.id}
+                  style={[
+                    s.messageRow,
+                    msg.sender === 'user' ? s.userRow : s.botRow,
+                  ]}
+                >
+                  <View
+                    style={[
+                      s.bubble,
+                      msg.sender === 'user'
+                        ? [s.userBubble, { backgroundColor: theme.primary }]
+                        : [s.botBubble, { backgroundColor: theme.card, borderColor: theme.border }],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        s.messageText,
+                        { color: msg.sender === 'user' ? '#fff' : theme.textPrimary, fontFamily: theme.fontBody }
+                      ]}
+                    >
+                      {msg.text}
+                    </Text>
+                  </View>
+                  <Text style={[s.time, { color: theme.inactive }]}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
+              ))}
+              {isTyping && (
+                <View style={s.botRow}>
+                  <View style={[s.bubble, s.botBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <ActivityIndicator size="small" color={theme.primary} />
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Input */}
+            <View style={[s.inputArea, { borderTopColor: theme.border, paddingBottom: Platform.OS === 'ios' ? 20 : 12 }]}>
+              <View style={[s.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <TextInput
+                  style={[s.input, { color: theme.textPrimary, fontFamily: theme.fontBody }]}
+                  placeholder="Tell me how you're feeling..."
+                  placeholderTextColor={theme.inactive}
+                  value={input}
+                  onChangeText={setInput}
+                  multiline
+                />
+                <TouchableOpacity
+                  onPress={handleSend}
+                  disabled={!input.trim() || isTyping}
+                  style={[s.sendBtn, { backgroundColor: input.trim() ? theme.primary : theme.border }]}
+                >
+                  <Send size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
+  );
+};
+
+const s = StyleSheet.create({
+  floatingBtn: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    zIndex: 1000,
+  },
+  badge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#4ADE80',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  chatContainer: {
+    width: '94%',
+    height: height * 0.7,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  header: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  botAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  onlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  onlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#4ADE80',
+  },
+  onlineText: {
+    fontSize: 11,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  messageList: {
+    flex: 1,
+  },
+  messageListContent: {
+    padding: 16,
+    gap: 16,
+  },
+  messageRow: {
+    maxWidth: '85%',
+  },
+  userRow: {
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  botRow: {
+    alignSelf: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  bubble: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  userBubble: {
+    borderTopRightRadius: 4,
+  },
+  botBubble: {
+    borderTopLeftRadius: 4,
+    borderWidth: 1,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  time: {
+    fontSize: 10,
+    marginTop: 4,
+  },
+  inputArea: {
+    padding: 12,
+    borderTopWidth: 1,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+  },
+  input: {
+    flex: 1,
+    maxHeight: 100,
+    fontSize: 14,
+    paddingTop: Platform.OS === 'ios' ? 10 : 8,
+    paddingBottom: Platform.OS === 'ios' ? 10 : 8,
+  },
+  sendBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+});
