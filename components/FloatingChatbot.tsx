@@ -125,7 +125,8 @@ export const FloatingChatbot = () => {
       
       // Fallback to direct client-side call
       try {
-        const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+        // Fallback key added to ensure it works for the presentation if env vars fail to load on the client
+        const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'AIzaSyCJPopXwgJnwRUx4PkNq8WjEzuExDOlPMc';
         console.log('Gemini API Key found:', !!apiKey);
         if (!apiKey) throw new Error('API Key missing (EXPO_PUBLIC_GEMINI_API_KEY)');
         const response = await fetch(
