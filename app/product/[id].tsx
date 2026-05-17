@@ -24,6 +24,8 @@ import { getProductImage } from '@/utils/images';
 import { notifyUser } from '@/services/notifyUser';
 import ProductRecommendations from '@/components/ProductRecommendations';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 const SUCCESS_GREEN = '#22C55E';
 
@@ -169,7 +171,29 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate }: {
     setLoading(false);
   };
 
-  useEffect(() => { fetchReviews(); }, [productId]);
+  useEffect(() => {
+    fetchReviews();
+
+    const channel = supabase
+      .channel(`product-reviews-${productId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reviews',
+          filter: `product_id=eq.${productId}`,
+        },
+        () => {
+          fetchReviews();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [productId, userId]);
 
   const handleSubmit = async () => {
     if (!userId) { Alert.alert('Sign in', 'Please log in to leave a review.'); return; }
@@ -335,6 +359,7 @@ export default function ProductDetailScreen() {
   const { addToCart, cartCount } = useCart();
   const { theme, isDark } = useTheme();
   const { isWeb, isWide, width: windowWidth } = useResponsive();
+  const insets = useSafeAreaInsets();
 
   const [product,      setProduct]      = useState<Product | null>(null);
   const [loading,      setLoading]      = useState(true);
@@ -639,7 +664,7 @@ export default function ProductDetailScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* ── Floating header ── */}
-      <View style={s.floatingHeader}>
+      <View style={[s.floatingHeader, { paddingTop: Math.max(12, insets.top) }]}>
         <TouchableOpacity style={s.iconBtn} onPress={() => router.back()}>
           <ArrowLeft size={20} color="#111" />
         </TouchableOpacity>
@@ -668,7 +693,7 @@ export default function ProductDetailScreen() {
         {/* ── Hero image ── */}
         <Image
           source={{ uri: getProductImage(product) }}
-          style={[s.productImage, { width: windowWidth, height: windowWidth * 0.95 }]}
+          style={[s.productImage, { width: windowWidth, height: Math.min(windowWidth * 0.8, 350) }]}
         />
 
         {/* ── Content card ── */}
@@ -699,7 +724,7 @@ export default function ProductDetailScreen() {
       </ScrollView>
 
       {/* ── Footer (mobile only) ── */}
-      <View style={[s.footer, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+      <View style={[s.footer, { backgroundColor: theme.card, borderTopColor: theme.border, paddingBottom: Math.max(16, insets.bottom) }]}>
         <TouchableOpacity
           style={[s.wishlistBtn, { backgroundColor: theme.background, borderColor: theme.border }]}
           onPress={() => setWished(w => {
@@ -776,7 +801,7 @@ const s = StyleSheet.create({
   inlineFooter:  { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 4 },
 
   // ── Mobile floating header ──
-  floatingHeader:{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 52, paddingHorizontal: 20, paddingBottom: 12 },
+  floatingHeader:{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
   headerActions: { flexDirection: 'row', gap: 8 },
   iconBtn:       { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cartBadge:     { position: 'absolute', top: -5, right: -5, minWidth: 15, height: 15, borderRadius: 8, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 2, borderWidth: 1.5, borderColor: '#fff' },
@@ -817,7 +842,7 @@ const s = StyleSheet.create({
   qtyTotal:      { fontSize: 14, fontWeight: '500', marginLeft: 4 },
 
   // ── Mobile footer ──
-  footer:        { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, paddingBottom: Platform.OS === 'ios' ? 32 : 20, borderTopWidth: 1, gap: 10 },
+  footer:        { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, gap: 10 },
   wishlistBtn:   { width: 52, height: 52, borderRadius: 14, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center' },
   addBtn:        { flex: 1, paddingVertical: 15, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
                    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 5 },

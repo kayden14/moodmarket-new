@@ -14,6 +14,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Product } from '@/types/database';
 import { ArrowLeft, Search, X, Star } from 'lucide-react-native';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const POPULAR = ['Skincare', 'Relaxing', 'Energy', 'Happy', 'Self-care', 'Cozy'];
 
@@ -22,6 +23,7 @@ export default function SearchScreen() {
   const { theme, isDark } = useTheme();
   const { isWide, isDesktop, width: windowWidth } = useResponsive();
   const inputRef = useRef<TextInput>(null);
+  const insets = useSafeAreaInsets();
 
   const numColumns = isWide ? 2 : 1;
   const cardWidth = isWide ? (Math.min(windowWidth, 1200) - 48) / 2 : windowWidth;
@@ -88,7 +90,7 @@ export default function SearchScreen() {
       <View style={s.container}>
 
       {/* ── Header ── */}
-      <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+      <View style={[s.header, { backgroundColor: theme.card, borderBottomColor: theme.border, paddingTop: Math.max(12, insets.top) }]}>
         <TouchableOpacity
           style={[s.backBtn, { backgroundColor: theme.background, borderColor: theme.border }]}
           onPress={() => router.back()}
@@ -182,7 +184,7 @@ const r = StyleSheet.create({
 
 const s = StyleSheet.create({
   container:   { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
-  header:      { paddingTop: 56, paddingBottom: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1 },
+  header:      { paddingBottom: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1 },
   backBtn:     { width: 36, height: 36, borderRadius: 18, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
   searchBox:   { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 12, gap: 8, height: 42 },
   searchInput: { flex: 1, fontSize: 15, paddingVertical: 0 },

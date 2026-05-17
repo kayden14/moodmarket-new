@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft, Star, Pencil, Trash2,
   MessageSquare, ShoppingBag, ChevronRight,
@@ -174,6 +175,7 @@ export default function ReviewsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [reviews,    setReviews]    = useState<Review[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -225,6 +227,7 @@ export default function ReviewsScreen() {
       <View style={[s.header, {
         backgroundColor:  theme.card,
         borderBottomColor: theme.border,
+        paddingTop: Math.max(16, insets.top),
       }]}>
         <TouchableOpacity
           style={[s.backBtn, {
@@ -354,7 +357,6 @@ export default function ReviewsScreen() {
 
 const s = StyleSheet.create({
   header: {
-    paddingTop: Platform.OS === 'ios' ? 56 : 44,
     paddingBottom: 16, paddingHorizontal: 20,
     borderBottomWidth: 1,
     flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',

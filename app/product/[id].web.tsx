@@ -194,7 +194,29 @@ function ReviewSection({ productId, userId, userProfile, onAverageUpdate, theme,
     setLoading(false);
   }, [productId, userId]);
 
-  useEffect(() => { fetchReviews(); }, [fetchReviews]);
+  useEffect(() => {
+    fetchReviews();
+
+    const channel = supabase
+      .channel(`product-reviews-web-${productId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reviews',
+          filter: `product_id=eq.${productId}`,
+        },
+        () => {
+          fetchReviews();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [productId, fetchReviews]);
 
   const handleSubmit = async () => {
     if (!userId) return;

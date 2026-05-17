@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ShoppingCart, ShoppingBag, BarChart3, Package, CheckCircle, DollarSign, ArrowRight, ArrowLeft, LogOut, Bell, Lock, Palette, Settings, Sun, Moon, User, Calendar, CalendarDays, ChevronRight, X, Menu } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, BarChart3, Package, CheckCircle, DollarSign, ArrowRight, ArrowLeft, LogOut, Bell, Lock, Palette, Settings, Sun, Moon, User, Calendar, CalendarDays, ChevronRight, ChevronDown, X, Menu } from 'lucide-react';
 
 const WebEmoji = ({ children, style }: any) => <span style={{ ...style, fontFamily: undefined }}>{children}</span>;
 import { Order } from '@/types/database';
@@ -322,6 +322,7 @@ export default function ProfileWeb() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [adminTaps, setAdminTaps] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
   const moodHistory: any[] = (() => {
     const mh = profile?.mood_history;
@@ -648,6 +649,137 @@ export default function ProfileWeb() {
           .prof-body { grid-template-columns: 1fr; padding: 0; }
           .prof-sidebar { position: static; }
         }
+
+        /* ── MOBILE CUSTOM DROPDOWN ── */
+        .prof-mobile-dropdown-container {
+          display: none;
+          position: relative;
+          width: 100%;
+          margin-bottom: 20px;
+          z-index: 100;
+        }
+
+        .prof-mobile-dropdown-btn {
+          width: 100%;
+          padding: 13px 16px;
+          border-radius: 14px;
+          background: ${card};
+          border: 1px solid ${bord};
+          color: ${tp};
+          font-size: 13.5px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: "Plus Jakarta Sans", sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: all 0.15s ease;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .prof-mobile-dropdown-btn:hover {
+          border-color: ${pri};
+          background: ${tint};
+        }
+        
+        .prof-mobile-dropdown-btn-content {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .prof-mobile-dropdown-chevron {
+          color: ${ts};
+          transition: transform 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+        }
+        .prof-mobile-dropdown-chevron.open {
+          transform: rotate(180deg);
+        }
+
+        .prof-mobile-dropdown-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: transparent;
+          z-index: 105;
+        }
+
+        .prof-mobile-dropdown-list {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          right: 0;
+          background: ${card};
+          border: 1px solid ${bord};
+          border-radius: 16px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+          overflow: hidden;
+          z-index: 110;
+          animation: prof-dropdown-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes prof-dropdown-slide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .prof-mobile-dropdown-item {
+          width: 100%;
+          padding: 12px 18px;
+          background: transparent;
+          border: none;
+          color: ${ts};
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: "Plus Jakarta Sans", sans-serif;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          text-align: left;
+          transition: all 0.12s ease;
+        }
+        .prof-mobile-dropdown-item:hover {
+          background: ${tint};
+          color: ${pri};
+        }
+        .prof-mobile-dropdown-item.active {
+          background: ${isDark ? '#2D1820' : '#FFF0F2'};
+          color: ${pri};
+          font-weight: 700;
+        }
+
+        .prof-mobile-dropdown-item-label {
+          flex: 1;
+        }
+
+        .prof-mobile-dropdown-item-indicator {
+          color: ${pri};
+          font-weight: 800;
+          font-size: 14px;
+        }
+
+        .prof-mobile-dropdown-divider {
+          height: 1px;
+          background: ${bord};
+          margin: 4px 0;
+        }
+
+        /* ── RESPONSIVE OVERRIDES ── */
+        @media (max-width: 768px) {
+          .prof-mobile-dropdown-container {
+            display: block;
+          }
+          .prof-tabs {
+            display: none !important;
+          }
+          .prof-hamburger {
+            display: none !important;
+          }
+          .prof-mobile-drawer {
+            display: none !important;
+          }
+        }
       `}</style>
 
       <div className="prof-app">
@@ -750,6 +882,72 @@ export default function ProfileWeb() {
                     <span className="prof-tab-label-short">{t.label}</span>
                   </TabBtn>
                 ))}
+              </div>
+
+              {/* Mobile Custom Dropdown Menu */}
+              <div className="prof-mobile-dropdown-container">
+                <button
+                  className="prof-mobile-dropdown-btn"
+                  onClick={() => setMobileDropdownOpen(v => !v)}
+                >
+                  <span className="prof-mobile-dropdown-btn-content">
+                    {(() => {
+                      const activeItem = NAV_ITEMS.find(item => item.key === activeTab);
+                      return (
+                        <>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', color: pri }}>
+                            {activeItem?.icon}
+                          </span>
+                          <span>
+                            {activeItem?.label}
+                          </span>
+                        </>
+                      );
+                    })()}
+                  </span>
+                  <ChevronDown className={`prof-mobile-dropdown-chevron${mobileDropdownOpen ? ' open' : ''}`} size={16} />
+                </button>
+
+                {mobileDropdownOpen && (
+                  <>
+                    <div 
+                      className="prof-mobile-dropdown-overlay" 
+                      onClick={() => setMobileDropdownOpen(false)} 
+                    />
+                    <div className="prof-mobile-dropdown-list">
+                      {NAV_ITEMS.map(item => (
+                        <button
+                          key={item.key}
+                          className={`prof-mobile-dropdown-item${activeTab === item.key ? ' active' : ''}`}
+                          onClick={() => {
+                            setActiveTab(item.key);
+                            setMobileDropdownOpen(false);
+                          }}
+                        >
+                          <span className="prof-mobile-dropdown-item-icon" style={{ color: activeTab === item.key ? pri : ts, display: 'inline-flex', alignItems: 'center' }}>
+                            {item.icon}
+                          </span>
+                          <span className="prof-mobile-dropdown-item-label">{item.label}</span>
+                          {activeTab === item.key && (
+                            <span className="prof-mobile-dropdown-item-indicator">✓</span>
+                          )}
+                        </button>
+                      ))}
+                      <div className="prof-mobile-dropdown-divider" />
+                      <button
+                        className="prof-mobile-dropdown-item"
+                        onClick={() => {
+                          handleSignOut();
+                          setMobileDropdownOpen(false);
+                        }}
+                        style={{ color: '#EF4444' }}
+                      >
+                        <span className="prof-mobile-dropdown-item-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>🚪</span>
+                        <span className="prof-mobile-dropdown-item-label">Sign Out</span>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* ── OVERVIEW ── */}

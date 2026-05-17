@@ -158,6 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
+      console.log('AUTH EVENT:', event);
+
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -249,10 +251,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
+    // Use /auth/callback route so the token exchange happens before navigating to tabs
     const redirectTo =
       Platform.OS === 'web'
-        ? `${window.location.origin}/(tabs)`
-        : Linking.createURL('(tabs)');
+        ? `${window.location.origin}/auth/callback`
+        : Linking.createURL('/auth/callback');
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -264,6 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
+    // On native, open the OAuth URL in the browser
     if (data?.url && Platform.OS !== 'web') {
       await Linking.openURL(data.url);
     }
