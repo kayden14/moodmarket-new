@@ -13,6 +13,7 @@ import {
   Animated,
   Dimensions,
   useWindowDimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { X, Send, Sparkles, Brain } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -133,7 +134,7 @@ export const FloatingChatbot = () => {
 
         console.log('[Chatbot] 🔄 Trying client-side fallback...');
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         const contents = conversationHistory.map((m) => ({
           role: m.sender === 'user' ? 'user' : 'model',
@@ -229,9 +230,13 @@ export const FloatingChatbot = () => {
       )}
 
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={toggleChat}>
+        <TouchableWithoutFeedback onPress={toggleChat}>
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
+        </TouchableWithoutFeedback>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={[s.modalOverlay, (isDesktop || isTablet) && s.modalOverlayWide]}
+          pointerEvents="box-none"
         >
           <Animated.View
             style={[
@@ -262,8 +267,10 @@ export const FloatingChatbot = () => {
                   </View>
                 </View>
               </View>
-              <TouchableOpacity onPress={toggleChat} style={s.closeBtn}>
-                <X size={20} color={theme.textSecondary} />
+              <TouchableOpacity onPress={toggleChat} style={s.closeBtn} hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
+                <View style={[s.closeBtnInner, { backgroundColor: theme.background }]}>
+                  <X size={18} color={theme.textSecondary} />
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -366,7 +373,6 @@ const s = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
@@ -375,12 +381,14 @@ const s = StyleSheet.create({
     borderTopRightRadius: 30,
     borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: 10,
-    ...Platform.select({ 
+    marginBottom: Platform.OS === 'ios' ? 0 : 10,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
+      android: { elevation: 20 },
       web: { 
         boxShadow: '0 20px 50px rgba(0,0,0,0.2)', 
         marginBottom: 20,
-        borderRadius: 20, // Rounded corners on all sides for web floating
+        borderRadius: 20,
       } 
     }),
   },
@@ -404,6 +412,7 @@ const s = StyleSheet.create({
   onlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ADE80' },
   onlineText: { fontSize: 11 },
   closeBtn: { padding: 4 },
+  closeBtnInner: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   messageList: { flex: 1 },
   messageListContent: { padding: 16, gap: 16 },
   messageRow: { maxWidth: '85%' },

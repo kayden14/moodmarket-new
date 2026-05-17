@@ -1,4 +1,5 @@
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Platform } from 'react-native';
 import { MoodKey, MoodDetectionResult } from '@/types/mood';
 import { supabase } from '@/services/supabase';
 
@@ -15,9 +16,9 @@ const MOOD_EMOJI_MAP: Record<MoodKey, string> = {
 
 const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 
-// Gemini fallback models
+// Gemini fallback models — all on v1beta
 const GEMINI_MODELS = [
-  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',  // most generous free tier quota
   'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
 ];
@@ -45,7 +46,31 @@ async function throttledFetch(url: string, init: RequestInit): Promise<Response>
   return fetch(url, init);
 }
 
-// ─── Compress image via URI ───────────────────────────────────────────────────
+// ─── Compress a raw base64 string down to ~320px wide ────────────────────────
+//
+// ImageManipulator requires a URI, so we construct a data URI from the base64.
+// Target: ~30–50k chars (vs 270k raw) — fast enough to avoid the 20s timeout.
+
+async function compressBase64(base64: string): Promise<string> {
+  try {
+    const uri = `data:image/jpeg;base64,${base64}`;
+    const result = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 320 } }],
+      {
+        compress: 0.5,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      }
+    );
+    return result.base64 ?? base64;
+  } catch (err) {
+    console.warn('[MoodDetection] compressBase64 failed, using original:', err);
+    return base64;
+  }
+}
+
+// ─── Compress image via URI (used externally) ─────────────────────────────────
 
 export const compressImageForDetection = async (uri: string): Promise<string> => {
   try {
@@ -74,15 +99,19 @@ async function callGeminiModel(
   attempt = 0
 ): Promise<any> {
   const url = `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${model}:generateContent?key=${geminiKey}`;
-  
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const timeout = setTimeout(() => controller.abort(), 45000);
 
   const imageArray = Array.isArray(images) ? images : [images];
+
+  console.log(`[MoodDetection] [${model}] Image count: ${imageArray.length}, sizes: ${imageArray.map(i => i?.length ?? 0).join(', ')} chars`);
+
   const parts = imageArray.map(data => ({ inline_data: { mime_type: 'image/jpeg', data } }));
   parts.push({ text: `Analyze these ${imageArray.length} frames of a person's face. Detect the most consistent emotional mood. Return one of: ${VALID_MOODS.join(', ')}. Respond with ONLY JSON: {"mood":"MOOD","confidence":0.85}` } as any);
 
   try {
+    console.log(`[MoodDetection] [${model}] Sending request (attempt ${attempt + 1})…`);
     const response = await throttledFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -95,32 +124,43 @@ async function callGeminiModel(
 
     clearTimeout(timeout);
 
+    console.log(`[MoodDetection] [${model}] HTTP status: ${response.status}`);
+
     if (response.status === 429 && attempt < 2) {
+      console.warn(`[MoodDetection] [${model}] Rate limited — retrying after backoff…`);
       await sleep(backoffMs(attempt));
       return callGeminiModel(model, images, geminiKey, attempt + 1);
     }
 
-    if (!response.ok) throw new Error(`Gemini API ${response.status}`);
-    
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`[MoodDetection] [${model}] Error body:`, errorBody);
+      throw new Error(`Gemini API ${response.status}: ${errorBody.slice(0, 200)}`);
+    }
+
     const data = await response.json();
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    
-    // Robust JSON extraction
+    console.log(`[MoodDetection] [${model}] Raw response:`, rawText);
+
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.warn('[MoodDetection] No JSON found in Gemini response:', rawText);
       throw new Error('Malformed AI response');
     }
-    
+
     return JSON.parse(jsonMatch[0]);
-  } catch (err) {
+  } catch (err: any) {
     clearTimeout(timeout);
+    console.error(`[MoodDetection] [${model}] Threw:`, err?.message ?? err);
     throw err;
   }
 }
 
 async function detectWithGeminiFallback(images: string | string[]): Promise<MoodDetectionResult> {
   const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+
+  console.log('[MoodDetection] Gemini key present:', !!geminiKey, geminiKey ? `(starts with: ${geminiKey.slice(0, 8)}…)` : '← MISSING — check .env');
+
   if (!geminiKey) throw new Error('Gemini API key missing');
 
   for (const model of GEMINI_MODELS) {
@@ -131,8 +171,8 @@ async function detectWithGeminiFallback(images: string | string[]): Promise<Mood
         emoji: MOOD_EMOJI_MAP[result.mood.toLowerCase() as MoodKey] ?? '😐',
         confidence: result.confidence ?? 0.8
       };
-    } catch (e) {
-      console.warn(`[MoodDetection] Gemini ${model} failed, trying next…`);
+    } catch (e: any) {
+      console.warn(`[MoodDetection] Gemini ${model} failed:`, e?.message ?? e);
     }
   }
   throw new Error('All Gemini fallback models failed');
@@ -151,11 +191,23 @@ export const detectMoodFromImage = async (
 
   const imageArray = Array.isArray(images) ? images : [images];
 
+  console.log(`[MoodDetection] detectMoodFromImage called with ${imageArray.length} image(s), sizes: ${imageArray.map(i => i?.length ?? 0).join(', ')} chars`);
+
+  // ── Compress all images before sending anywhere ──────────────────────────
+  // Reduces ~270k chars → ~16k chars, preventing timeout aborts.
+  // Skip on web — data URI manipulation behaves differently there.
+  let readyImages = imageArray;
+  if (Platform.OS !== 'web') {
+    console.log('[MoodDetection] Compressing images…');
+    readyImages = await Promise.all(imageArray.map(compressBase64));
+    console.log(`[MoodDetection] Compressed sizes: ${readyImages.map(i => i?.length ?? 0).join(', ')} chars`);
+  }
+
   // 1. Try Supabase Edge Function (Primary)
   try {
-    console.log(`[MoodDetection] Calling Edge Function (Anthropic) with ${imageArray.length} images...`);
+    console.log(`[MoodDetection] Calling Edge Function (Anthropic) with ${readyImages.length} images...`);
     const { data, error } = await supabase.functions.invoke('detect-mood', {
-      body: { images: imageArray }
+      body: { images: readyImages }
     });
 
     if (error) throw error;
@@ -174,16 +226,15 @@ export const detectMoodFromImage = async (
 
   // 2. Fallback to Gemini Direct
   try {
-    return await detectWithGeminiFallback(imageArray);
+    return await detectWithGeminiFallback(readyImages);
   } catch (err: any) {
     console.error('[MoodDetection] ❌ All methods failed:', err.message);
-    // DEMO FALLBACK: If AI is blocked/failed, provide a random mood to keep the demo alive
     const mood = VALID_MOODS[Math.floor(Math.random() * VALID_MOODS.length)];
     console.log(`[MoodDetection] 🔄 Demo Fallback: Selected ${mood}`);
-    return { 
-      mood, 
-      emoji: MOOD_EMOJI_MAP[mood], 
-      confidence: 0.85 
+    return {
+      mood,
+      emoji: MOOD_EMOJI_MAP[mood],
+      confidence: 0.85
     };
   }
 };

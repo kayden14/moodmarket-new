@@ -49,7 +49,13 @@ function ResetPasswordWeb() {
         setReady(true);
       } catch (err) {
         console.log('Reset exchange error:', err);
-        setError('This reset link is invalid or has already been used.');
+        // If supabase automatically exchanged the code, we might already have a session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setReady(true);
+        } else {
+          setError('This reset link is invalid or has already been used.');
+        }
       }
     };
     init();
@@ -183,8 +189,14 @@ function ResetPasswordMobile() {
         setReady(true);
       } catch (err: any) {
         console.log('Reset exchange error:', err);
-        Alert.alert('Link Issue', 'This reset link may be invalid or expired. Please request a new one.');
-        router.replace('/(auth)/login');
+        // Supabase might have auto-exchanged the code
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+           setReady(true);
+        } else {
+           Alert.alert('Link Issue', 'This reset link may be invalid or expired. Please request a new one.');
+           router.replace('/(auth)/login');
+        }
       }
     };
     init();

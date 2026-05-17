@@ -395,6 +395,12 @@ export default function HomeScreen() {
           </View>
           <View style={s.headerIcons}>
             <TouchableOpacity 
+              style={[s.headerIconBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              onPress={() => router.push('/search')}
+            >
+              <Search size={20} color={theme.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
               style={[s.headerIconBtn, { backgroundColor: isVibeSearch ? theme.primary : theme.border, borderColor: theme.border }]}
               onPress={() => setIsVibeSearch(!isVibeSearch)}
             >
@@ -402,9 +408,10 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity 
               style={[s.headerIconBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
-              onPress={() => router.push('/chat' as any)}
+              onPress={() => router.push('/notifications')}
             >
-              <MessageSquare size={20} color={theme.textPrimary} />
+              <Bell size={20} color={theme.textPrimary} />
+              <View style={[s.notifDot, { backgroundColor: theme.primary, borderColor: theme.card }]} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[s.headerIconBtn, { backgroundColor: theme.primary, borderColor: theme.border }]}

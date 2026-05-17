@@ -252,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const redirectTo =
       Platform.OS === 'web'
         ? `${window.location.origin}/(tabs)`
-        : 'moodmarket://(tabs)';
+        : Linking.createURL('(tabs)');
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,

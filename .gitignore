@@ -1,3 +1,10 @@
+# EAS
+eas.json
+
+# local env files
+.env*.local
+.env
+
 # dependencies
 node_modules/
 
@@ -27,14 +34,7 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-.env
-
 # typescript
 *.tsbuildinfo
 android
 ios
-
-
-eas.json

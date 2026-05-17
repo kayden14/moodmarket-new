@@ -205,7 +205,8 @@ function InnerTabLayout() {
     };
   }, [user?.id]);
 
-  const currentSegment = segments[segments.length - 1] || 'index';
+  const currentSegment = (segments[segments.length - 1] as string) || 'index';
+  const isHome = currentSegment === 'index' || currentSegment === '(tabs)' || currentSegment === '';
   const firstName = profile?.name?.split(' ')[0] ?? '';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -234,7 +235,9 @@ function InnerTabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      <MobileHeader {...(headerProps[currentSegment] || headerProps.index)} />
+      {!isHome && (
+        <MobileHeader {...(headerProps[currentSegment] || headerProps.index)} />
+      )}
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}
@@ -242,12 +245,6 @@ function InnerTabLayout() {
         <Tabs.Screen name="index" />
         <Tabs.Screen name="cart" />
         <Tabs.Screen name="profile" />
-        <Tabs.Screen name="search" />
-        <Tabs.Screen name="reviews" />
-        <Tabs.Screen name="edit-profile" />
-        <Tabs.Screen name="mood-history" />
-        <Tabs.Screen name="product/[id]" />
-        <Tabs.Screen name="order/[id]" />
       </Tabs>
     </View>
   );

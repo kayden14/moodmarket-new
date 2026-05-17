@@ -52,10 +52,10 @@ export default function VendorProducts() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permission required'); return; }
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8 });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8, base64: true });
     if (!r.canceled && r.assets[0]) {
       setUploading(true);
-      try { const url = await uploadImage(r.assets[0].uri); setForm(f => ({ ...f, image: url })); }
+      try { const url = await uploadImage(r.assets[0].uri, false, r.assets[0].base64 || undefined); setForm(f => ({ ...f, image: url })); }
       catch (e: any) { Alert.alert('Upload failed', e.message); }
       finally { setUploading(false); }
     }

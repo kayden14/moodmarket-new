@@ -268,7 +268,11 @@ export function useMoodDetection({
     };
 
     requestPermission();
-    return () => { cancelled = true; };
+    return () => { 
+      cancelled = true; 
+      if (cameraReadyTimerRef.current) clearTimeout(cameraReadyTimerRef.current);
+      if (captureFallbackTimerRef.current) clearTimeout(captureFallbackTimerRef.current);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── rescan: reset guard flags and re-capture without touching hasPermission ─
