@@ -22,7 +22,7 @@ serve(async (req) => {
       throw new Error('GEMINI_API_KEY not set in Supabase secrets');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
     const systemPrompt = `You are a helpful AI assistant for MoodMarket, a mood-aware online marketplace based in Ghana.
 The user's name is ${profileName || 'User'}.
