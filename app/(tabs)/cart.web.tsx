@@ -843,26 +843,7 @@ export default function CartWeb() {
 
       <div className="cart-app">
 
-        {/* ── TOP NAV ── */}
-        <nav className="cart-topnav">
-          <button className="cart-back" onClick={() => router.back()}>
-            <ArrowLeft size={14} /> <span>Back</span>
-          </button>
-          <span className="cart-logo">Mood<span>Market</span></span>
-          <button
-            style={{
-              background: 'none', border: `1px solid ${bord}`,
-              borderRadius: 9, width: 34, height: 34,
-              cursor: 'pointer', fontSize: 15,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s', flexShrink: 0,
-            }}
-            onClick={toggleDark}
-            title="Toggle theme"
-          >
-            {isDark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </nav>
+
 
         {/* ── CONTENT ── */}
         {!user ? (
