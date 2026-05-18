@@ -18,9 +18,9 @@ const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 
 // Gemini fallback models — all on v1beta
 const GEMINI_MODELS = [
-  'gemini-2.0-flash-lite',  // most generous free tier quota
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-3-flash',
 ];
 
 const GEMINI_API_VERSION = 'v1beta';
