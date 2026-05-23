@@ -48,14 +48,14 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 
 const MOODS_META: { key: MoodKey; emoji: string; label: string; description: string }[] = [
-  { key: 'happy',   emoji: '😊', label: 'Happy',   description: 'Joyful and upbeat'    },
-  { key: 'calm',    emoji: '😌', label: 'Calm',    description: 'Peaceful and relaxed' },
+  { key: 'happy', emoji: '😊', label: 'Happy', description: 'Joyful and upbeat' },
+  { key: 'calm', emoji: '😌', label: 'Calm', description: 'Peaceful and relaxed' },
   { key: 'excited', emoji: '🤩', label: 'Excited', description: 'Energetic and pumped' },
-  { key: 'sad',     emoji: '😢', label: 'Sad',     description: 'Down or blue'         },
-  { key: 'angry',   emoji: '😠', label: 'Angry',   description: 'Frustrated or upset'  },
-  { key: 'tired',   emoji: '😴', label: 'Tired',   description: 'Low energy or sleepy' },
-  { key: 'anxious', emoji: '😰', label: 'Anxious', description: 'Stressed or worried'  },
-  { key: 'neutral', emoji: '😐', label: 'Neutral', description: 'No strong feeling'    },
+  { key: 'sad', emoji: '😢', label: 'Sad', description: 'Down or blue' },
+  { key: 'angry', emoji: '😠', label: 'Angry', description: 'Frustrated or upset' },
+  { key: 'tired', emoji: '😴', label: 'Tired', description: 'Low energy or sleepy' },
+  { key: 'anxious', emoji: '😰', label: 'Anxious', description: 'Stressed or worried' },
+  { key: 'neutral', emoji: '😐', label: 'Neutral', description: 'No strong feeling' },
 ];
 
 // Lowered 0.40 → 0.15 so face-api.js expression scores are accepted in
@@ -74,13 +74,13 @@ const POLL_INTERVAL = 800;
 // face-api.js only produces these 7 expression labels. 'calm' and 'tired'
 // are custom MoodKeys not present in its output — removed from the map.
 const EMOTION_TO_MOOD: Record<string, MoodKey> = {
-  happy:     'happy',
+  happy: 'happy',
   surprised: 'excited',
-  sad:       'sad',
-  angry:     'angry',
-  fearful:   'anxious',
+  sad: 'sad',
+  angry: 'angry',
+  fearful: 'anxious',
   disgusted: 'angry',
-  neutral:   'neutral',
+  neutral: 'neutral',
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -88,11 +88,11 @@ const EMOTION_TO_MOOD: Record<string, MoodKey> = {
 ───────────────────────────────────────────────────────────────────────── */
 
 type ProductRec = {
-  name:        string;
-  category:    string;
-  emoji:       string;
-  reason:      string;
-  priceRange:  string;
+  name: string;
+  category: string;
+  emoji: string;
+  reason: string;
+  priceRange: string;
 };
 
 type Phase =
@@ -127,22 +127,22 @@ async function fetchProductRecs(mood: string, moodEmoji: string): Promise<Produc
 ───────────────────────────────────────────────────────────────────────── */
 
 type ResultsProps = {
-  mood:       MoodKey;
-  recs:       ProductRec[];
-  onConfirm:  () => void;
+  mood: MoodKey;
+  recs: ProductRec[];
+  onConfirm: () => void;
   onOverride: (m: MoodKey) => void;
-  theme:      any;
+  theme: any;
 };
 
 function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme }: ResultsProps) {
-  const pal       = MOOD_PALETTES[mood];
-  const meta      = MOODS_META.find(m => m.key === mood)!;
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const pal = MOOD_PALETTES[mood];
+  const meta = MOODS_META.find(m => m.key === mood)!;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
     ]).start();
   }, []);
@@ -232,20 +232,20 @@ function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme }: Resul
 ───────────────────────────────────────────────────────────────────────── */
 
 function MobileCameraScreen() {
-  const router             = useRouter();
+  const router = useRouter();
   const { theme, setMood } = useTheme();
-  const { profile }        = useAuth();
+  const { profile } = useAuth();
 
   // expo-camera is now imported at the top level to avoid dynamic require lag
 
-  const [phase,        setPhase]        = useState<Phase>('initialising');
+  const [phase, setPhase] = useState<Phase>('initialising');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
-  const [productRecs,  setProductRecs]  = useState<ProductRec[]>([]);
+  const [productRecs, setProductRecs] = useState<ProductRec[]>([]);
 
   // Ref to break the circular dependency: the hook needs onMoodDetected at
   // construction time, but handleMoodDetected closes over state setters that
   // are only stable after the component renders.
-  const onMoodDetectedRef = useRef<(mood: MoodKey) => void>(() => {});
+  const onMoodDetectedRef = useRef<(mood: MoodKey) => void>(() => { });
 
   const { permissionDenied, hasPermission, onCameraReady, cameraRef, rescan } =
     useMoodDetection({ onMoodDetected: (mood) => onMoodDetectedRef.current(mood) });
@@ -253,14 +253,14 @@ function MobileCameraScreen() {
   const handleMoodDetected = useCallback(async (moodKey: MoodKey) => {
     setDetectedMood(moodKey);
     const meta = MOODS_META.find(m => m.key === moodKey)!;
-    
+
     // Automatically apply mood and navigate back immediately
     setMood(moodKey);
     if (profile?.id) {
       NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
       notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
     }
-    
+
     router.back();
   }, [setMood, profile, router]);
 
@@ -312,12 +312,12 @@ function MobileCameraScreen() {
     rescan();
   }, [rescan]);
 
-  const pri  = theme.primary;
-  const bg   = theme.background;
+  const pri = theme.primary;
+  const bg = theme.background;
   const card = theme.card;
   const bord = theme.border;
-  const tp   = theme.textPrimary;
-  const ts   = theme.textSecondary;
+  const tp = theme.textPrimary;
+  const ts = theme.textSecondary;
   const tint = theme.tint;
 
   return (
@@ -453,7 +453,7 @@ function MobileCameraScreen() {
                   <EmojiText style={nativeStyles.moodEmoji}>{m.emoji}</EmojiText>
                   <View>
                     <Text style={[nativeStyles.moodLabel, { color: pal.primary }]}>{m.label}</Text>
-                    <Text style={[nativeStyles.moodDesc,  { color: pal.primary }]}>{m.description}</Text>
+                    <Text style={[nativeStyles.moodDesc, { color: pal.primary }]}>{m.description}</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -470,27 +470,27 @@ function MobileCameraScreen() {
 ───────────────────────────────────────────────────────────────────────── */
 
 function WebCameraScreen() {
-  const router             = useRouter();
+  const router = useRouter();
   const { theme, setMood } = useTheme();
-  const { profile }        = useAuth();
+  const { profile } = useAuth();
 
-  const videoRef    = useRef<HTMLVideoElement>(null);
-  const streamRef   = useRef<MediaStream | null>(null);
-  const pollingRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didDetect   = useRef(false);
-  const pollCount   = useRef(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didDetect = useRef(false);
+  const pollCount = useRef(0);
 
-  const [phase,        setPhase]        = useState<Phase>('initialising');
-  const [errMsg,       setErrMsg]       = useState('');
+  const [phase, setPhase] = useState<Phase>('initialising');
+  const [errMsg, setErrMsg] = useState('');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
-  const [productRecs,  setProductRecs]  = useState<ProductRec[]>([]);
+  const [productRecs, setProductRecs] = useState<ProductRec[]>([]);
 
-  const pri  = theme.primary;
-  const bg   = theme.background;
+  const pri = theme.primary;
+  const bg = theme.background;
   const card = theme.card;
   const bord = theme.border;
-  const tp   = theme.textPrimary;
-  const ts   = theme.textSecondary;
+  const tp = theme.textPrimary;
+  const ts = theme.textSecondary;
   const tint = theme.tint;
 
   /* inject global CSS once */
@@ -558,7 +558,7 @@ function WebCameraScreen() {
     didDetect.current = true;
     stopAll();
     setDetectedMood(moodKey);
-    
+
     // Automatically apply mood and navigate back immediately
     setMood(moodKey);
     const meta = MOODS_META.find(m => m.key === moodKey)!;
@@ -566,7 +566,7 @@ function WebCameraScreen() {
       NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
       notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
     }
-    
+
     router.back();
   }, [setMood, profile, router, stopAll]);
 
@@ -600,16 +600,16 @@ function WebCameraScreen() {
   const loadScript = (src: string): Promise<void> =>
     new Promise((resolve, reject) => {
       if ((window as any).faceapi) { resolve(); return; }
-      if (document.querySelector(`script[src="${src}"]`)) { 
+      if (document.querySelector(`script[src="${src}"]`)) {
         // Script is already in DOM, wait for it if not ready
         const check = setInterval(() => {
           if ((window as any).faceapi) { clearInterval(check); resolve(); }
         }, 100);
-        return; 
+        return;
       }
       const el = document.createElement('script');
       el.src = src;
-      el.onload  = () => resolve();
+      el.onload = () => resolve();
       el.onerror = () => reject(new Error(`Failed to load: ${src}`));
       document.head.appendChild(el);
     });
@@ -701,7 +701,7 @@ function WebCameraScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const detectedMeta = detectedMood ? MOODS_META.find(m => m.key === detectedMood) : null;
-  const detectedPal  = detectedMood ? MOOD_PALETTES[detectedMood] : null;
+  const detectedPal = detectedMood ? MOOD_PALETTES[detectedMood] : null;
 
   return (
     <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp, display: 'flex', flexDirection: 'column' }}>
@@ -891,65 +891,65 @@ function WebCameraScreen() {
 ───────────────────────────────────────────────────────────────────────── */
 
 const nativeStyles = StyleSheet.create({
-  container:      { flex: 1 },
+  container: { flex: 1 },
   // Full-screen but behind all content — iOS will render it (so hardware inits)
   // and onCameraReady fires. opacity:0 + zIndex:-1 keeps it invisible to the user.
-  hiddenCamera:   { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, zIndex: -1 },
+  hiddenCamera: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, zIndex: -1 },
 
-  topBar:         { height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, borderBottomWidth: 1, gap: 12 },
-  backBtn:        { width: 40, height: 40, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  backArrow:      { fontSize: 18 },
-  topBarText:     { flex: 1 },
-  topBarTitle:    { fontSize: 14, fontWeight: '900', letterSpacing: -0.3 },
-  topBarSub:      { fontSize: 11 },
-  manualBtn:      { borderWidth: 1.5, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  manualBtnText:  { fontSize: 12, fontWeight: '700' },
+  topBar: { height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, borderBottomWidth: 1, gap: 12 },
+  backBtn: { width: 40, height: 40, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  backArrow: { fontSize: 18 },
+  topBarText: { flex: 1 },
+  topBarTitle: { fontSize: 14, fontWeight: '900', letterSpacing: -0.3 },
+  topBarSub: { fontSize: 11 },
+  manualBtn: { borderWidth: 1.5, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  manualBtnText: { fontSize: 12, fontWeight: '700' },
 
-  content:        { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 
-  iconBox:        { width: 96, height: 96, borderRadius: 28, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 28 },
-  iconEmoji:      { fontSize: 48 },
-  h1:             { fontSize: 24, fontWeight: '900', letterSpacing: -0.5, marginBottom: 12, textAlign: 'center' },
-  h2:             { fontSize: 20, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
-  body:           { fontSize: 15, lineHeight: 24, textAlign: 'center', marginBottom: 28, opacity: 0.75 },
+  iconBox: { width: 96, height: 96, borderRadius: 28, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 28 },
+  iconEmoji: { fontSize: 48 },
+  h1: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5, marginBottom: 12, textAlign: 'center' },
+  h2: { fontSize: 20, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
+  body: { fontSize: 15, lineHeight: 24, textAlign: 'center', marginBottom: 28, opacity: 0.75 },
 
-  errorBox:       { width: 90, height: 90, borderRadius: 24, backgroundColor: '#FEF2F2', borderWidth: 2, borderColor: '#FECACA', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  primaryBtn:     { width: '100%', height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  errorBox: { width: 90, height: 90, borderRadius: 24, backgroundColor: '#FEF2F2', borderWidth: 2, borderColor: '#FECACA', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  primaryBtn: { width: '100%', height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 
-  manualSub:      { fontSize: 14, textAlign: 'center', marginBottom: 20 },
-  moodGrid:       { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  moodChip:       { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, padding: 14, width: '47%' },
-  moodEmoji:      { fontSize: 32 },
-  moodLabel:      { fontSize: 14, fontWeight: '800', marginBottom: 2 },
-  moodDesc:       { fontSize: 11, opacity: 0.75 },
+  manualSub: { fontSize: 14, textAlign: 'center', marginBottom: 20 },
+  moodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  moodChip: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, padding: 14, width: '47%' },
+  moodEmoji: { fontSize: 32 },
+  moodLabel: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  moodDesc: { fontSize: 11, opacity: 0.75 },
 
-  moodHero:       { flexDirection: 'row', alignItems: 'center', gap: 16, borderRadius: 20, borderWidth: 1.5, padding: 20, marginBottom: 24 },
-  moodHeroEmoji:  { fontSize: 52 },
-  moodHeroLabel:  { fontSize: 11, fontWeight: '700', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  moodHeroMood:   { fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
-  moodHeroDesc:   { fontSize: 13, opacity: 0.75, marginTop: 2 },
+  moodHero: { flexDirection: 'row', alignItems: 'center', gap: 16, borderRadius: 20, borderWidth: 1.5, padding: 20, marginBottom: 24 },
+  moodHeroEmoji: { fontSize: 52 },
+  moodHeroLabel: { fontSize: 11, fontWeight: '700', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  moodHeroMood: { fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
+  moodHeroDesc: { fontSize: 13, opacity: 0.75, marginTop: 2 },
 
-  sectionRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  sectionTitle:   { fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
-  sectionSub:     { fontSize: 12, fontWeight: '600' },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
+  sectionSub: { fontSize: 12, fontWeight: '600' },
 
-  recCard:        { flexDirection: 'row', alignItems: 'flex-start', gap: 14, borderRadius: 16, borderWidth: 1.5, padding: 16, marginBottom: 10 },
-  recEmojiBox:    { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  recTopRow:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
-  recName:        { fontSize: 15, fontWeight: '800', flex: 1 },
-  recPrice:       { fontSize: 13, fontWeight: '700', marginLeft: 8 },
-  recCategory:    { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4, opacity: 0.6 },
-  recReason:      { fontSize: 13, lineHeight: 18, opacity: 0.75 },
+  recCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, borderRadius: 16, borderWidth: 1.5, padding: 16, marginBottom: 10 },
+  recEmojiBox: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  recTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
+  recName: { fontSize: 15, fontWeight: '800', flex: 1 },
+  recPrice: { fontSize: 13, fontWeight: '700', marginLeft: 8 },
+  recCategory: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4, opacity: 0.6 },
+  recReason: { fontSize: 13, lineHeight: 18, opacity: 0.75 },
 
-  ctaBtn:         { height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 8, marginBottom: 24 },
-  ctaBtnText:     { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: -0.3 },
+  ctaBtn: { height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 8, marginBottom: 24 },
+  ctaBtnText: { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: -0.3 },
 
-  overrideLabel:  { fontSize: 13, fontWeight: '600', marginBottom: 12, opacity: 0.7 },
-  overrideChip:   { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 40, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 8 },
+  overrideLabel: { fontSize: 13, fontWeight: '600', marginBottom: 12, opacity: 0.7 },
+  overrideChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 40, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 8 },
   overrideChipText: { fontSize: 13, fontWeight: '700' },
 
-  rescanBtn:     { alignSelf: 'center', marginBottom: 16, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, borderWidth: 1.5 },
+  rescanBtn: { alignSelf: 'center', marginBottom: 16, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, borderWidth: 1.5 },
   rescanBtnText: { fontSize: 13, fontWeight: '700' },
 });
 

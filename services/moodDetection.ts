@@ -19,7 +19,9 @@ const VALID_MOODS: MoodKey[] = Object.keys(MOOD_EMOJI_MAP) as MoodKey[];
 // Gemini fallback models — all on v1beta
 const GEMINI_MODELS = [
   'gemini-2.5-flash-lite',
-  'gemini-1.5-flash',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
 ];
 
 const GEMINI_API_VERSION = 'v1beta';
@@ -137,8 +139,8 @@ Respond with ONLY valid raw JSON. Do NOT wrap it in markdown code blocks like \`
       signal: controller.signal,
       body: JSON.stringify({
         contents: [{ parts }],
-        generationConfig: { 
-          temperature: 0.1, 
+        generationConfig: {
+          temperature: 0.1,
           maxOutputTokens: 512,
           responseMimeType: "application/json"
         },
@@ -204,7 +206,7 @@ async function detectWithGeminiFallback(images: string | string[]): Promise<Mood
     try {
       const result = await callGeminiModel(model, images, geminiKey);
       const detectedMood = result.mood?.trim().toLowerCase() as MoodKey;
-      
+
       if (VALID_MOODS.includes(detectedMood)) {
         return {
           mood: detectedMood,

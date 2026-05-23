@@ -747,6 +747,7 @@ export default function CheckoutWeb() {
   const validateDetails = () => {
     if (!name.trim())    { alert('Please enter your full name.');        return false; }
     if (!phone.trim())   { alert('Please enter your phone number.');     return false; }
+    if (!/^\d+$/.test(phone.trim())) { alert('Phone number must contain only numbers.'); return false; }
     if (!address.trim()) { alert('Please enter your delivery address.'); return false; }
     if (!city.trim())    { alert('Please enter your city.');             return false; }
     return true;
@@ -757,6 +758,7 @@ export default function CheckoutWeb() {
     if (payMethod === 'mobile_money') {
       if (!momoProvider)      { alert('Please select your MoMo network.'); return false; }
       if (!momoNumber.trim()) { alert('Please enter your MoMo number.');   return false; }
+      if (!/^\d+$/.test(momoNumber.trim())) { alert('MoMo number must contain only numbers.'); return false; }
     }
     return true;
   };
@@ -989,7 +991,7 @@ export default function CheckoutWeb() {
                   selected={momoProvider}
                   onSelect={setMomoProvider}
                   momoNumber={momoNumber}
-                  onNumberChange={setMomoNumber}
+                  onNumberChange={v => setMomoNumber(v.replace(/[^0-9]/g, ''))}
                   theme={theme}
                   isDark={isDark}
                 />
@@ -1068,7 +1070,7 @@ export default function CheckoutWeb() {
                   <Field icon="👤" label="Full Name"      value={name}    onChange={setName}    placeholder="e.g. Ama Owusu" />
                 </div>
                 <div className="co-field-full">
-                  <Field icon="📞" label="Phone Number"   value={phone}   onChange={setPhone}   placeholder="e.g. 0244000000" type="tel" />
+                  <Field icon="📞" label="Phone Number"   value={phone}   onChange={v => setPhone(v.replace(/[^0-9]/g, ''))}   placeholder="e.g. 0244000000" type="tel" />
                 </div>
                 <div className="co-field-full">
                   <Field icon="📍" label="Street Address" value={address} onChange={setAddress} placeholder="e.g. 14 Osu Badu Street" />

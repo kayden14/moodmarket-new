@@ -50,12 +50,12 @@ import { useResponsive } from '@/hooks/useResponsive';
 const DEFAULT_CARD_WIDTH = 160;
 
 const CATEGORIES = [
-  { id: 'all',         label: 'All',         emoji: '🏠', keywords: [] as string[] },
-  { id: 'self-care',   label: 'Self Care',   emoji: '🧴', keywords: ['self-care','self care','skincare','skin care','beauty','moisturiser','moisturizer','cleanser','serum','toner','face','body','lotion','soap','scrub','bath','hygiene','wellness','nurturing','soothing','pamper'] },
-  { id: 'food',        label: 'Food',        emoji: '🍵', keywords: ['food','snack','drink','tea','coffee','chocolate','candy','sweet','beverage','juice','smoothie','protein','supplement','vitamin','nutrition','healthy','organic','herbal','cocoa','honey','granola','cookie','biscuit','fruit','nut'] },
-  { id: 'books',       label: 'Books',       emoji: '📚', keywords: ['book','novel','journal','diary','planner','notebook','magazine','guide','read','fiction','non-fiction','poetry','motivational','self-help','mindfulness','spiritual','educational'] },
-  { id: 'accessories', label: 'Accessories', emoji: '💎', keywords: ['accessory','accessories','jewellery','jewelry','bracelet','necklace','ring','earring','bag','purse','wallet','watch','sunglasses','hat','scarf','belt','keychain','pin','charm','crystal','stone','gem'] },
-  { id: 'relaxation',  label: 'Relaxation',  emoji: '🧘', keywords: ['relaxation','relax','calm','candle','aromatherapy','diffuser','essential oil','massage','yoga','meditation','pillow','blanket','sleep','rest','stress','anxiety','zen','peaceful','spa','bath bomb','incense','music','sound','breathing'] },
+  { id: 'all', label: 'All', emoji: '🏠', keywords: [] as string[] },
+  { id: 'self-care', label: 'Self Care', emoji: '🧴', keywords: ['self-care', 'self care', 'skincare', 'skin care', 'beauty', 'moisturiser', 'moisturizer', 'cleanser', 'serum', 'toner', 'face', 'body', 'lotion', 'soap', 'scrub', 'bath', 'hygiene', 'wellness', 'nurturing', 'soothing', 'pamper'] },
+  { id: 'food', label: 'Food', emoji: '🍵', keywords: ['food', 'snack', 'drink', 'tea', 'coffee', 'chocolate', 'candy', 'sweet', 'beverage', 'juice', 'smoothie', 'protein', 'supplement', 'vitamin', 'nutrition', 'healthy', 'organic', 'herbal', 'cocoa', 'honey', 'granola', 'cookie', 'biscuit', 'fruit', 'nut'] },
+  { id: 'books', label: 'Books', emoji: '📚', keywords: ['book', 'novel', 'journal', 'diary', 'planner', 'notebook', 'magazine', 'guide', 'read', 'fiction', 'non-fiction', 'poetry', 'motivational', 'self-help', 'mindfulness', 'spiritual', 'educational'] },
+  { id: 'accessories', label: 'Accessories', emoji: '💎', keywords: ['accessory', 'accessories', 'jewellery', 'jewelry', 'bracelet', 'necklace', 'ring', 'earring', 'bag', 'purse', 'wallet', 'watch', 'sunglasses', 'hat', 'scarf', 'belt', 'keychain', 'pin', 'charm', 'crystal', 'stone', 'gem'] },
+  { id: 'relaxation', label: 'Relaxation', emoji: '🧘', keywords: ['relaxation', 'relax', 'calm', 'candle', 'aromatherapy', 'diffuser', 'essential oil', 'massage', 'yoga', 'meditation', 'pillow', 'blanket', 'sleep', 'rest', 'stress', 'anxiety', 'zen', 'peaceful', 'spa', 'bath bomb', 'incense', 'music', 'sound', 'breathing'] },
 ];
 
 function getProductImage(product: Product, size = 400): string {
@@ -76,26 +76,26 @@ function ProductCard({ item, onPress, onAddToCart, index = 0, cardWidth = DEFAUL
   cardWidth?: number;
 }) {
   const { theme } = useTheme();
-  const [liked, setLiked]   = useState(false);
+  const [liked, setLiked] = useState(false);
   const [adding, setAdding] = useState(false);
   const stars = Math.round((item as Product).rating ?? 0);
-  const fadeAnim   = useRef(new Animated.Value(0)).current;
-  const scaleAnim  = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const cartBounce = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: Math.min(index * 40, 400), useNativeDriver: true }).start();
   }, []);
 
-  const pressIn  = () => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 200, friction: 10 }).start();
-  const pressOut = () => Animated.spring(scaleAnim, { toValue: 1,    useNativeDriver: true, tension: 200, friction: 10 }).start();
+  const pressIn = () => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 200, friction: 10 }).start();
+  const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 200, friction: 10 }).start();
 
   const handleAdd = async () => {
     if (adding) return;
     setAdding(true);
     Animated.sequence([
       Animated.spring(cartBounce, { toValue: 1.4, useNativeDriver: true, tension: 300, friction: 5 }),
-      Animated.spring(cartBounce, { toValue: 1,   useNativeDriver: true, tension: 300, friction: 5 }),
+      Animated.spring(cartBounce, { toValue: 1, useNativeDriver: true, tension: 300, friction: 5 }),
     ]).start();
     await onAddToCart(item as Product);
     setAdding(false);
@@ -120,7 +120,7 @@ function ProductCard({ item, onPress, onAddToCart, index = 0, cardWidth = DEFAUL
             )}
             <Text style={[s.productName, { color: theme.textPrimary, fontFamily: theme.fontBody }]} numberOfLines={2}>{item.name}</Text>
             <View style={s.starsRow}>
-              {[1,2,3,4,5].map((i) => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <Star key={i} size={10} color={theme.primary} fill={i <= stars ? theme.primary : 'transparent'} />
               ))}
               <Text style={[s.ratingText, { color: theme.textSecondary }]}>{(item as Product).rating?.toFixed(1)}</Text>
@@ -204,17 +204,17 @@ function CartSnapBar({ cartCount, cartTotal, visible, onPress }: {
 }
 
 const snap = StyleSheet.create({
-  wrap:     { position: 'absolute', bottom: Platform.OS === 'ios' ? 102 : 82, left: 16, right: 16, zIndex: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 20, elevation: 14 },
-  inner:    { backgroundColor: '#1C1C1E', borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
-  left:     { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  wrap: { position: 'absolute', bottom: Platform.OS === 'ios' ? 102 : 82, left: 16, right: 16, zIndex: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 20, elevation: 14 },
+  inner: { backgroundColor: '#1C1C1E', borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
+  left: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconWrap: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  dot:      { position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, backgroundColor: '#fff', borderRadius: 8, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 2 },
-  dotTxt:   { fontSize: 9, fontWeight: '800' },
-  label:    { fontSize: 13, fontWeight: '700', color: '#fff' },
-  sub:      { fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 1 },
-  right:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  viewTxt:  { fontSize: 13, fontWeight: '700', color: '#fff' },
-  arrowWrap:{ width: 28, height: 28, backgroundColor: '#fff', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  dot: { position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, backgroundColor: '#fff', borderRadius: 8, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 2 },
+  dotTxt: { fontSize: 9, fontWeight: '800' },
+  label: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  sub: { fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 1 },
+  right: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  viewTxt: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  arrowWrap: { width: 28, height: 28, backgroundColor: '#fff', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
 });
 
 function SectionHeader({ icon, title, onSeeAll }: { icon: React.ReactNode; title: React.ReactNode; onSeeAll?: () => void }) {
@@ -257,16 +257,16 @@ export default function HomeScreen() {
   const trendingCardWidth = isDesktop ? 280 : isTablet ? 220 : windowWidth * 0.44;
 
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [snapVisible, setSnapVisible]           = useState(false);
+  const [snapVisible, setSnapVisible] = useState(false);
   const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queryClient = useQueryClient();
 
   /* ── Vibe Search State ────────────────────────────────────────── */
   const [isVibeSearch, setIsVibeSearch] = useState(false);
-  const [vibeQuery,    setVibeQuery]    = useState('');
+  const [vibeQuery, setVibeQuery] = useState('');
   const [vibeSearching, setVibeSearching] = useState(false);
-  const [vibeResults,  setVibeResults]  = useState<Product[] | null>(null);
-  const [isListening,  setIsListening]  = useState(false);
+  const [vibeResults, setVibeResults] = useState<Product[] | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   const handleVibeSearch = async () => {
     if (!vibeQuery.trim()) return;
@@ -296,11 +296,11 @@ export default function HomeScreen() {
     if (isListening) {
       voiceService.stop();
       setIsListening(false);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => { });
       handleVibeSearch();
     } else {
       setIsListening(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
       voiceService.start(
         (res) => {
           setVibeQuery(res.text);
@@ -394,26 +394,26 @@ export default function HomeScreen() {
             <Text style={[s.userName, { color: theme.textPrimary, fontFamily: theme.fontHeading }]}>Find your vibe</Text>
           </View>
           <View style={s.headerIcons}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[s.headerIconBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
               onPress={() => router.push('/search')}
             >
               <Search size={20} color={theme.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[s.headerIconBtn, { backgroundColor: isVibeSearch ? theme.primary : theme.border, borderColor: theme.border }]}
               onPress={() => setIsVibeSearch(!isVibeSearch)}
             >
               <Sparkles size={20} color={isVibeSearch ? '#fff' : theme.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[s.headerIconBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
               onPress={() => router.push('/notifications')}
             >
               <Bell size={20} color={theme.textPrimary} />
               <View style={[s.notifDot, { backgroundColor: theme.primary, borderColor: theme.card }]} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[s.headerIconBtn, { backgroundColor: theme.primary, borderColor: theme.border }]}
               onPress={() => router.push('/(tabs)/profile')}
             >
@@ -508,7 +508,7 @@ export default function HomeScreen() {
         <Text style={[s.sectionLabel, { color: theme.inactive, fontFamily: theme.fontHeading }]}>HOW ARE YOU FEELING?</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.moodScroll}>
           {MOODS.map((m) => {
-            const active  = mood === m.key;
+            const active = mood === m.key;
             const palette = MOOD_PALETTES[m.key];
             return (
               <TouchableOpacity
@@ -584,7 +584,7 @@ export default function HomeScreen() {
         </View>
       )}
     </>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [theme, mood, detecting, permissionDenied, selectedCategory, trending, recommended, filteredProducts, selectedMood, moodPalette, cardWidth, trendingCardWidth]);
 
   return (
@@ -628,78 +628,78 @@ export default function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  container:    { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
+  container: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 1200 },
   hiddenCamera: { position: 'absolute', width: 1, height: 1, opacity: 0, top: 0, left: 0 },
-  loadingWrap:  { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  loadingText:  { fontSize: 14, fontWeight: '500' },
-  header:        { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 18, paddingHorizontal: 20, borderBottomWidth: 1 },
-  headerTop:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  greeting:      { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
-  userName:      { fontSize: 28, fontWeight: '800', letterSpacing: -0.8 },
-  headerIcons:   { flexDirection: 'row', gap: 8 },
+  loadingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
+  loadingText: { fontSize: 14, fontWeight: '500' },
+  header: { paddingTop: Platform.OS === 'ios' ? 56 : 44, paddingBottom: 18, paddingHorizontal: 20, borderBottomWidth: 1 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  greeting: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
+  userName: { fontSize: 28, fontWeight: '800', letterSpacing: -0.8 },
+  headerIcons: { flexDirection: 'row', gap: 8 },
   headerIconBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  notifDot:      { position: 'absolute', top: 9, right: 9, width: 7, height: 7, borderRadius: 3.5, borderWidth: 1.5 },
-  
+  notifDot: { position: 'absolute', top: 9, right: 9, width: 7, height: 7, borderRadius: 3.5, borderWidth: 1.5 },
+
   vibeSearchContainer: { padding: 16, borderBottomWidth: 1 },
-  vibeInputWrapper:    { flexDirection: 'row', alignItems: 'center', height: 50, borderRadius: 25, borderWidth: 1, paddingHorizontal: 16 },
-  vibeIcon:            { marginRight: 10 },
-  vibeInput:           { flex: 1, fontSize: 14, fontWeight: '600' },
-  vibeResultCount:     { fontSize: 11, fontWeight: '700', marginTop: 10, textAlign: 'center' },
+  vibeInputWrapper: { flexDirection: 'row', alignItems: 'center', height: 50, borderRadius: 25, borderWidth: 1, paddingHorizontal: 16 },
+  vibeIcon: { marginRight: 10 },
+  vibeInput: { flex: 1, fontSize: 14, fontWeight: '600' },
+  vibeResultCount: { fontSize: 11, fontWeight: '700', marginTop: 10, textAlign: 'center' },
   listContent: { paddingBottom: 120 },
-  row:         { paddingHorizontal: 16, justifyContent: 'flex-start', gap: 16 },
-  rowWide:     { paddingHorizontal: 0 },
-  moodBanner:     { marginHorizontal: 16, marginTop: 16, marginBottom: 4, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1 },
+  row: { paddingHorizontal: 16, justifyContent: 'flex-start', gap: 16 },
+  rowWide: { paddingHorizontal: 0 },
+  moodBanner: { marginHorizontal: 16, marginTop: 16, marginBottom: 4, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1 },
   moodBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  moodEmojiCircle:{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
+  moodEmojiCircle: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
   moodEmojiLarge: { fontSize: 26 },
-  moodBannerLabel:{ fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
+  moodBannerLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 2, textTransform: 'uppercase' },
   moodBannerName: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
   moodBannerHint: { fontSize: 11, fontWeight: '500', marginTop: 2, letterSpacing: 0.2, lineHeight: 14 },
-  scanBtn:        { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
-  scanBtnText:    { color: '#fff', fontSize: 13, fontWeight: '700' },
+  scanBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
+  scanBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   moodSelectorSection: { marginTop: 16, marginBottom: 8 },
-  sectionLabel:        { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10, paddingHorizontal: 16, textTransform: 'uppercase' },
-  moodScroll:          { paddingHorizontal: 16, gap: 8 },
-  moodChip:            { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5 },
-  moodChipEmoji:       { fontSize: 16 },
-  moodChipLabel:       { fontSize: 12 },
+  sectionLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10, paddingHorizontal: 16, textTransform: 'uppercase' },
+  moodScroll: { paddingHorizontal: 16, gap: 8 },
+  moodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5 },
+  moodChipEmoji: { fontSize: 16 },
+  moodChipLabel: { fontSize: 12 },
   trendingSection: { marginBottom: 8 },
-  trendingScroll:  { paddingHorizontal: 16, gap: 12 },
-  trendingCard:    { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
-  trendingImage:   { width: '100%', height: 120 },
-  trendingBadge:   { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1 },
-  trendingBadgeTxt:{ fontSize: 11, fontWeight: '800' },
-  trendingInfo:    { padding: 10 },
-  trendingName:    { fontSize: 13, fontWeight: '600', lineHeight: 18, marginBottom: 6 },
-  trendingBottom:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  trendingPrice:   { fontSize: 13, fontWeight: '900' },
-  trendingAddBtn:  { width: 26, height: 26, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  trendingScroll: { paddingHorizontal: 16, gap: 12 },
+  trendingCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
+  trendingImage: { width: '100%', height: 120 },
+  trendingBadge: { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1 },
+  trendingBadgeTxt: { fontSize: 11, fontWeight: '800' },
+  trendingInfo: { padding: 10 },
+  trendingName: { fontSize: 13, fontWeight: '600', lineHeight: 18, marginBottom: 6 },
+  trendingBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  trendingPrice: { fontSize: 13, fontWeight: '900' },
+  trendingAddBtn: { width: 26, height: 26, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   recommendedSection: { marginBottom: 8 },
-  recommendedScroll:  { paddingHorizontal: 16 },
+  recommendedScroll: { paddingHorizontal: 16 },
   categorySection: { marginBottom: 4 },
-  categoryScroll:  { paddingHorizontal: 16, gap: 8 },
-  categoryChip:    { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
-  categoryEmoji:   { fontSize: 14 },
-  categoryLabel:   { fontSize: 12 },
-  sectionHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 20, marginBottom: 12 },
-  sectionTitleRow:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
-  sectionTitle:   { fontSize: 15, fontWeight: '700', letterSpacing: -0.2 },
-  seeAll:         { fontSize: 13, fontWeight: '700' },
-  emptyCategory:     { alignItems: 'center', paddingVertical: 32 },
-  emptyCategoryEmoji:{ fontSize: 36, marginBottom: 8 },
+  categoryScroll: { paddingHorizontal: 16, gap: 8 },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
+  categoryEmoji: { fontSize: 14 },
+  categoryLabel: { fontSize: 12 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 20, marginBottom: 12 },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2 },
+  seeAll: { fontSize: 13, fontWeight: '700' },
+  emptyCategory: { alignItems: 'center', paddingVertical: 32 },
+  emptyCategoryEmoji: { fontSize: 36, marginBottom: 8 },
   emptyCategoryText: { fontSize: 14, fontWeight: '500' },
-  productCard:   { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
-  imageContainer:{ position: 'relative' },
-  productImage:  { width: '100%', height: 150 },
-  heartBtn:      { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F0F0F0' },
-  productInfo:   { padding: 10, gap: 4 },
-  reasonBadge:   { flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 2 },
-  reasonText:    { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
-  productName:   { fontSize: 13, fontWeight: '600', lineHeight: 18, minHeight: 36 },
-  starsRow:      { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  ratingText:    { fontSize: 11, fontWeight: '500', marginLeft: 3 },
-  priceRow:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
-  productPrice:  { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
-  addBtn:        { width: 28, height: 28, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
-  addBtnActive:  { opacity: 0.6 },
+  productCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
+  imageContainer: { position: 'relative' },
+  productImage: { width: '100%', height: 150 },
+  heartBtn: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F0F0F0' },
+  productInfo: { padding: 10, gap: 4 },
+  reasonBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 2 },
+  reasonText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
+  productName: { fontSize: 13, fontWeight: '600', lineHeight: 18, minHeight: 36 },
+  starsRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  ratingText: { fontSize: 11, fontWeight: '500', marginLeft: 3 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
+  productPrice: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
+  addBtn: { width: 28, height: 28, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  addBtnActive: { opacity: 0.6 },
 });

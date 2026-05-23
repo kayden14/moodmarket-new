@@ -1,23 +1,20 @@
+// app/(auth)/signup.tsx
+
 import { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
+  View, Text, TextInput, StyleSheet,
+  TouchableOpacity, KeyboardAvoidingView,
+  ScrollView, Platform, ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthLayoutWeb } from '@/components/AuthLayoutWeb';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
-import EmojiText from '@/components/EmojiText';
 
-// ── Social Icon Components ──────────────────────────────────────────────────
+// ── Google Icon ───────────────────────────────────────────────────────────────
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
@@ -28,24 +25,41 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   </Svg>
 );
 
-const AppleIcon = ({ color = '#000', size = 20 }: { color?: string; size?: number }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-    <Path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-  </Svg>
-);
+// ── Web Signup ────────────────────────────────────────────────────────────────
 
-const FacebookIcon = ({ size = 20 }: { size?: number }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="#1877F2">
-    <Path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </Svg>
-);
-
-// ── Web Signup ──────────────────────────────────────────────────────────────
+const WEB_CSS = `
+  .su-features { display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+  .su-feature-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: #F9FAFB; border: 1px solid #F1F5F9;
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 11px; font-weight: 600; color: #6B7280;
+  }
+  .su-google-btn {
+    width: 100%; height: 52px;
+    background: #fff; border: 1.5px solid #E5E7EB;
+    border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; gap: 12px; cursor: pointer;
+    font-size: 15px; font-weight: 700; color: #374151;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: box-shadow 0.18s, border-color 0.18s, transform 0.14s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .su-google-btn:hover { border-color: #4285F4; box-shadow: 0 4px 16px rgba(66,133,244,0.16); transform: translateY(-2px); }
+  .su-google-btn:active { transform: translateY(0); }
+  .su-strength-wrap { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .su-strength-bars { display: flex; gap: 4px; flex: 1; }
+  .su-strength-bar { flex: 1; height: 5px; border-radius: 3px; transition: background 0.3s; }
+  .su-terms { font-size: 12px; color: #9CA3AF; line-height: 1.6; margin-bottom: 20px; text-align: center; }
+  .su-terms a { color: #FF7A8A; font-weight: 700; text-decoration: none; }
+  .su-terms a:hover { text-decoration: underline; }
+  .su-trust { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #F1F5F9; }
+  .su-trust-item { font-size: 11px; font-weight: 600; color: #9CA3AF; }
+`;
 
 function SignupScreenWeb() {
   const router = useRouter();
   const { signUp, signInWithOAuth } = useAuth();
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,28 +69,16 @@ function SignupScreenWeb() {
   const [focusedField, setFocused] = useState<string | null>(null);
 
   const handleSignup = async () => {
-    if (!name || !email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      await signUp(email, password, name);
-      router.replace('/(tabs)');
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-    } finally {
-      setLoading(false);
-    }
+    if (!name || !email || !password) { setError('Please fill in all fields'); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    setLoading(true); setError('');
+    try { await signUp(email, password, name); router.replace('/(tabs)'); }
+    catch (err: any) { setError(err.message || 'Failed to create account'); }
+    finally { setLoading(false); }
   };
 
   const getStrength = () => {
-    if (password.length === 0) return null;
+    if (!password) return null;
     if (password.length < 6) return { level: 1, label: 'Too short', color: '#EF4444' };
     if (password.length < 8) return { level: 2, label: 'Weak', color: '#F97316' };
     if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { level: 3, label: 'Fair', color: '#EAB308' };
@@ -86,9 +88,9 @@ function SignupScreenWeb() {
 
   return (
     <AuthLayoutWeb
-      eyebrow="Get started"
-      heading={<>Create your<br /><em>free account</em></>}
-      subheading="Join thousands shopping by mood."
+      eyebrow="Join MoodMarket"
+      heading={<>Shop by <em>how you feel.</em></>}
+      subheading="Create your free account and let AI curate your perfect vibe."
       error={error}
       footer={
         <>
@@ -97,121 +99,91 @@ function SignupScreenWeb() {
         </>
       }
     >
-      {/* Name */}
-      <div className="auth-field">
-        <div className="auth-field-header">
-          <label className="auth-field-label">Full name</label>
-        </div>
-        <div className={`auth-input-wrap${focusedField === 'name' ? ' focused' : ''}`}>
-          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>👤</span></span>
-          <input
-            type="text"
-            placeholder="Jane Doe"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            onFocus={() => setFocused('name')}
-            onBlur={() => setFocused(null)}
-            onKeyDown={e => e.key === 'Enter' && handleSignup()}
-            autoComplete="name"
-          />
-        </div>
+      <style dangerouslySetInnerHTML={{ __html: WEB_CSS }} />
+
+      <div className="su-features">
+        {['🧠 AI Mood Scan', '🛍️ 10k+ Products', '🚀 Fast Delivery'].map(f => (
+          <div key={f} className="su-feature-pill">{f}</div>
+        ))}
       </div>
 
-      {/* Email */}
-      <div className="auth-field">
-        <div className="auth-field-header">
-          <label className="auth-field-label">Email address</label>
-        </div>
-        <div className={`auth-input-wrap${focusedField === 'email' ? ' focused' : ''}`}>
-          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>✉️</span></span>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onFocus={() => setFocused('email')}
-            onBlur={() => setFocused(null)}
-            onKeyDown={e => e.key === 'Enter' && handleSignup()}
-            autoComplete="email"
-          />
-        </div>
-      </div>
-
-      {/* Password */}
-      <div className="auth-field">
-        <div className="auth-field-header">
-          <label className="auth-field-label">Password</label>
-        </div>
-        <div className={`auth-input-wrap${focusedField === 'password' ? ' focused' : ''}`}>
-          <span className="auth-input-icon"><span style={{ fontFamily: undefined }}>🔒</span></span>
-          <input
-            type={showPw ? 'text' : 'password'}
-            placeholder="Min. 6 characters"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onFocus={() => setFocused('password')}
-            onBlur={() => setFocused(null)}
-            onKeyDown={e => e.key === 'Enter' && handleSignup()}
-            autoComplete="new-password"
-          />
-          <button className="auth-eye-btn" onClick={() => setShowPw(!showPw)}>
-            {showPw ? <span style={{ fontFamily: undefined }}>🙈</span> : <span style={{ fontFamily: undefined }}>👁️</span>}
-          </button>
-        </div>
-        {strength && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: i <= strength.level ? strength.color : '#E5E7EB' }} />
-              ))}
-            </div>
-            <span style={{ fontSize: 12, fontWeight: 600, color: strength.color, width: 56, textAlign: 'right' }}>{strength.label}</span>
-          </div>
-        )}
-      </div>
-
-      <div style={{ fontSize: 12, color: '#9CA3AF', lineHeight: 1.5, marginBottom: 16 }}>
-        By creating an account you agree to our{' '}
-        <span style={{ color: '#FF7A8A', fontWeight: 600, cursor: 'pointer' }}>Terms of Service</span> and{' '}
-        <span style={{ color: '#FF7A8A', fontWeight: 600, cursor: 'pointer' }}>Privacy Policy</span>.
-      </div>
-
-      <button className="auth-cta" onClick={handleSignup} disabled={loading}>
-        {loading ? <div className="auth-spinner" /> : 'Create Account →'}
+      <button className="su-google-btn" onClick={() => signInWithOAuth('google')}>
+        <GoogleIcon size={20} /> Continue with Google
       </button>
 
       <div className="auth-divider">
         <div className="auth-divider-line" />
-        <span className="auth-divider-text">or sign up with</span>
+        <span className="auth-divider-text">or create with email</span>
         <div className="auth-divider-line" />
       </div>
 
-      <div className="auth-socials">
-        {[
-          { icon: <GoogleIcon size={20} />, label: 'Google', provider: 'google' as const },
-          { icon: <AppleIcon size={20} color="#000" />, label: 'Apple', provider: 'apple' as const },
-          { icon: <FacebookIcon size={20} />, label: 'Facebook', provider: 'facebook' as const },
-        ].map(s => (
-          <button
-            key={s.label}
-            className="auth-social-btn"
-            title={`Continue with ${s.label}`}
-            onClick={() => signInWithOAuth(s.provider)}
-          >
-            {s.icon}
-          </button>
+      <div className="auth-field">
+        <div className="auth-field-header"><label className="auth-field-label">Full name</label></div>
+        <div className={`auth-input-wrap${focusedField === 'name' ? ' focused' : ''}`}>
+          <span className="auth-input-icon">👤</span>
+          <input type="text" placeholder="Jane Doe" value={name}
+            onChange={e => setName(e.target.value)}
+            onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
+            onKeyDown={e => e.key === 'Enter' && handleSignup()} autoComplete="name" />
+        </div>
+      </div>
+
+      <div className="auth-field">
+        <div className="auth-field-header"><label className="auth-field-label">Email address</label></div>
+        <div className={`auth-input-wrap${focusedField === 'email' ? ' focused' : ''}`}>
+          <span className="auth-input-icon">✉️</span>
+          <input type="email" placeholder="you@example.com" value={email}
+            onChange={e => setEmail(e.target.value)}
+            onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
+            onKeyDown={e => e.key === 'Enter' && handleSignup()} autoComplete="email" />
+        </div>
+      </div>
+
+      <div className="auth-field">
+        <div className="auth-field-header"><label className="auth-field-label">Password</label></div>
+        <div className={`auth-input-wrap${focusedField === 'password' ? ' focused' : ''}`}>
+          <span className="auth-input-icon">🔒</span>
+          <input type={showPw ? 'text' : 'password'} placeholder="Min. 6 characters" value={password}
+            onChange={e => setPassword(e.target.value)}
+            onFocus={() => setFocused('password')} onBlur={() => setFocused(null)}
+            onKeyDown={e => e.key === 'Enter' && handleSignup()} autoComplete="new-password" />
+          <button className="auth-eye-btn" onClick={() => setShowPw(!showPw)}>{showPw ? '🙈' : '👁️'}</button>
+        </div>
+        {strength && (
+          <div className="su-strength-wrap">
+            <div className="su-strength-bars">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="su-strength-bar"
+                  style={{ background: i <= strength.level ? strength.color : '#E5E7EB' }} />
+              ))}
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: strength.color, width: 60 }}>{strength.label}</span>
+          </div>
+        )}
+      </div>
+
+      <p className="su-terms">
+        By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </p>
+
+      <button className="auth-cta" onClick={handleSignup} disabled={loading}>
+        {loading ? <div className="auth-spinner" /> : '✨ Create Free Account'}
+      </button>
+
+      <div className="su-trust">
+        {['🔒 256-bit SSL', '🛡️ No spam ever', '✅ Free forever'].map(t => (
+          <div key={t} className="su-trust-item">{t}</div>
         ))}
       </div>
     </AuthLayoutWeb>
   );
 }
 
-// ── Mobile Signup ───────────────────────────────────────────────────────────
+// ── Mobile Signup — mirrors Login design exactly ──────────────────────────────
 
 function SignupScreenMobile() {
   const router = useRouter();
   const { signUp, signInWithOAuth } = useAuth();
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -223,28 +195,16 @@ function SignupScreenMobile() {
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const handleSignup = async () => {
-    if (!name || !email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      await signUp(email, password, name);
-      router.replace('/(tabs)');
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-    } finally {
-      setLoading(false);
-    }
+    if (!name || !email || !password) { setError('Please fill in all fields'); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    setLoading(true); setError('');
+    try { await signUp(email, password, name); router.replace('/(tabs)'); }
+    catch (err: any) { setError(err.message || 'Failed to create account'); }
+    finally { setLoading(false); }
   };
 
   const getStrength = () => {
-    if (password.length === 0) return null;
+    if (!password) return null;
     if (password.length < 6) return { level: 1, label: 'Too short', color: '#EF4444' };
     if (password.length < 8) return { level: 2, label: 'Weak', color: '#F97316' };
     if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { level: 3, label: 'Fair', color: '#EAB308' };
@@ -253,254 +213,203 @@ function SignupScreenMobile() {
   const strength = getStrength();
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <View style={styles.logoMark}>
-            <Text style={styles.logoMarkText}>M</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF0F2' }}>
+      <KeyboardAvoidingView style={ms.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Back Button */}
+        <TouchableOpacity style={ms.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
+          <Text style={ms.backArrow}>←</Text>
+        </TouchableOpacity>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={ms.scrollContent} showsVerticalScrollIndicator={true} keyboardShouldPersistTaps="handled">
+
+          {/* Header — identical to login */}
+          <View style={ms.header}>
+          <View style={ms.logoMark}>
+            <Text style={ms.logoMarkText}>M</Text>
           </View>
-          <Text style={styles.logo}>MoodMarket</Text>
-          <Text style={styles.subtitle}>Create your free account</Text>
+          <Text style={ms.logo}>MoodMarket</Text>
+          <Text style={ms.tagline}>Shop by how you feel</Text>
         </View>
 
-        <View style={styles.card}>
+        {/* Card — identical card design to login */}
+        <View style={ms.card}>
+          <Text style={ms.cardTitle}>Create account</Text>
+          <Text style={ms.cardSubtitle}>Join thousands shopping by mood</Text>
+
           {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
+            <View style={ms.errorBox}><Text style={ms.errorText}>{error}</Text></View>
           ) : null}
 
           {/* Full Name */}
-          <View style={styles.fieldWrapper}>
-            <Text style={styles.label}>Full name</Text>
-            <View style={[styles.inputContainer, nameFocused && styles.inputFocused]}>
-              <User size={18} color={nameFocused ? Colors.primary : Colors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Jane Doe"
-                placeholderTextColor={Colors.textSecondary}
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                onFocus={() => setNameFocused(true)}
-                onBlur={() => setNameFocused(false)}
-              />
-            </View>
+          <Text style={ms.label}>Full name</Text>
+          <View style={[ms.inputBox, nameFocused && ms.inputFocused]}>
+            <User size={18} color={nameFocused ? PRIMARY : '#9CA3AF'} />
+            <TextInput style={ms.input} value={name} onChangeText={setName}
+              placeholder="Jane Doe" placeholderTextColor="#9CA3AF"
+              autoCapitalize="words"
+              onFocus={() => setNameFocused(true)} onBlur={() => setNameFocused(false)} />
           </View>
 
           {/* Email */}
-          <View style={styles.fieldWrapper}>
-            <Text style={styles.label}>Email address</Text>
-            <View style={[styles.inputContainer, emailFocused && styles.inputFocused]}>
-              <Mail size={18} color={emailFocused ? Colors.primary : Colors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textSecondary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-              />
-            </View>
+          <Text style={ms.label}>Email</Text>
+          <View style={[ms.inputBox, emailFocused && ms.inputFocused]}>
+            <Mail size={18} color={emailFocused ? PRIMARY : '#9CA3AF'} />
+            <TextInput style={ms.input} value={email} onChangeText={setEmail}
+              placeholder="you@example.com" placeholderTextColor="#9CA3AF"
+              autoCapitalize="none" keyboardType="email-address"
+              onFocus={() => setEmailFocused(true)} onBlur={() => setEmailFocused(false)} />
           </View>
 
           {/* Password */}
-          <View style={styles.fieldWrapper}>
-            <Text style={styles.label}>Password</Text>
-            <View style={[styles.inputContainer, passwordFocused && styles.inputFocused]}>
-              <Lock size={18} color={passwordFocused ? Colors.primary : Colors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Min. 6 characters"
-                placeholderTextColor={Colors.textSecondary}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                {showPassword
-                  ? <EyeOff size={18} color={Colors.textSecondary} />
-                  : <Eye size={18} color={Colors.textSecondary} />}
-              </TouchableOpacity>
-            </View>
-            {strength && (
-              <View style={styles.strengthWrapper}>
-                <View style={styles.strengthBars}>
-                  {[1, 2, 3, 4].map((i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.strengthBar,
-                        { backgroundColor: i <= strength.level ? strength.color : '#E5E7EB' },
-                      ]}
-                    />
-                  ))}
-                </View>
-                <Text style={[styles.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
+          <Text style={ms.label}>Password</Text>
+          <View style={[ms.inputBox, passwordFocused && ms.inputFocused]}>
+            <Lock size={18} color={passwordFocused ? PRIMARY : '#9CA3AF'} />
+            <TextInput style={ms.input} value={password} onChangeText={setPassword}
+              placeholder="Min. 6 characters" placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showPassword}
+              onFocus={() => setPasswordFocused(true)} onBlur={() => setPasswordFocused(false)} />
+            <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={ms.eyeBtn}>
+              {showPassword ? <EyeOff size={18} color="#9CA3AF" /> : <Eye size={18} color="#9CA3AF" />}
+            </TouchableOpacity>
+          </View>
+
+          {/* Strength bars */}
+          {strength && (
+            <View style={ms.strengthRow}>
+              <View style={ms.strengthBars}>
+                {[1,2,3,4].map(i => (
+                  <View key={i} style={[ms.strengthBar, { backgroundColor: i <= strength.level ? strength.color : '#E5E7EB' }]} />
+                ))}
               </View>
-            )}
-          </View>
+              <Text style={[ms.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
+            </View>
+          )}
 
-          <Text style={styles.termsText}>
-            By creating an account you agree to our{' '}
-            <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-            <Text style={styles.termsLink}>Privacy Policy</Text>.
-          </Text>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSignup}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Creating account…' : 'Create Account'}
-            </Text>
+          {/* Create Account button */}
+          <TouchableOpacity style={ms.button} onPress={handleSignup} disabled={loading} activeOpacity={0.85}>
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={ms.buttonText}>Create Account</Text>
+            }
           </TouchableOpacity>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or sign up with</Text>
-            <View style={styles.dividerLine} />
+          {/* Divider */}
+          <View style={ms.divider}>
+            <View style={ms.dividerLine} />
+            <Text style={ms.dividerText}>or continue with</Text>
+            <View style={ms.dividerLine} />
           </View>
 
-          <View style={styles.socialButtons}>
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.75} onPress={() => signInWithOAuth('google')}>
-              <GoogleIcon />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.75} onPress={() => signInWithOAuth('apple')}>
-              <AppleIcon color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.75} onPress={() => signInWithOAuth('facebook')}>
-              <FacebookIcon />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/login')}>
-            <Text style={styles.link}>Sign in</Text>
+          {/* Google */}
+          <TouchableOpacity style={ms.socialBtn} activeOpacity={0.85} onPress={() => signInWithOAuth('google')}>
+            <GoogleIcon size={20} />
+            <Text style={ms.socialBtnText}>Continue with Google</Text>
           </TouchableOpacity>
+
+          {/* ← Already have an account — same position as login's "Don't have an account?" */}
+          <View style={ms.signinRow}>
+            <Text style={ms.signinText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/login')}>
+              <Text style={ms.signinLink}>Sign in</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={ms.secureBadge}>🔒 Secured with 256-bit encryption</Text>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-// ── Export ──────────────────────────────────────────────────────────────────
+// ── Export ────────────────────────────────────────────────────────────────────
 
 export default function SignupScreen() {
   if (Platform.OS === 'web') return <SignupScreenWeb />;
   return <SignupScreenMobile />;
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F6FA' },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 48,
+// ── Mobile Styles (mirrors login's `ms` stylesheet exactly) ──────────────────
+
+const PRIMARY = '#FF7A8A';
+
+const ms = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#FFF0F2' },
+  scrollContent: { padding: 16, paddingBottom: 40 },
+
+  backBtn: {
+    position: 'absolute', top: 12, left: 16, zIndex: 10,
+    width: 36, height: 36, borderRadius: 10, backgroundColor: '#fff',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
   },
-  header: { alignItems: 'center', marginBottom: 32 },
+  backArrow: { fontSize: 18, color: '#1A1A1A', fontWeight: '600' },
+
+  header: { alignItems: 'center', marginBottom: 16, marginTop: 10 },
   logoMark: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    width: 56, height: 56, borderRadius: 16, backgroundColor: PRIMARY,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+    shadowColor: PRIMARY, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.38, shadowRadius: 16, elevation: 8,
   },
-  logoMarkText: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -1 },
-  logo: { fontSize: 26, fontWeight: '700', color: '#111827', letterSpacing: -0.5, marginBottom: 4 },
-  subtitle: { fontSize: 15, color: '#6B7280', fontWeight: '400' },
+  logoMarkText: { fontSize: 28, fontWeight: '900', color: '#fff' },
+  logo: { fontSize: 22, fontWeight: '800', color: '#1A1A1A', letterSpacing: -0.5, marginBottom: 2 },
+  tagline: { fontSize: 13, color: '#9CA3AF', fontWeight: '500' },
+
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 24,
-    elevation: 4,
+    backgroundColor: '#fff', padding: 20, borderRadius: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07, shadowRadius: 20, elevation: 4,
   },
-  errorContainer: {
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
+  cardTitle: { fontSize: 20, fontWeight: '800', color: '#1A1A1A', letterSpacing: -0.4, marginBottom: 2 },
+  cardSubtitle: { fontSize: 13, color: '#9CA3AF', marginBottom: 16 },
+
+  label: { fontSize: 12, fontWeight: '700', color: '#374151', marginBottom: 4 },
+  inputBox: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#E5E7EB',
+    borderRadius: 12, paddingHorizontal: 12,
+    marginBottom: 10, backgroundColor: '#F9FAFB',
+    height: 46, gap: 10,
   },
-  errorText: { color: '#DC2626', textAlign: 'center', fontSize: 14, fontWeight: '500' },
-  fieldWrapper: { marginBottom: 16 },
-  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6, letterSpacing: 0.1 },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-  },
-  inputFocused: { borderColor: Colors.primary, backgroundColor: '#FFF5F6' },
-  inputIcon: { marginRight: 10 },
-  eyeIcon: { padding: 4 },
-  input: { flex: 1, paddingVertical: 14, fontSize: 15, color: '#111827' },
-  strengthWrapper: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  inputFocused: { borderColor: PRIMARY, backgroundColor: '#FFF5F6' },
+  input: { flex: 1, fontSize: 14, color: '#111827', paddingVertical: 0 },
+  eyeBtn: { padding: 4 },
+
+  strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: -4, marginBottom: 10 },
   strengthBars: { flexDirection: 'row', gap: 4, flex: 1 },
   strengthBar: { flex: 1, height: 4, borderRadius: 2 },
-  strengthLabel: { fontSize: 12, fontWeight: '600', width: 56, textAlign: 'right' },
-  termsText: { fontSize: 12, color: '#9CA3AF', lineHeight: 18, marginBottom: 16 },
-  termsLink: { color: Colors.primary, fontWeight: '600' },
+  strengthLabel: { fontSize: 10, fontWeight: '700', width: 50, textAlign: 'right' },
+
   button: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: PRIMARY, height: 48, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center', marginTop: 4,
+    shadowColor: PRIMARY, shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
   },
-  buttonDisabled: { opacity: 0.55 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.2 },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
+  buttonText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16, gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
-  dividerText: { marginHorizontal: 12, color: '#9CA3AF', fontSize: 13, fontWeight: '500' },
-  socialButtons: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
-  socialButton: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+  dividerText: { fontSize: 12, color: '#9CA3AF', fontWeight: '500' },
+
+  socialBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 10, height: 48, backgroundColor: '#F9FAFB',
+    borderWidth: 1.5, borderColor: '#E5E7EB', borderRadius: 12, marginBottom: 16,
   },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
-  footerText: { color: '#6B7280', fontSize: 14 },
-  link: { color: Colors.primary, fontSize: 14, fontWeight: '600' },
+  socialBtnText: { fontSize: 14, fontWeight: '700', color: '#374151' },
+
+  signinRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  signinText: { fontSize: 13, color: '#6B7280' },
+  signinLink: { fontSize: 13, fontWeight: '700', color: PRIMARY },
+
+  secureBadge: { textAlign: 'center', fontSize: 10, color: '#9CA3AF' },
+
+  errorBox: {
+    backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA',
+    borderRadius: 10, padding: 10, marginBottom: 12,
+  },
+  errorText: { color: '#DC2626', textAlign: 'center', fontSize: 12, fontWeight: '500' },
 });

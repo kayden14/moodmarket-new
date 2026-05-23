@@ -525,6 +525,7 @@ export default function CheckoutScreen() {
   const validateDetails = () => {
     if (!name.trim())    { Alert.alert('Missing info', 'Please enter your full name.');        return false; }
     if (!phone.trim())   { Alert.alert('Missing info', 'Please enter your phone number.');     return false; }
+    if (!/^\d+$/.test(phone.trim())) { Alert.alert('Invalid phone', 'Phone number must contain only numbers.'); return false; }
     if (!address.trim()) { Alert.alert('Missing info', 'Please enter your delivery address.'); return false; }
     if (!city.trim())    { Alert.alert('Missing info', 'Please enter your city.');             return false; }
     return true;
@@ -535,6 +536,7 @@ export default function CheckoutScreen() {
     if (payMethod === 'mobile_money') {
       if (!momoProvider)      { Alert.alert('Select network', 'Please select your MoMo network.'); return false; }
       if (!momoNumber.trim()) { Alert.alert('Missing info',   'Please enter your MoMo number.');   return false; }
+      if (!/^\d+$/.test(momoNumber.trim())) { Alert.alert('Invalid number', 'MoMo number must contain only numbers.'); return false; }
     }
     return true;
   };
@@ -827,7 +829,7 @@ export default function CheckoutScreen() {
 
         {payMethod === 'mobile_money' && (
           <View style={[s.momoWrap, { backgroundColor: theme.card, borderColor: theme.primary }]}>
-            <MomoSelector selected={momoProvider} onSelect={setMomoProvider} momoNumber={momoNumber} onNumberChange={setMomoNumber} />
+            <MomoSelector selected={momoProvider} onSelect={setMomoProvider} momoNumber={momoNumber} onNumberChange={v => setMomoNumber(v.replace(/[^0-9]/g, ''))} />
           </View>
         )}
 
@@ -891,7 +893,7 @@ export default function CheckoutScreen() {
 
         <Text style={[s.sectionLabel, { color: theme.inactive }]}>DELIVERY DETAILS</Text>
         <Field icon={<User   size={16} color={theme.primary} />} label="Full Name"      value={name}    onChange={setName}    placeholder="e.g. Ama Owusu" />
-        <Field icon={<Phone  size={16} color={theme.primary} />} label="Phone Number"   value={phone}   onChange={setPhone}   placeholder="e.g. 0244000000" keyboardType="phone-pad" />
+        <Field icon={<Phone  size={16} color={theme.primary} />} label="Phone Number"   value={phone}   onChange={v => setPhone(v.replace(/[^0-9]/g, ''))}   placeholder="e.g. 0244000000" keyboardType="phone-pad" />
         <Field icon={<MapPin size={16} color={theme.primary} />} label="Street Address" value={address} onChange={setAddress} placeholder="e.g. 14 Osu Badu Street" />
         <Field icon={<MapPin size={16} color={theme.primary} />} label="City"           value={city}    onChange={setCity}    placeholder="e.g. Accra" />
 

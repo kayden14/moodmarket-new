@@ -92,16 +92,22 @@ type UseMoodDetectionReturn = {
 export function useMoodDetection({
   onMoodDetected,
 }: UseMoodDetectionOptions): UseMoodDetectionReturn {
-  const [detecting,        setDetecting]        = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const [hasPermission,    setHasPermission]    = useState<boolean | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
-  const cameraRef               = useRef<any>(null);
-  const isCapturing             = useRef(false);   // prevents double-capture
-  const hasDetected             = useRef(false);   // prevents re-running after success
-  const cameraReadyRef          = useRef(false);   // tracks whether onCameraReady has fired
-  const cameraReadyTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cameraRef = useRef<any>(null);
+  const isCapturing = useRef(false);   // prevents double-capture
+  const hasDetected = useRef(false);   // prevents re-running after success
+  const cameraReadyRef = useRef(false);   // tracks whether onCameraReady has fired
+  const cameraReadyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const captureFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep a stable ref to onMoodDetected to decouple callbacks from parent updates
+  const onMoodDetectedRef = useRef(onMoodDetected);
+  useEffect(() => {
+    onMoodDetectedRef.current = onMoodDetected;
+  }, [onMoodDetected]);
 
   // ── Capture + detect (called after camera is confirmed ready) ──────────────
   const capture = useCallback(async () => {
@@ -111,7 +117,7 @@ export function useMoodDetection({
 
     // Physical Feedback: Light pulse when scanning starts
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     }
 
     try {
@@ -130,7 +136,7 @@ export function useMoodDetection({
           console.warn('[useMoodDetection] cameraRef.current is null');
           if (!hasDetected.current) {
             hasDetected.current = true;
-            onMoodDetected('neutral');
+            onMoodDetectedRef.current('neutral');
           }
           return;
         }
@@ -149,7 +155,7 @@ export function useMoodDetection({
         console.warn('[useMoodDetection] No images captured');
         if (!hasDetected.current) {
           hasDetected.current = true;
-          onMoodDetected('neutral');
+          onMoodDetectedRef.current('neutral');
         }
         return;
       }
@@ -161,7 +167,7 @@ export function useMoodDetection({
       if (!result) {
         console.warn('[useMoodDetection] AI returned no result, falling back to neutral');
         hasDetected.current = true;
-        onMoodDetected('neutral');
+        onMoodDetectedRef.current('neutral');
         return;
       }
 
@@ -170,11 +176,11 @@ export function useMoodDetection({
       );
 
       hasDetected.current = true;
-      onMoodDetected(result.mood);
+      onMoodDetectedRef.current(result.mood);
 
       // Physical Feedback: Pulse on success
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
       }
 
     } catch (err: any) {
@@ -183,18 +189,18 @@ export function useMoodDetection({
 
       if (!hasDetected.current) {
         hasDetected.current = true;
-        onMoodDetected('neutral');
+        onMoodDetectedRef.current('neutral');
 
         // Physical Feedback: Pulse on failure
         if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
         }
       }
     } finally {
       setDetecting(false);
       isCapturing.current = false;
     }
-  }, [onMoodDetected]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── onCameraReady: fired by CameraView when hardware is ready (native only) ─
   const onCameraReady = useCallback(() => {
@@ -247,7 +253,7 @@ export function useMoodDetection({
           if (!cameraReadyRef.current && !hasDetected.current) {
             console.warn('[useMoodDetection] ⚠️ onCameraReady timeout — falling back to neutral');
             hasDetected.current = true;
-            onMoodDetected('neutral');
+            onMoodDetectedRef.current('neutral');
           }
         }, CAMERA_READY_TIMEOUT_MS);
 
@@ -268,8 +274,8 @@ export function useMoodDetection({
     };
 
     requestPermission();
-    return () => { 
-      cancelled = true; 
+    return () => {
+      cancelled = true;
       if (cameraReadyTimerRef.current) clearTimeout(cameraReadyTimerRef.current);
       if (captureFallbackTimerRef.current) clearTimeout(captureFallbackTimerRef.current);
     };
@@ -297,8 +303,8 @@ export function useMoodDetection({
     }
 
     // Reset guards so capture() is allowed to run again
-    hasDetected.current    = false;
-    isCapturing.current    = false;
+    hasDetected.current = false;
+    isCapturing.current = false;
     // cameraReadyRef stays true — the camera is still mounted and ready (native)
 
     console.log('[useMoodDetection] 🔄 Re-scan triggered — capturing again');
