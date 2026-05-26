@@ -174,10 +174,11 @@ function LoginScreenWeb() {
     .auth-testimonial-stars { font-size: 11px; color: #FF7A8A; }
 
     .auth-right {
-      width: 52%; display: flex; align-items: center; justify-content: center;
+      width: 52%; display: flex; flex-direction: column;
       padding: 48px 60px; background: #fff;
+      overflow-y: auto;
     }
-    .auth-form-wrap { width: 100%; max-width: 420px; }
+    .auth-form-wrap { width: 100%; max-width: 420px; margin: auto; }
 
     .auth-eyebrow {
       font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
@@ -252,9 +253,9 @@ function LoginScreenWeb() {
     .auth-social-btn:hover { background: #F3F4F6; border-color: #4285F4; color: #4285F4; transform: translateY(-1px); }
     .auth-social-btn:active { transform: translateY(0); }
 
-    .auth-footer { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 24px; font-size: 14px; color: #6B7280; }
-    .auth-footer-link { color: #FF7A8A; font-weight: 700; cursor: pointer; background: none; border: none; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .auth-footer-link:hover { text-decoration: underline; }
+    .auth-footer { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 28px; font-size: 14.5px; color: #111827; font-weight: 600; }
+    .auth-footer-link { color: #E11D48; font-weight: 800; cursor: pointer; background: none; border: none; font-size: 14.5px; font-family: 'Plus Jakarta Sans', sans-serif; transition: color 0.15s; }
+    .auth-footer-link:hover { color: #BE123C; text-decoration: underline; }
 
     .auth-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 500; display: flex; align-items: center; justify-content: center; }
     .auth-modal {

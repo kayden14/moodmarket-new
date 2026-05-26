@@ -335,7 +335,7 @@ const PRIMARY = '#FF7A8A';
 
 const ms = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF0F2' },
-  scrollContent: { padding: 16, paddingBottom: 40 },
+  scrollContent: { padding: 16, paddingBottom: 80 },
 
   backBtn: {
     position: 'absolute', top: 12, left: 16, zIndex: 10,
@@ -402,8 +402,8 @@ const ms = StyleSheet.create({
   socialBtnText: { fontSize: 14, fontWeight: '700', color: '#374151' },
 
   signinRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  signinText: { fontSize: 13, color: '#6B7280' },
-  signinLink: { fontSize: 13, fontWeight: '700', color: PRIMARY },
+  signinText: { fontSize: 13, color: '#1F2937', fontWeight: '600' },
+  signinLink: { fontSize: 13, fontWeight: '800', color: '#E11D48' },
 
   secureBadge: { textAlign: 'center', fontSize: 10, color: '#9CA3AF' },
 

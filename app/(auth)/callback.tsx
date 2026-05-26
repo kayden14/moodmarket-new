@@ -14,7 +14,7 @@
 // onAuthStateChange, so we just wait briefly and redirect.
 
 import { useEffect } from 'react';
-import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, Text, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { supabase } from '@/services/supabase';
@@ -36,8 +36,20 @@ export default function AuthCallback() {
       console.log('[AuthCallback] Handling URL:', url);
 
       try {
-        const parsed = Linking.parse(url);
-        const code = parsed.queryParams?.code as string | undefined;
+        let code: string | undefined;
+        if (Platform.OS === 'web') {
+          try {
+            const urlObj = new URL(url);
+            code = urlObj.searchParams.get('code') || undefined;
+          } catch (e) {
+            console.error('[AuthCallback] Web URL parse error:', e);
+          }
+        }
+
+        if (!code) {
+          const parsed = Linking.parse(url);
+          code = parsed.queryParams?.code as string | undefined;
+        }
 
         if (code) {
           // PKCE flow — exchange code for session
@@ -61,21 +73,35 @@ export default function AuthCallback() {
       navigate();
     };
 
-    // Check if the app was opened via deep link (cold start)
-    Linking.getInitialURL().then((url) => {
-      if (url && url.includes('auth/callback')) {
-        handleURL(url);
+    if (Platform.OS === 'web') {
+      const currentUrl = window.location.href;
+      if (currentUrl.includes('auth/callback') || currentUrl.includes('code=')) {
+        handleURL(currentUrl);
       } else {
-        // App was already open — check for session that supabase-js may
-        // have already set via onAuthStateChange, then redirect
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
-            console.log('[AuthCallback] Session already active, redirecting…');
+            console.log('[AuthCallback] Session already active on web, redirecting…');
             navigate();
           }
         });
       }
-    });
+    } else {
+      // Check if the app was opened via deep link (cold start)
+      Linking.getInitialURL().then((url) => {
+        if (url && url.includes('auth/callback')) {
+          handleURL(url);
+        } else {
+          // App was already open — check for session that supabase-js may
+          // have already set via onAuthStateChange, then redirect
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+              console.log('[AuthCallback] Session already active, redirecting…');
+              navigate();
+            }
+          });
+        }
+      });
+    }
 
     // Handle URL if the app was already running (warm start)
     const sub = Linking.addEventListener('url', ({ url }) => {
