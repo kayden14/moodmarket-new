@@ -141,7 +141,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
             '✨ <strong>Vibe Collections</strong> — Hand-picked sets for every emotion.',
             '🚀 <strong>Express Delivery</strong> — Joy, delivered to your door.',
           ], 'WHAT\'S WAITING FOR YOU')}
-          ${btn('Start Your First Mood Scan', 'https://moodmarket.vercel.app/(tabs)')}
+          ${btn('Start Your First Mood Scan', 'https://moodmarket.vercel.app/')}
           ${p('Have questions? We\'re here at <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;font-weight:700;">support@moodmarket.com</a>.', 'margin-bottom:0;font-size:13px;color:#94a3b8;')}
         `),
       };
@@ -172,7 +172,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
             `🛍️ <strong>Items:</strong> ${p_.itemCount ?? 1} item(s)`,
             `📍 <strong>Delivering to:</strong> ${p_.address ?? 'your saved address'}`,
           ], 'ORDER SUMMARY', '#bbf7d0', '#f0fdf4')}
-          ${btn('Track My Order', 'https://moodmarket.vercel.app/(tabs)/profile')}
+          ${btn('Track My Order', 'https://moodmarket.vercel.app/profile')}
           ${divider()}
           ${p('Need help? Reach us at <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;font-weight:700;">support@moodmarket.com</a>', 'font-size:13px;color:#94a3b8;margin-bottom:0;')}
         `),
@@ -189,7 +189,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
             `🔄 <strong>New Status:</strong> <span style="color:${accent};font-weight:800;">${String(p_.status ?? 'Updated').toUpperCase()}</span>`,
             p_.message ? `💬 <strong>Note:</strong> ${p_.message}` : '',
           ].filter(Boolean), 'STATUS UPDATE', '#fde68a', '#fffbeb')}
-          ${btn('View Order Details', 'https://moodmarket.vercel.app/(tabs)/profile')}
+          ${btn('View Order Details', 'https://moodmarket.vercel.app/profile')}
         `),
       };
 
@@ -216,7 +216,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
           ${h2(`Welcome Back, ${name}!`)}
           ${p(`We've reviewed your account and are happy to confirm your access has been fully restored. Your vibes are back!`)}
           ${statusBadge('✅ ACCOUNT ACTIVE', '#16a34a', '#f0fdf4')}
-          ${btn('Return to MoodMarket', 'https://moodmarket.vercel.app/(tabs)', '#16a34a')}
+          ${btn('Return to MoodMarket', 'https://moodmarket.vercel.app/', '#16a34a')}
         `, '#16a34a'),
       };
 
@@ -256,7 +256,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
           )}
           ${btn(
             isAdmin ? 'Open Admin Panel' : isVendor ? 'Open Vendor Dashboard' : 'Shop MoodMarket',
-            isAdmin ? 'https://moodmarket.vercel.app/admin' : isVendor ? 'https://moodmarket.vercel.app/vendor' : 'https://moodmarket.vercel.app/(tabs)',
+            isAdmin ? 'https://moodmarket.vercel.app/admin' : isVendor ? 'https://moodmarket.vercel.app/vendor' : 'https://moodmarket.vercel.app/',
             roleColor
           )}
         `, roleColor),
@@ -357,7 +357,7 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
         html: wrap(`
           ${h2('A note from MoodMarket')}
           ${p('You have a new notification. Please log in to your account to view the details.')}
-          ${btn('Go to MoodMarket', 'https://moodmarket.vercel.app/(tabs)')}
+          ${btn('Go to MoodMarket', 'https://moodmarket.vercel.app/')}
         `),
       };
   }

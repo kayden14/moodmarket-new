@@ -252,10 +252,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
     // Use /auth/callback route so the token exchange happens before navigating to tabs
+    // (auth) is a route group — transparent in URLs.
+    // app/(auth)/callback.tsx is reachable at /callback, NOT /auth/callback.
     const redirectTo =
       Platform.OS === 'web'
-        ? `${window.location.origin}/auth/callback`
-        : Linking.createURL('/auth/callback');
+        ? `${window.location.origin}/callback`
+        : Linking.createURL('/callback');
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,

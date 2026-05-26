@@ -1,13 +1,16 @@
-// app/auth/callback.tsx
+// app/(auth)/callback.tsx
 //
-// Handles the deep link redirect after Google (or other OAuth) sign-in.
+// Handles the OAuth redirect after Google sign-in.
+//
+// IMPORTANT: In Expo Router, (auth) is a route GROUP — it is transparent in
+// the URL. So this file is reachable at /callback, NOT /auth/callback.
 //
 // Flow:
 //  1. User taps "Continue with Google" → browser opens Google consent
-//  2. Google redirects to moodmarket://auth/callback?code=xxx
+//  2. Google/Supabase redirects to <origin>/callback?code=xxx
 //  3. Expo Router opens this screen
 //  4. We exchange the code for a Supabase session
-//  5. Redirect to (tabs)
+//  5. Redirect to home tabs
 //
 // Also handles the case where Supabase uses a URL fragment (#access_token=...)
 // instead of a query param — supabase-js picks that up automatically via
@@ -75,7 +78,7 @@ export default function AuthCallback() {
 
     if (Platform.OS === 'web') {
       const currentUrl = window.location.href;
-      if (currentUrl.includes('auth/callback') || currentUrl.includes('code=')) {
+      if (currentUrl.includes('/callback') || currentUrl.includes('code=')) {
         handleURL(currentUrl);
       } else {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -88,7 +91,7 @@ export default function AuthCallback() {
     } else {
       // Check if the app was opened via deep link (cold start)
       Linking.getInitialURL().then((url) => {
-        if (url && url.includes('auth/callback')) {
+        if (url && url.includes('/callback')) {
           handleURL(url);
         } else {
           // App was already open — check for session that supabase-js may
@@ -105,7 +108,7 @@ export default function AuthCallback() {
 
     // Handle URL if the app was already running (warm start)
     const sub = Linking.addEventListener('url', ({ url }) => {
-      if (url.includes('auth/callback')) handleURL(url);
+      if (url.includes('/callback')) handleURL(url);
     });
 
     // Safety net — redirect after 5s no matter what
