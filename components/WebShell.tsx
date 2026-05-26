@@ -215,12 +215,15 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
           -webkit-backdrop-filter: blur(20px) saturate(1.4);
           transition: all 0.3s ease;
         }
-        @media (max-width: 600px) {
-          .mm-topnav { padding: 0 16px; height: 60px; }
+        @media (max-width: 768px) {
+          .mm-topnav { padding: 0 16px; height: 60px; gap: 8px; }
+        }
+        @media (max-width: 480px) {
+          .mm-topnav { padding: 0 12px; height: 56px; gap: 6px; }
         }
 
         .mm-logo {
-          display: flex; align-items: center; gap: 9px;
+          display: flex; align-items: center; gap: 8px;
           flex-shrink: 0; text-decoration: none; cursor: pointer;
         }
         .mm-logo-icon {
@@ -232,8 +235,17 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
         .mm-logo-text {
           font-family: "Playfair Display", serif; font-size: 19px;
           font-weight: 600; color: ${tp}; letter-spacing: -0.4px;
+          white-space: nowrap;
         }
         .mm-logo-text em { font-style: italic; color: ${pri}; }
+        @media (max-width: 700px) {
+          .mm-logo-text { font-size: 16px; }
+          .mm-logo-icon { width: 30px; height: 30px; font-size: 15px; }
+        }
+        @media (max-width: 380px) {
+          .mm-logo-text { font-size: 14px; letter-spacing: -0.2px; }
+          .mm-logo-icon { width: 28px; height: 28px; font-size: 13px; border-radius: 7px; }
+        }
 
         .mm-topnav-search {
           flex: 1; max-width: 480px; position: relative;
@@ -439,22 +451,27 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
         }
 
         @media (max-width: 768px) {
-          .mm-main-inner { padding: 20px 16px 40px; }
+          .mm-main-inner { padding: 18px 16px 60px; }
           .mm-sidebar-inner { width: 100%; }
         }
 
+        @media (max-width: 480px) {
+          .mm-main-inner { padding: 14px 12px 80px; }
+        }
+
         @media (max-width: 700px) {
-          .mm-topnav { padding: 0 12px; }
           .mm-topnav-search { display: none; }
           .mm-search-toggle { display: flex; }
           .mm-desktop-only { display: none !important; }
           .mm-mobile-only  { display: flex; }
           .mm-btn-label { display: none; }
-          .mm-logo-text { font-size: 16px; }
         }
         @media (max-width: 480px) {
-          .mm-logo-text { display: none; }
-          .mm-icon-btn { padding: 0 8px; min-width: 34px; height: 34px; }
+          .mm-icon-btn { padding: 0 7px; min-width: 32px; height: 32px; }
+          .mm-avatar { width: 32px; height: 32px; font-size: 11px; }
+        }
+        @media (max-width: 360px) {
+          .mm-icon-btn { padding: 0 6px; min-width: 30px; height: 30px; }
         }
       `}</style>
 

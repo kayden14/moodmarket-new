@@ -176,10 +176,51 @@ const CSS = `
 
   .auth-secure { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 20px; font-size: 11px; color: #9CA3AF; }
 
-  @media (max-width: 768px) {
-    .auth-left { display: none; }
-    .auth-right { width: 100%; padding: 40px 24px; }
+  /* ── Tablet: shrink left panel ── */
+  @media (max-width: 900px) {
+    .auth-left { width: 38%; padding: 40px 28px; }
+    .auth-right { width: 62%; padding: 40px 36px; }
+    .auth-brand-mark { width: 56px; height: 56px; font-size: 28px; border-radius: 16px; }
+    .auth-brand-name { font-size: 22px; }
+    .auth-testimonials { gap: 8px; }
+    .auth-testimonial { padding: 12px 14px; }
+    .auth-testimonial-text { font-size: 12px; }
   }
+
+  /* ── Mobile: hide left panel, show inline logo ── */
+  @media (max-width: 640px) {
+    .auth-left { display: none; }
+    .auth-right { width: 100%; padding: 0; min-height: 100vh; }
+    .auth-form-wrap { max-width: 100%; padding: 24px 20px 48px; }
+    .auth-mobile-logo { display: flex !important; }
+    .auth-heading { font-size: 26px; }
+    .auth-subheading { font-size: 14px; margin-bottom: 24px; }
+  }
+
+  @media (max-width: 380px) {
+    .auth-form-wrap { padding: 20px 16px 48px; }
+    .auth-heading { font-size: 23px; }
+  }
+
+  /* Hidden by default on desktop — shown on mobile */
+  .auth-mobile-logo {
+    display: none;
+    align-items: center; gap: 10px;
+    margin-bottom: 28px;
+  }
+  .auth-mobile-logo-icon {
+    width: 44px; height: 44px; border-radius: 13px;
+    background: #FF7A8A; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+    box-shadow: 0 8px 24px rgba(255,122,138,0.35);
+    flex-shrink: 0;
+  }
+  .auth-mobile-logo-text {
+    font-family: 'Playfair Display', serif; font-size: 22px;
+    font-weight: 700; color: #1A1A1A; letter-spacing: -0.4px;
+  }
+  .auth-mobile-logo-text em { font-style: italic; color: #FF7A8A; }
 `;
 
 interface AuthLayoutWebProps {
@@ -270,6 +311,12 @@ export function AuthLayoutWeb({
         {/* ── Right panel ── */}
         <div className="auth-right">
           <div className="auth-form-wrap">
+            {/* Mobile-only logo — hidden on desktop where left panel shows branding */}
+            <div className="auth-mobile-logo">
+              <div className="auth-mobile-logo-icon">M</div>
+              <div className="auth-mobile-logo-text">Mood<em>Market</em></div>
+            </div>
+
             {eyebrow && <div className="auth-eyebrow">{eyebrow}</div>}
             <h1 className="auth-heading">{heading}</h1>
             <p className="auth-subheading">{subheading}</p>
