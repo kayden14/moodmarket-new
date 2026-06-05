@@ -31,7 +31,7 @@ export default function AdminLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#0F0F0F', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator color="#FF7A8A" size="large" />
       </View>
     );
@@ -61,8 +61,9 @@ export default function AdminLayout() {
       subtitle="🛡️ Management Portal"
       navItems={ADMIN_NAV}
       primaryColor="#FF7A8A"
+      bgColor="#ffffff"
     >
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#ffffff' } }}>
         <Stack.Screen name="index"    options={{ headerShown: false }} />
         <Stack.Screen name="orders"   options={{ headerShown: false }} />
         <Stack.Screen name="products" options={{ headerShown: false }} />
