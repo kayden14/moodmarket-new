@@ -19,6 +19,7 @@ interface DashboardShellProps {
   portalName: string;
   primaryColor?: string;
   actions?: React.ReactNode;
+  bgColor?: string; // override background (e.g. '#ffffff' for vendor)
 }
 
 export default function DashboardShell({
@@ -29,6 +30,7 @@ export default function DashboardShell({
   portalName,
   primaryColor = '#FF7A8A',
   actions,
+  bgColor,
 }: DashboardShellProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -60,7 +62,7 @@ export default function DashboardShell({
     setIsSidebarOpen(width >= 1024);
   }, [width]);
 
-  const bg = theme.background;
+  const bg = bgColor ?? theme.background;
   const sidebarBg = theme.card;
   const headerBg = theme.card;
   const border = theme.border;

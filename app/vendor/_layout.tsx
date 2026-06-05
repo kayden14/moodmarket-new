@@ -85,8 +85,9 @@ export default function VendorLayout() {
       subtitle="🏪 Store Management"
       navItems={VENDOR_NAV}
       primaryColor="#FF7A8A"
+      bgColor="#ffffff"
     >
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.background } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#ffffff' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="products" />
         <Stack.Screen name="orders" />

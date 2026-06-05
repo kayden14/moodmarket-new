@@ -13,7 +13,7 @@ import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { VendorNotification } from '@/services/vendorService';
 
 const P = '#FF7A8A';
-const BG = 'transparent', CARD = '#1E1E1E', BORDER = '#2A2A2A', TEXT = '#F1F5F9', SUB = '#A0A0A0';
+const BG = '#ffffff', CARD = '#1E1E1E', BORDER = '#2A2A2A', TEXT = '#F1F5F9', SUB = '#A0A0A0';
 
 function typeIcon(t: string) {
   const m: Record<string, string> = { order: '🛒', payout: '💸', warning: '⚠️', approval: '🎉', info: 'ℹ️' };

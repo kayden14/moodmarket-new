@@ -26,7 +26,7 @@ export default function VendorEarnings() {
   const { profile } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
-  const BG = theme.background;
+  const BG = '#ffffff';
   const CARD = theme.card;
   const BORDER = theme.border;
   const TEXT = theme.textPrimary;
