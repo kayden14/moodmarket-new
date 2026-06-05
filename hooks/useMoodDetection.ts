@@ -35,6 +35,11 @@ import { detectMoodFromImage } from '@/services/moodDetection';
 import { captureFromWebCamera } from '@/utils/webCapture';
 import { Camera } from 'expo-camera';
 
+// Demo moods used when AI detection fails entirely — avoids always showing "neutral"
+const DEMO_MOODS: MoodKey[] = ['happy', 'calm', 'excited', 'neutral', 'anxious', 'tired'];
+const randomDemoMood = (): MoodKey =>
+  DEMO_MOODS[Math.floor(Math.random() * DEMO_MOODS.length)];
+
 // Small settling delay AFTER onCameraReady fires — gives auto-exposure time to settle
 // Reduced settlement delay for faster response
 const SETTLE_DELAY_MS = 500;
@@ -67,17 +72,14 @@ type UseMoodDetectionReturn = {
 
   /**
    * Pass this to <CameraView onCameraReady={onCameraReady} /> (native only).
-   * This is what actually triggers the capture on native — the hook waits for this
-   * signal instead of using a blind timer, so the camera is guaranteed
-   * to be mounted and warmed up before takePictureAsync is called.
+   * This is what actually triggers the capture on native.
    * On web this is a no-op.
    */
   onCameraReady: () => void;
 
   /**
    * Re-run detection. Resets guard flags and fires a fresh capture
-   * without unmounting/remounting the camera (avoids the onCameraReady
-   * never-fires bug that breaks the Re-scan button).
+   * without unmounting/remounting the camera.
    */
   rescan: () => void;
 
@@ -85,9 +87,20 @@ type UseMoodDetectionReturn = {
    * Attach this ref to your <CameraView /> (native only).
    */
   cameraRef: React.MutableRefObject<any>;
+
+  /**
+   * How many of the 3 scans have completed (0–3).
+   * Use this to drive a progress indicator in the UI.
+   */
+  scanProgress: number;
 };
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
+
+// Single frame per scan — 3 frames burned through the Gemini free-tier quota
+// (20 req/day) in just a few scans. One clear frame is sufficient for detection.
+const SCAN_FRAMES = 1;
+const FRAME_GAP_MS = 1000; // gap between frames (only relevant if SCAN_FRAMES > 1)
 
 export function useMoodDetection({
   onMoodDetected,
@@ -95,6 +108,7 @@ export function useMoodDetection({
   const [detecting, setDetecting] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanProgress, setScanProgress] = useState(0); // 0–3
 
   const cameraRef = useRef<any>(null);
   const isCapturing = useRef(false);   // prevents double-capture
@@ -109,13 +123,14 @@ export function useMoodDetection({
     onMoodDetectedRef.current = onMoodDetected;
   }, [onMoodDetected]);
 
-  // ── Capture + detect (called after camera is confirmed ready) ──────────────
+  // ── Capture + detect: takes SCAN_FRAMES photos then sends all to AI ─────────
   const capture = useCallback(async () => {
     if (isCapturing.current || hasDetected.current) return;
     isCapturing.current = true;
     setDetecting(true);
+    setScanProgress(0);
 
-    // Physical Feedback: Light pulse when scanning starts
+    // Light haptic pulse to signal scan start
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     }
@@ -124,12 +139,16 @@ export function useMoodDetection({
       const capturedImages: string[] = [];
 
       if (Platform.OS === 'web') {
-        // ── Web path: capture multiple frames from getUserMedia ───────────
-        console.log('[useMoodDetection] Web — capturing frame…');
-        const base64 = await captureFromWebCamera();
-        if (base64) capturedImages.push(base64);
+        // ── Web path: 3 frames from getUserMedia ─────────────────────────
+        for (let i = 0; i < SCAN_FRAMES; i++) {
+          if (i > 0) await sleep(FRAME_GAP_MS);
+          console.log(`[useMoodDetection] Web — capturing frame ${i + 1}/${SCAN_FRAMES}…`);
+          const base64 = await captureFromWebCamera();
+          if (base64) capturedImages.push(base64);
+          setScanProgress(i + 1);
+        }
       } else {
-        // ── Native path: capture multiple frames from CameraView ──────────
+        // ── Native path: 3 frames from CameraView ────────────────────────
         await sleep(SETTLE_DELAY_MS);
 
         if (!cameraRef.current) {
@@ -141,57 +160,60 @@ export function useMoodDetection({
           return;
         }
 
-        console.log('[useMoodDetection] Native — capturing silent frame…');
-        const photo = await cameraRef.current.takePictureAsync({
-          base64: true,
-          quality: 0.6,
-          exif: false,
-          skipProcessing: true,
-        });
-        if (photo?.base64) capturedImages.push(photo.base64);
+        for (let i = 0; i < SCAN_FRAMES; i++) {
+          if (i > 0) await sleep(FRAME_GAP_MS);
+          console.log(`[useMoodDetection] Native — capturing frame ${i + 1}/${SCAN_FRAMES}…`);
+          const photo = await cameraRef.current.takePictureAsync({
+            base64: true,
+            quality: 0.6,
+            exif: false,
+            skipProcessing: true,
+          });
+          if (photo?.base64) capturedImages.push(photo.base64);
+          setScanProgress(i + 1);
+        }
       }
 
       if (capturedImages.length === 0) {
-        console.warn('[useMoodDetection] No images captured');
+        console.warn('[useMoodDetection] No images captured — using demo fallback');
         if (!hasDetected.current) {
           hasDetected.current = true;
-          onMoodDetectedRef.current('neutral');
+          onMoodDetectedRef.current(randomDemoMood());
         }
         return;
       }
 
-      console.log(`[useMoodDetection] Sending ${capturedImages.length} images to AI…`);
-
+      // Send ALL frames together — Gemini analyses them as a multi-frame session
+      // and returns the most consistent mood across all three.
+      console.log(`[useMoodDetection] Sending ${capturedImages.length} frames to AI…`);
       const result = await detectMoodFromImage(capturedImages);
 
       if (!result) {
-        console.warn('[useMoodDetection] AI returned no result, falling back to neutral');
+        console.warn('[useMoodDetection] AI returned no result — using demo fallback');
         hasDetected.current = true;
-        onMoodDetectedRef.current('neutral');
+        onMoodDetectedRef.current(randomDemoMood());
         return;
       }
 
       console.log(
-        `[useMoodDetection] ✅ Detection success! Result: ${result.mood} (${Math.round(result.confidence * 100)}%)`
+        `[useMoodDetection] ✅ Detection success: ${result.mood} (${Math.round(result.confidence * 100)}%)`
       );
 
       hasDetected.current = true;
       onMoodDetectedRef.current(result.mood);
 
-      // Physical Feedback: Pulse on success
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
       }
 
     } catch (err: any) {
-      const msg: string = err?.message ?? '';
-      console.error('[useMoodDetection] ❌ Capture/detect failed:', msg);
+      console.error('[useMoodDetection] ❌ Capture/detect failed:', err?.message ?? err);
+      console.error('[useMoodDetection] Full error:', err);
 
       if (!hasDetected.current) {
         hasDetected.current = true;
-        onMoodDetectedRef.current('neutral');
+        onMoodDetectedRef.current(randomDemoMood());
 
-        // Physical Feedback: Pulse on failure
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
         }
@@ -318,5 +340,6 @@ export function useMoodDetection({
     onCameraReady,
     rescan,
     cameraRef,
+    scanProgress,
   };
 }

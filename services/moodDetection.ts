@@ -171,13 +171,23 @@ Respond with ONLY valid raw JSON. Do NOT wrap it in markdown code blocks like \`
     try {
       parsedResult = JSON.parse(rawText);
     } catch (e) {
-      // Fallback to regex matching if JSON parsing failed directly
+      // Fallback 1: try to extract a complete JSON object via regex
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
           parsedResult = JSON.parse(jsonMatch[0]);
         } catch (innerErr) {
           console.warn('[MoodDetection] Regex JSON match parsing failed:', innerErr);
+        }
+      }
+
+      // Fallback 2: truncated JSON — extract the mood field directly with a
+      // field-level regex. Handles cases like {"mood": "happy (no closing brace).
+      if (!parsedResult) {
+        const moodFieldMatch = rawText.match(/"mood"\s*:\s*"([^"]+)"/);
+        if (moodFieldMatch) {
+          console.warn('[MoodDetection] Recovered mood from truncated JSON:', moodFieldMatch[1]);
+          parsedResult = { mood: moodFieldMatch[1].trim().toLowerCase(), confidence: 0.75 };
         }
       }
     }

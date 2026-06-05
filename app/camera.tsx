@@ -62,9 +62,10 @@ const MOODS_META: { key: MoodKey; emoji: string; label: string; description: str
 // normal/indoor lighting where scores rarely exceed 0.40.
 const CONFIDENCE_THRESHOLD = 0.15;
 
-// Lowered 0.60 → 0.30 for neutral — still requires a higher bar than other
-// expressions so subtle resting-face frames don't resolve too eagerly.
-const NEUTRAL_THRESHOLD = 0.30;
+// Raised 0.30 → 0.70: neutral only wins when it's overwhelmingly dominant.
+// face-api.js routinely scores neutral > 0.30 even when smiling — we need it
+// to be clearly above everything else before we accept it.
+const NEUTRAL_THRESHOLD = 0.70;
 
 // After this many failed polls (~12 s) give up and show manual picker.
 const MAX_POLL_ATTEMPTS = 15;
@@ -93,6 +94,7 @@ type ProductRec = {
   emoji: string;
   reason: string;
   priceRange: string;
+  description?: string;
 };
 
 type Phase =
@@ -107,17 +109,24 @@ type Phase =
    AI PRODUCT RECOMMENDATIONS  (Supabase Edge Function)
 ─────────────────────────────────────────────────────────────────────────── */
 
-async function fetchProductRecs(mood: string, moodEmoji: string): Promise<ProductRec[]> {
+async function fetchProductRecs(
+  mood: string,
+  moodEmoji: string,
+  allProducts: any[],
+  userId?: string
+): Promise<ProductRec[]> {
   try {
-    const { data, error } = await supabase.functions.invoke('get-recommendations', {
-      body: { mood, moodEmoji }
-    });
-
-    if (error) throw error;
-    return data as ProductRec[];
+    const scored = await getAIRecommendations(userId, mood, allProducts, 4);
+    return scored.map(p => ({
+      name: p.name,
+      category: (p as any).category || p.mood_tags?.[0] || 'Wellness',
+      emoji: (p as any).emoji || '✨',
+      reason: p.reason || '',
+      priceRange: (p as any).priceRange || `$${p.price}`,
+      description: p.description || '',
+    })) as ProductRec[];
   } catch (err: any) {
     console.error('[fetchProductRecs] ❌ failed:', err?.message);
-    // Return empty array to allow manual picker fallback
     return [];
   }
 }
@@ -126,15 +135,22 @@ async function fetchProductRecs(mood: string, moodEmoji: string): Promise<Produc
    RESULTS SCREEN  (shared, rendered inside both platform screens)
 ───────────────────────────────────────────────────────────────────────── */
 
+import { detectMoodShift, MoodShiftResult } from '@/services/moodShiftDetector';
+import { getAIRecommendations } from '@/services/recommendations';
+
+
+
 type ResultsProps = {
   mood: MoodKey;
   recs: ProductRec[];
   onConfirm: () => void;
   onOverride: (m: MoodKey) => void;
   theme: any;
+  moodShift: MoodShiftResult | null;
+  onRescan: () => void;
 };
 
-function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme }: ResultsProps) {
+function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme, moodShift, onRescan }: ResultsProps) {
   const pal = MOOD_PALETTES[mood];
   const meta = MOODS_META.find(m => m.key === mood)!;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -158,6 +174,27 @@ function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme }: Resul
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Mood shift alert banner */}
+        {moodShift && (
+          <View style={[nativeStyles.shiftBanner, { backgroundColor: '#FFFBEB', borderColor: '#FEF3C7' }]}>
+            <EmojiText style={{ fontSize: 22 }}>⚠️</EmojiText>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#B45309' }}>
+                Mood shifted from this {moodShift.timeOfDay}!
+              </Text>
+              <Text style={{ fontSize: 12, color: '#B45309', opacity: 0.9, marginTop: 2 }}>
+                You were {moodShift.previousMood} {moodShift.previousEmoji} at {moodShift.previousTime}.
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={onRescan}
+              style={{ backgroundColor: '#F59E0B', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
+            >
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>Rescan</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Mood hero card */}
         <View style={[nativeStyles.moodHero, { backgroundColor: pal.tint, borderColor: pal.secondary }]}>
           <EmojiText style={nativeStyles.moodHeroEmoji}>{meta.emoji}</EmojiText>
@@ -186,6 +223,11 @@ function NativeResultsScreen({ mood, recs, onConfirm, onOverride, theme }: Resul
                 <Text style={[nativeStyles.recPrice, { color: pal.primary }]}>{rec.priceRange}</Text>
               </View>
               <Text style={[nativeStyles.recCategory, { color: ts }]}>{rec.category}</Text>
+              {rec.description ? (
+                <Text style={{ fontSize: 12, color: ts, fontStyle: 'italic', marginBottom: 4, marginTop: 2 }}>
+                  {rec.description}
+                </Text>
+              ) : null}
               <Text style={[nativeStyles.recReason, { color: ts }]}>{rec.reason}</Text>
             </View>
           </View>
@@ -236,33 +278,43 @@ function MobileCameraScreen() {
   const { theme, setMood } = useTheme();
   const { profile } = useAuth();
 
-  // expo-camera is now imported at the top level to avoid dynamic require lag
-
   const [phase, setPhase] = useState<Phase>('initialising');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
   const [productRecs, setProductRecs] = useState<ProductRec[]>([]);
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [moodShift, setMoodShift] = useState<MoodShiftResult | null>(null);
 
-  // Ref to break the circular dependency: the hook needs onMoodDetected at
-  // construction time, but handleMoodDetected closes over state setters that
-  // are only stable after the component renders.
+  useEffect(() => {
+    supabase.from('products').select('*')
+      .then(({ data }) => {
+        if (data) setDbProducts(data);
+      });
+  }, []);
+
+  // Ref to break the circular dependency
   const onMoodDetectedRef = useRef<(mood: MoodKey) => void>(() => { });
 
-  const { permissionDenied, hasPermission, onCameraReady, cameraRef, rescan } =
+  const { permissionDenied, hasPermission, onCameraReady, cameraRef, rescan, scanProgress } =
     useMoodDetection({ onMoodDetected: (mood) => onMoodDetectedRef.current(mood) });
 
   const handleMoodDetected = useCallback(async (moodKey: MoodKey) => {
     setDetectedMood(moodKey);
+    setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
 
-    // Automatically apply mood and navigate back immediately
-    setMood(moodKey);
-    if (profile?.id) {
-      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
-      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
-    }
+    // Check for significant mood change from earlier today
+    const shift = detectMoodShift(profile?.mood_history || [], moodKey);
+    setMoodShift(shift);
 
-    router.back();
-  }, [setMood, profile, router]);
+    try {
+      const recs = await fetchProductRecs(moodKey, meta.emoji, dbProducts, profile?.id);
+      setProductRecs(recs);
+    } catch (err: any) {
+      console.error('[MobileCameraScreen] ❌ fetchProductRecs failed:', err?.message);
+      setProductRecs([]);
+    }
+    setPhase('results');
+  }, [dbProducts, profile]);
 
   // Keep the ref in sync with the latest handleMoodDetected
   useEffect(() => {
@@ -295,19 +347,20 @@ function MobileCameraScreen() {
     setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
     try {
-      const recs = await fetchProductRecs(moodKey, meta.emoji);
+      const recs = await fetchProductRecs(moodKey, meta.emoji, dbProducts, profile?.id);
       setProductRecs(recs);
     } catch (err: any) {
       console.error('[MobileCameraScreen] ❌ fetchProductRecs (override) failed:', err?.message);
       setProductRecs([]);
     }
     setPhase('results');
-  }, []);
+  }, [dbProducts, profile]);
 
   // Re-scan: reset all component state then let the hook restart capture
   const handleRescan = useCallback(() => {
     setDetectedMood(null);
     setProductRecs([]);
+    setMoodShift(null);
     setPhase('scanning');
     rescan();
   }, [rescan]);
@@ -372,6 +425,30 @@ function MobileCameraScreen() {
           <Text style={[nativeStyles.body, { color: ts }]}>
             Hold still for a second while we{'\n'}personalise your recommendations.
           </Text>
+          
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, marginBottom: 16 }}>
+            {[1, 2, 3].map((step) => {
+              const active = scanProgress >= step;
+              return (
+                <View
+                  key={step}
+                  style={{
+                    width: 48,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: active ? pri : bord,
+                  }}
+                />
+              );
+            })}
+          </View>
+          <Text style={{ fontSize: 12, color: ts, fontWeight: '700', marginBottom: 20 }}>
+            {scanProgress === 0 && "Warming up camera…"}
+            {scanProgress === 1 && "Verifying scan 1 of 3…"}
+            {scanProgress === 2 && "Verifying scan 2 of 3 (Anti-fake check)…"}
+            {scanProgress === 3 && "Verifying scan 3 of 3 (Finalizing)…"}
+          </Text>
+
           <ActivityIndicator size="small" color={pri} />
         </View>
       )}
@@ -401,6 +478,8 @@ function MobileCameraScreen() {
             onConfirm={handleConfirm}
             onOverride={handleOverride}
             theme={theme}
+            moodShift={moodShift}
+            onRescan={handleRescan}
           />
           {/* Scan again — overlaid at the bottom */}
           <TouchableOpacity
@@ -479,11 +558,15 @@ function WebCameraScreen() {
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didDetect = useRef(false);
   const pollCount = useRef(0);
+  const scanBuffer = useRef<string[]>([]);
 
   const [phase, setPhase] = useState<Phase>('initialising');
   const [errMsg, setErrMsg] = useState('');
   const [detectedMood, setDetectedMood] = useState<MoodKey | null>(null);
   const [productRecs, setProductRecs] = useState<ProductRec[]>([]);
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [moodShift, setMoodShift] = useState<MoodShiftResult | null>(null);
+  const [scanProgress, setScanProgress] = useState(0);
 
   const pri = theme.primary;
   const bg = theme.background;
@@ -492,6 +575,13 @@ function WebCameraScreen() {
   const tp = theme.textPrimary;
   const ts = theme.textSecondary;
   const tint = theme.tint;
+
+  useEffect(() => {
+    supabase.from('products').select('*')
+      .then(({ data }) => {
+        if (data) setDbProducts(data);
+      });
+  }, []);
 
   /* inject global CSS once */
   useEffect(() => {
@@ -554,21 +644,24 @@ function WebCameraScreen() {
 
   /* After mood detected: fetch recs */
   const handleMoodDetected = useCallback(async (moodKey: MoodKey) => {
-    if (didDetect.current) return;
-    didDetect.current = true;
     stopAll();
     setDetectedMood(moodKey);
-
-    // Automatically apply mood and navigate back immediately
-    setMood(moodKey);
+    setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
-    if (profile?.id) {
-      NotificationService.moodSelected(profile.id, meta.label, meta.emoji);
-      notifyUser.moodDetected(profile.id, meta.label, meta.emoji);
-    }
 
-    router.back();
-  }, [setMood, profile, router, stopAll]);
+    // Check for significant mood change from earlier today
+    const shift = detectMoodShift(profile?.mood_history || [], moodKey);
+    setMoodShift(shift);
+
+    try {
+      const recs = await fetchProductRecs(moodKey, meta.emoji, dbProducts, profile?.id);
+      setProductRecs(recs);
+    } catch (err: any) {
+      console.error('[WebCameraScreen] ❌ fetchProductRecs failed:', err?.message);
+      setProductRecs([]);
+    }
+    setPhase('results');
+  }, [dbProducts, profile, stopAll]);
 
   /* User confirms */
   const handleConfirm = useCallback((moodKey: MoodKey) => {
@@ -584,24 +677,24 @@ function WebCameraScreen() {
   /* User overrides */
   const handleOverride = useCallback(async (moodKey: MoodKey) => {
     didDetect.current = true;
+    stopAll();
     setDetectedMood(moodKey);
     setPhase('fetching_recs');
     const meta = MOODS_META.find(m => m.key === moodKey)!;
     try {
-      const recs = await fetchProductRecs(moodKey, meta.emoji);
+      const recs = await fetchProductRecs(moodKey, meta.emoji, dbProducts, profile?.id);
       setProductRecs(recs);
     } catch (err: any) {
       console.error('[WebCameraScreen] ❌ fetchProductRecs (override) failed:', err?.message);
       setProductRecs([]);
     }
     setPhase('results');
-  }, []);
+  }, [dbProducts, profile, stopAll]);
 
   const loadScript = (src: string): Promise<void> =>
     new Promise((resolve, reject) => {
       if ((window as any).faceapi) { resolve(); return; }
       if (document.querySelector(`script[src="${src}"]`)) {
-        // Script is already in DOM, wait for it if not ready
         const check = setInterval(() => {
           if ((window as any).faceapi) { clearInterval(check); resolve(); }
         }, 100);
@@ -633,18 +726,48 @@ function WebCameraScreen() {
 
         if (detection?.expressions) {
           const expressions = detection.expressions as Record<string, number>;
-          const [topLabel, topScore] = Object.entries(expressions)
-            .sort((a, b) => b[1] - a[1])[0];
+          const sorted = Object.entries(expressions).sort((a, b) => b[1] - a[1]);
+          const [topLabel, topScore] = sorted[0];
 
-          // Debug: shows real scores in the console so thresholds can be tuned
-          console.log('[faceapi] top:', topLabel, topScore, JSON.stringify(expressions));
+          // Prefer a non-neutral emotion if it clears the confidence bar.
+          // face-api.js often scores neutral highest even during genuine expressions
+          // (e.g. neutral=0.55, happy=0.30) so we always check non-neutral first.
+          const nonNeutralBest = sorted.find(([label]) => label !== 'neutral');
+          const useNonNeutral =
+            nonNeutralBest && nonNeutralBest[1] >= CONFIDENCE_THRESHOLD;
 
-          const threshold = topLabel === 'neutral' ? NEUTRAL_THRESHOLD : CONFIDENCE_THRESHOLD;
+          const [chosenLabel, chosenScore] = useNonNeutral
+            ? nonNeutralBest!
+            : [topLabel, topScore];
 
-          if (topScore >= threshold) {
-            const moodKey = EMOTION_TO_MOOD[topLabel] ?? 'neutral';
-            await handleMoodDetected(moodKey);
-            return;
+          const threshold =
+            chosenLabel === 'neutral' ? NEUTRAL_THRESHOLD : CONFIDENCE_THRESHOLD;
+
+          console.log(
+            '[faceapi] top:', topLabel, topScore.toFixed(3),
+            '| chosen:', chosenLabel, chosenScore.toFixed(3),
+            '| threshold:', threshold,
+            JSON.stringify(Object.fromEntries(sorted.map(([k, v]) => [k, v.toFixed(3)])))
+          );
+
+          if (chosenScore >= threshold) {
+            const moodKey = EMOTION_TO_MOOD[chosenLabel] ?? 'neutral';
+
+            // Push to scan buffer for triple-scan validation
+            scanBuffer.current.push(moodKey);
+            setScanProgress(scanBuffer.current.length);
+
+            if (scanBuffer.current.length >= 3) {
+              didDetect.current = true;
+
+              // Majority vote
+              const counts: Record<string, number> = {};
+              scanBuffer.current.forEach(m => counts[m] = (counts[m] || 0) + 1);
+              const finalMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as MoodKey;
+
+              await handleMoodDetected(finalMood);
+              return;
+            }
           }
         }
       } catch (err) {
@@ -656,49 +779,62 @@ function WebCameraScreen() {
     attempt();
   }, [handleMoodDetected, stopAll]);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        await loadScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
-        const fa = (window as any).faceapi;
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-        await Promise.all([
-          fa.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          fa.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-        ]);
+  const startCamera = useCallback(async () => {
+    try {
+      setPhase('initialising');
+      await loadScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
+      const fa = (window as any).faceapi;
+      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+      await Promise.all([
+        fa.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        fa.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+      ]);
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-          audio: false,
-        });
-        streamRef.current = stream;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+      streamRef.current = stream;
 
-        if (!videoRef.current) return;
-        videoRef.current.srcObject = stream;
-        await new Promise<void>(res => { videoRef.current!.onloadedmetadata = () => res(); });
-        await videoRef.current.play();
+      if (!videoRef.current) return;
+      videoRef.current.srcObject = stream;
+      await new Promise<void>(res => { videoRef.current!.onloadedmetadata = () => res(); });
+      await videoRef.current.play();
 
-        // Diagnostic log — if either dimension is 0 the video feed is broken
-        console.log('[WebCam] Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+      console.log('[WebCam] Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
 
-        setPhase('scanning');
-        startPolling(fa);
-      } catch (err: any) {
-        stopAll();
-        console.error('[WebCameraScreen] ❌ Init failed:', err);
-        const msg = (err?.message ?? '').toLowerCase();
-        if (msg.includes('permission') || msg.includes('denied') || msg.includes('notallowed')) {
-          setErrMsg('Camera access was denied. Please allow camera access in your browser settings.');
-        } else if (msg.includes('notfound') || msg.includes('no camera')) {
-          setErrMsg('No camera found on this device.');
-        } else {
-          setErrMsg(err?.message || 'Something went wrong starting the camera.');
-        }
-        setPhase('error');
+      setPhase('scanning');
+      startPolling(fa);
+    } catch (err: any) {
+      stopAll();
+      console.error('[WebCameraScreen] ❌ Init failed:', err);
+      const msg = (err?.message ?? '').toLowerCase();
+      if (msg.includes('permission') || msg.includes('denied') || msg.includes('notallowed')) {
+        setErrMsg('Camera access was denied. Please allow camera access in your browser settings.');
+      } else if (msg.includes('notfound') || msg.includes('no camera')) {
+        setErrMsg('No camera found on this device.');
+      } else {
+        setErrMsg(err?.message || 'Something went wrong starting the camera.');
       }
-    };
-    init();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+      setPhase('error');
+    }
+  }, [startPolling, stopAll]);
+
+  useEffect(() => {
+    startCamera();
+  }, [startCamera]);
+
+  const handleRescan = useCallback(() => {
+    stopAll();
+    didDetect.current = false;
+    pollCount.current = 0;
+    scanBuffer.current = [];
+    setScanProgress(0);
+    setDetectedMood(null);
+    setProductRecs([]);
+    setMoodShift(null);
+    startCamera();
+  }, [stopAll, startCamera]);
 
   const detectedMeta = detectedMood ? MOODS_META.find(m => m.key === detectedMood) : null;
   const detectedPal = detectedMood ? MOOD_PALETTES[detectedMood] : null;
@@ -741,7 +877,32 @@ function WebCameraScreen() {
           <div style={{ textAlign: 'center', maxWidth: 420 }}>
             <div style={{ width: 96, height: 96, borderRadius: 28, background: tint, border: `2px solid ${pri}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, margin: '0 auto 28px', animation: 'cam-pulse 2s ease-in-out infinite' }}>✨</div>
             <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 900, color: tp, letterSpacing: -0.5, marginBottom: 12 }}>Reading your vibe…</h1>
-            <p style={{ fontSize: 15, color: ts, lineHeight: 1.7, marginBottom: 32 }}>Hold still for a second while we personalise your recommendations.</p>
+            <p style={{ fontSize: 15, color: ts, lineHeight: 1.7, marginBottom: 20 }}>Hold still for a second while we personalise your recommendations.</p>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 10, marginBottom: 16 }}>
+              {[1, 2, 3].map((step) => {
+                const active = scanProgress >= step;
+                return (
+                  <div
+                    key={step}
+                    style={{
+                      width: 48,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: active ? pri : bord,
+                      transition: 'background-color 0.3s ease',
+                    }}
+                  />
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 12, color: ts, fontWeight: '700', marginBottom: 28 }}>
+              {scanProgress === 0 && "Warming up camera…"}
+              {scanProgress === 1 && "Verifying scan 1 of 3…"}
+              {scanProgress === 2 && "Verifying scan 2 of 3 (Anti-fake check)…"}
+              {scanProgress === 3 && "Verifying scan 3 of 3 (Finalizing)…"}
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {[0, 0.3, 0.6].map((delay, i) => (
                 <div key={i} style={{ width: 8, height: 8, borderRadius: 4, background: pri, animation: `cam-pulse 1.2s ease-in-out ${delay}s infinite` }} />
@@ -768,10 +929,30 @@ function WebCameraScreen() {
         {phase === 'results' && detectedMeta && detectedPal && detectedMood && (
           <div style={{ width: '100%', animation: 'cam-fadein 0.5s ease both' }}>
 
+            {/* Mood shift alert banner */}
+            {moodShift && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: '#FFFBEB', border: '1.5px solid #FEF3C7', borderRadius: 20, padding: '16px 20px', marginBottom: 28 }}>
+                <span style={{ fontSize: 24 }}>⚠️</span>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#B45309' }}>Mood shifted from this {moodShift.timeOfDay}!</div>
+                  <div style={{ fontSize: 12, color: '#B45309', opacity: 0.9, marginTop: 2 }}>
+                    You were {moodShift.previousMood} {moodShift.previousEmoji} at {moodShift.previousTime}.
+                  </div>
+                </div>
+                <button
+                  className="cam-btn"
+                  onClick={handleRescan}
+                  style={{ background: '#F59E0B', color: '#fff', padding: '10px 16px', fontSize: 13, borderRadius: 10, flexShrink: 0 }}
+                >
+                  Rescan mood
+                </button>
+              </div>
+            )}
+
             {/* Mood hero */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: detectedPal.tint, border: `1.5px solid ${detectedPal.secondary}`, borderRadius: 20, padding: '20px 24px', marginBottom: 28 }}>
               <span style={{ fontSize: 52 }}>{detectedMeta.emoji}</span>
-              <div>
+              <div style={{ textAlign: 'left' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: detectedPal.primary, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>We detected your mood</div>
                 <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 26, fontWeight: 900, color: detectedPal.primary, letterSpacing: -0.3 }}>{detectedMeta.label}</div>
                 <div style={{ fontSize: 13, color: detectedPal.primary, opacity: 0.75, marginTop: 2 }}>{detectedMeta.description}</div>
@@ -797,7 +978,7 @@ function WebCameraScreen() {
                     <div
                       key={i}
                       className="cam-rec-card"
-                      style={{ background: card, borderColor: bord, animationDelay: `${i * 0.1}s` }}
+                      style={{ background: card, borderColor: bord, animationDelay: `${i * 0.1}s`, textAlign: 'left' }}
                     >
                       <div style={{ width: 52, height: 52, borderRadius: 14, background: detectedPal.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
                         {rec.emoji}
@@ -808,6 +989,11 @@ function WebCameraScreen() {
                           <span style={{ fontSize: 13, fontWeight: 700, color: detectedPal.primary }}>{rec.priceRange}</span>
                         </div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: ts, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>{rec.category}</div>
+                        {rec.description ? (
+                          <div style={{ fontSize: 13, color: ts, fontStyle: 'italic', marginBottom: 4 }}>
+                            {rec.description}
+                          </div>
+                        ) : null}
                         <div style={{ fontSize: 13, color: ts, lineHeight: 1.5 }}>{rec.reason}</div>
                       </div>
                     </div>
@@ -817,10 +1003,10 @@ function WebCameraScreen() {
             )}
 
             {/* Override */}
-            <div style={{ marginBottom: 14 }}>
+            <div style={{ marginBottom: 14, textAlign: 'left' }}>
               <span style={{ fontSize: 13, color: ts, fontWeight: 600 }}>Not how you feel?</span>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
               {MOODS_META.filter(m => m.key !== detectedMood).map(m => {
                 const p = MOOD_PALETTES[m.key];
                 return (
@@ -836,6 +1022,15 @@ function WebCameraScreen() {
                 );
               })}
             </div>
+
+            {/* Scan again */}
+            <button
+              className="cam-btn"
+              onClick={handleRescan}
+              style={{ margin: '0 auto', background: 'none', border: `1.5px solid ${bord}`, borderRadius: 20, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: ts }}
+            >
+              🔄 Scan again
+            </button>
           </div>
         )}
 
@@ -951,6 +1146,15 @@ const nativeStyles = StyleSheet.create({
 
   rescanBtn: { alignSelf: 'center', marginBottom: 16, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, borderWidth: 1.5 },
   rescanBtnText: { fontSize: 13, fontWeight: '700' },
+  shiftBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 16,
+    marginBottom: 20,
+  },
 });
 
 export default function CameraRoute() {

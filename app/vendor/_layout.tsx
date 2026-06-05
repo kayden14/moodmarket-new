@@ -14,13 +14,18 @@ const VENDOR_NAV = [
 ];
 
 export default function VendorLayout() {
-  const { profile, loading, isVendor } = useAuth();
+  const { user, profile, loading, isVendor } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
   const segments = useSegments();
 
+  // Treat as loading if the auth session is ready but profile hasn't arrived yet.
+  // This prevents the guard from seeing isVendor=false while the non-blocking
+  // profile fetch is still in-flight (e.g. on page refresh or first login).
+  const profilePending = !loading && !!user && profile === null;
+
   useEffect(() => {
-    if (loading) return;
+    if (loading || profilePending) return;
 
     const seg = segments as string[];
     const isPublic = seg.includes('login') || seg.includes('apply');
@@ -35,9 +40,9 @@ export default function VendorLayout() {
     if (!isVendor && !isPublic) {
       router.replace('/vendor/apply' as any);
     }
-  }, [loading, isVendor, segments]);
+  }, [loading, profilePending, isVendor, segments]);
 
-  if (loading) {
+  if (loading || profilePending) {
     return (
       <View
         style={{

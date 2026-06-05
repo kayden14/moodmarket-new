@@ -7,6 +7,7 @@
 
 import { Product } from '@/types/database';
 import { ScoredProduct } from '@/types/recommendations';
+import { supabase } from '@/services/supabase';
 
 const MOOD_TAG_MAP: Record<string, string[]> = {
   happy:   ['cheerful', 'fun', 'vibrant', 'social', 'celebration', 'happy'],
@@ -117,3 +118,57 @@ export async function getTrending(
     return [];
   }
 }
+
+// ─── AI-Powered Recommendations using real DB products ────────────────────────
+//
+// Sends actual products (with descriptions) to the get-recommendations edge
+// function so the AI can read each product's description and explain why it
+// fits the user's detected mood.  Falls back to local tag-matching silently.
+
+export async function getAIRecommendations(
+  userId: string | undefined,
+  mood: string,
+  allProducts: Product[],
+  limit = 8
+): Promise<ScoredProduct[]> {
+  if (allProducts.length === 0) return [];
+
+  try {
+    // Trim the payload — pass at most 40 products so the prompt stays short
+    const payload = allProducts.slice(0, 40).map(p => ({
+      id:          p.id,
+      name:        p.name,
+      description: p.description ?? '',
+      price:       p.price,
+      mood_tags:   p.mood_tags ?? [],
+      rating:      p.rating ?? 0,
+    }));
+
+    const { data, error } = await supabase.functions.invoke('get-recommendations', {
+      body: { mood, products: payload },
+    });
+
+    if (error) throw error;
+
+    // Edge function returns ScoredProduct-compatible objects when products are supplied
+    if (Array.isArray(data) && data.length > 0) {
+      return (data as ScoredProduct[]).slice(0, limit);
+    }
+  } catch (err) {
+    console.warn('[recommendations] getAIRecommendations edge call failed, using tag-match fallback:', err);
+  }
+
+  // Local tag-matching fallback
+  const fallback = await getRecommendations(userId, mood, allProducts, limit);
+  const MOOD_EMOJI_MAP: Record<string, string> = {
+    happy: '😊', sad: '😢', angry: '😠', excited: '🤩',
+    neutral: '😐', calm: '😌', anxious: '😰', tired: '😴'
+  };
+  return fallback.map(p => ({
+    ...p,
+    priceRange: `$${p.price}`,
+    category: p.mood_tags?.[0] ? p.mood_tags[0].toUpperCase() : 'Lifestyle',
+    emoji: MOOD_EMOJI_MAP[mood.toLowerCase()] ?? '🎁',
+  })) as any[];
+}
+

@@ -80,6 +80,18 @@ function VendorLoginWeb() {
       setLoading(false);
       return;
     }
+    // Wait for onAuthStateChange to propagate the new session + profile
+    // into context before navigating, so isVendor is true when the layout guard runs.
+    await new Promise<void>((resolve) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          subscription.unsubscribe();
+          resolve();
+        }
+      });
+      // Safety fallback
+      setTimeout(() => { subscription.unsubscribe(); resolve(); }, 3000);
+    });
     await refreshProfile();
     router.replace('/vendor' as any);
   };
@@ -437,6 +449,18 @@ function VendorLoginMobile() {
       setLoading(false);
       return;
     }
+    // Wait for onAuthStateChange to propagate the new session + profile
+    // into context before navigating, so isVendor is true when the layout guard runs.
+    await new Promise<void>((resolve) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          subscription.unsubscribe();
+          resolve();
+        }
+      });
+      // Safety fallback
+      setTimeout(() => { subscription.unsubscribe(); resolve(); }, 3000);
+    });
     await refreshProfile();
     router.replace('/vendor' as any);
   };
