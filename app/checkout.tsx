@@ -45,6 +45,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/services/supabase';
 import { NotificationService } from '@/services/notifications';
+import { emailService } from '@/services/emailService';
 import {
   ChevronLeft, MapPin, Phone, User, CreditCard,
   CheckCircle, Package, Truck, ShieldCheck,
@@ -619,6 +620,20 @@ export default function CheckoutScreen() {
             await NotificationService.send(
               '🎉 Order Confirmed!',
               `GH₵${total.toFixed(2)} order placed successfully.`,
+            );
+          } catch {}
+
+          /* 3b. Order confirmation email (non-blocking) */
+          try {
+            emailService.orderPlaced(
+              user!.email ?? '',
+              name,
+              msg.reference,
+              total,
+              cartItems.length,
+              payMethod === 'card' ? 'Bank Card' : 'Mobile Money',
+              `${address}, ${city}`,
+              phone,
             );
           } catch {}
 

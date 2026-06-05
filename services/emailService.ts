@@ -30,7 +30,8 @@ type EmailType =
   | 'vendor_unsuspended'
   | 'vendor_removed'
   | 'payout_processed'
-  | 'role_updated';
+  | 'role_updated'
+  | 'check_in';
 
 async function send(type: EmailType, to: string, payload: Record<string, any>): Promise<void> {
   if (!to) {
@@ -55,6 +56,10 @@ async function send(type: EmailType, to: string, payload: Record<string, any>): 
 }
 
 export const emailService = {
+  /** Sent as a general check-in to see how the user is doing */
+  checkIn: (email: string, name: string) =>
+    send('check_in', email, { name }),
+
   /** Sent once when a brand-new user completes sign-up */
   welcome: (email: string, name: string) =>
     send('welcome', email, { name }),
@@ -71,8 +76,10 @@ export const emailService = {
     total: number,
     itemCount: number,
     paymentMethod = 'Online',
+    address?: string,
+    phone?: string,
   ) =>
-    send('order_placed', email, { name, orderId, total, itemCount, paymentMethod }),
+    send('order_placed', email, { name, orderId, total, itemCount, paymentMethod, address, phone }),
 
   /** Sent when admin marks order as shipped */
   orderShipped: (email: string, name: string, orderId: string) =>
