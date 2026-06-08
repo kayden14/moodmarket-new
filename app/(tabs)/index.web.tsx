@@ -139,25 +139,20 @@ function ProductCard({ item, onPress, onAddToCart }: {
             {(item as Product).rating?.toFixed(1)}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary, letterSpacing: -0.5, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+        <div className="mm-card-footer">
+          <span className="mm-card-price">
             <span style={{ fontSize: 11, fontWeight: 500, color: theme.textSecondary }}>GH₵ </span>
             {(item as Product).price.toFixed(2)}
           </span>
           <button
             onClick={handleAdd}
             disabled={adding}
+            className="mm-card-btn"
             style={{
-              height: 34, borderRadius: 8,
               background: hovered ? theme.primary : theme.tint,
               border: `1px solid ${hovered ? theme.primary : theme.secondary}`,
               color: hovered ? '#fff' : theme.primary,
-              fontSize: 12, fontWeight: 600,
               cursor: adding ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '0 12px',
-              transition: 'all 0.18s ease',
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
               whiteSpace: 'nowrap',
             }}
           >
@@ -482,6 +477,33 @@ export default function HomeScreenWeb() {
         .mm-show-more-btn { background: ${theme.background}; border: 1px solid ${bord}; border-radius: 8px; padding: 10px 24px; color: ${ts}; font-weight: 500; font-size: 13px; cursor: pointer; font-family: "Plus Jakarta Sans", sans-serif; transition: all 0.15s; min-height: 44px; }
         .mm-show-more-btn:hover { border-color: ${pri}; color: ${pri}; background: ${theme.tint}; }
 
+        .mm-card-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: auto;
+          padding-top: 4px;
+        }
+        .mm-card-price {
+          font-size: 16px;
+          font-weight: 700;
+          color: ${tp};
+          letter-spacing: -0.5px;
+          font-family: "Plus Jakarta Sans", sans-serif;
+        }
+        .mm-card-btn {
+          height: 34px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 0 12px;
+          transition: all 0.18s ease;
+          font-family: "Plus Jakarta Sans", sans-serif;
+        }
+
         @media (max-width: 1200px) {
           .mm-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
         }
@@ -495,6 +517,21 @@ export default function HomeScreenWeb() {
         }
         @media (max-width: 540px) {
           .mm-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+        @media (max-width: 480px) {
+          .mm-card-footer {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+          }
+          .mm-card-price {
+            font-size: 14px;
+            text-align: center;
+          }
+          .mm-card-btn {
+            width: 100%;
+            justify-content: center;
+          }
         }
         @media (max-width: 380px) {
           .mm-grid { grid-template-columns: 1fr; gap: 12px; }

@@ -720,6 +720,8 @@ export default function ProductDetailWeb() {
           padding: 32px;
         }
 
+        .pd-mood-chips-right { display: none; }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 960px) {
           .pd-left { flex: 0 0 42%; padding: 24px 20px 24px 24px; }
@@ -736,6 +738,7 @@ export default function ProductDetailWeb() {
           .pd-right { height: auto; border-left: none; border-top: 1px solid ${bord}; }
           .pd-right-inner { padding: 20px 18px 60px; }
           .pd-mood-chips { display: none; }
+          .pd-mood-chips-right { display: block !important; }
         }
       `}</style>
 
@@ -875,7 +878,7 @@ export default function ProductDetailWeb() {
 
                 {/* Mood tags (right column, smaller screens) */}
                 {product.mood_tags && product.mood_tags.length > 0 && (
-                  <div className="pd-section" style={{ display: 'none' }}>
+                  <div className="pd-section pd-mood-chips-right">
                     <p className="pd-section-title">Mood Tags</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {product.mood_tags.map((tag: string, i: number) => (

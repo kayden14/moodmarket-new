@@ -683,11 +683,19 @@ export default function CartWeb() {
           overflow: visible;
         }
 
-        .cart-summary-col {
+        .cart-summary-sidebar {
           position: sticky;
           top: 76px;
           align-self: start;
           overflow: visible;
+          display: block;
+        }
+        .cart-summary-inline {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .cart-summary-sidebar { display: none !important; }
+          .cart-summary-inline { display: block !important; }
         }
 
         .cart-page-title { margin-bottom: 22px; }
@@ -748,7 +756,6 @@ export default function CartWeb() {
             padding: 20px 20px 100px;
             gap: 16px;
           }
-          .cart-summary-col { position: static; }
           .cart-h1 { font-size: 24px; }
           /* Show floating checkout bar on tablet portrait */
           .cart-sticky-checkout {
@@ -773,7 +780,6 @@ export default function CartWeb() {
             padding: 16px 16px 90px;
             gap: 14px;
           }
-          .cart-summary-col { position: static; }
           .cart-h1 { font-size: 22px; }
           .cart-back span { display: none; } /* hide "Back" text, keep arrow */
           .cart-sticky-checkout {
@@ -802,12 +808,9 @@ export default function CartWeb() {
             padding: 14px 14px 90px;
             gap: 12px;
           }
-          .cart-summary-col { position: static; }
           .cart-h1 { font-size: 20px; }
           .cart-eyebrow { display: none; }
           .cart-back span { display: none; }
-          /* On very small screens, hide the full summary panel — use sticky bar */
-          .cart-summary-col { display: none; }
           .cart-sticky-checkout {
             display: flex;
             position: fixed;
@@ -835,9 +838,9 @@ export default function CartWeb() {
 
         /* Print */
         @media print {
-          .cart-topnav, .cart-sticky-checkout { display: none; }
+          .cart-topnav, .cart-sticky-checkout, .cart-summary-inline { display: none; }
           .cart-body { grid-template-columns: 1fr; padding: 0; }
-          .cart-summary-col { position: static; }
+          .cart-summary-sidebar { position: static; display: block; }
         }
       `}</style>
 
@@ -939,7 +942,7 @@ export default function CartWeb() {
                 </button>
 
                 {/* Inline summary shown on mobile/tablet instead of side panel */}
-                <div className="cart-summary-col" style={{ marginTop: 20 }}>
+                <div className="cart-summary-inline" style={{ marginTop: 20 }}>
                   <OrderSummary
                     subtotal={cartTotal}
                     coupon={coupon}
@@ -953,7 +956,7 @@ export default function CartWeb() {
               </div>
 
               {/* ── RIGHT: summary (desktop/laptop) ── */}
-              <div className="cart-summary-col">
+              <div className="cart-summary-sidebar">
                 <OrderSummary
                   subtotal={cartTotal}
                   coupon={coupon}

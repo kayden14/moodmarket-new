@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
@@ -14,10 +14,24 @@ export default function Index() {
 
     // small delay helps prevent navigation race conditions in Expo Router
     const timeout = setTimeout(() => {
-      if (user) {
+      let onboarded = false;
+      if (Platform.OS === 'web') {
+        try {
+          onboarded = localStorage.getItem('moodmarket_onboarded') === 'true';
+        } catch (e) {
+          // ignore localStorage access errors
+        }
+      } else {
+        // Native platform handles onboarding state or assumes onboarded
+        onboarded = true;
+      }
+
+      if (!onboarded) {
+        router.replace('/onboarding');
+      } else if (user) {
         router.replace('/(tabs)');
       } else {
-        router.replace('/onboarding'); // or '/login' if you have auth screen
+        router.replace('/login');
       }
     }, 50);
 

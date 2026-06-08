@@ -179,9 +179,18 @@ function OnboardingScreenWeb() {
   const [current, setCurrent] = useState(0);
   const slide = slides[current];
 
+  const completeOnboarding = () => {
+    try {
+      localStorage.setItem('moodmarket_onboarded', 'true');
+    } catch (e) {
+      // ignore localStorage issues
+    }
+    router.replace('/login');
+  };
+
   const goNext = () => {
     if (current < slides.length - 1) setCurrent(c => c + 1);
-    else router.replace('/login');
+    else completeOnboarding();
   };
 
   const CSS = `
@@ -309,8 +318,69 @@ function OnboardingScreenWeb() {
 
     /* Responsive */
     @media (max-width: 768px) {
-      .ob-left { display: none; }
-      .ob-right { width: 100%; padding: 48px 28px; }
+      .ob-root {
+        flex-direction: column;
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .ob-left {
+        width: 100%;
+        height: 42%;
+        min-height: 240px;
+        padding: 32px 16px 16px;
+      }
+      .ob-right {
+        width: 100%;
+        height: 58%;
+        min-height: 340px;
+        padding: 32px 24px 40px;
+        align-items: center;
+        text-align: center;
+        justify-content: flex-start;
+      }
+      .ob-illus-emoji {
+        width: 100px;
+        height: 100px;
+        font-size: 48px;
+        border-radius: 24px;
+        box-shadow: 0 12px 32px rgba(255,122,138,0.18);
+      }
+      .ob-feature-pills {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        max-width: 100%;
+      }
+      .ob-feature-pill {
+        padding: 6px 12px;
+        font-size: 11px;
+        border-radius: 10px;
+      }
+      .ob-title {
+        font-size: 28px;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+      .ob-desc {
+        font-size: 14px;
+        margin-bottom: 24px;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .ob-dots {
+        margin-bottom: 24px;
+        justify-content: center;
+      }
+      .ob-cta {
+        max-width: 100%;
+        padding: 14px 28px;
+        font-size: 15px;
+      }
+      .ob-signin {
+        max-width: 100%;
+      }
     }
   `;
 
@@ -366,7 +436,7 @@ function OnboardingScreenWeb() {
 
         {/* ── RIGHT PANEL ── */}
         <div className="ob-right">
-          <button className="ob-skip" onClick={() => router.replace('/login')}>Skip</button>
+          <button className="ob-skip" onClick={completeOnboarding}>Skip</button>
 
           <div className="ob-pill">
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF7A8A', display: 'inline-block' }} /> {slide.label}
@@ -398,7 +468,7 @@ function OnboardingScreenWeb() {
           {current === slides.length - 1 && (
             <p className="ob-signin">
               Already have an account?{' '}
-              <span onClick={() => router.replace('/login')}>Sign in</span>
+              <span onClick={completeOnboarding}>Sign in</span>
             </p>
           )}
         </div>
