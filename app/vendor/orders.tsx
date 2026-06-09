@@ -18,8 +18,8 @@ const PRIMARY = '#FF7A8A';
 
 function statusColor(s: string) {
   switch (s) {
-    case 'paid':      return '#38BDF8';
-    case 'shipped':   return '#A78BFA';
+    case 'pending':   return '#F59E0B';
+    case 'confirmed': return '#38BDF8';
     case 'delivered': return '#4ADE80';
     case 'cancelled': return '#F87171';
     default:          return '#94A3B8';
@@ -105,7 +105,7 @@ export default function VendorOrders() {
                 <View style={s.section}>
                   <Text style={[s.label, { color: sub }]}>STATUS</Text>
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                    {['paid', 'shipped', 'delivered', 'cancelled'].map(st => (
+                    {['pending', 'confirmed', 'delivered', 'cancelled'].map(st => (
                       <TouchableOpacity 
                         key={st}
                         style={[s.statusTab, { 

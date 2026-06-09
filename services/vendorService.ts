@@ -2,6 +2,7 @@
 // Centralised data-access layer for all vendor-related Supabase operations.
 
 import { supabase } from '@/services/supabase';
+import { emailService } from '@/services/emailService';
 
 /* ─── Types ────────────────────────────────────────────────────────────── */
 
@@ -124,7 +125,7 @@ export async function getVendorStats(vendorId: string): Promise<VendorStats> {
       .eq('vendor_id', vendorId),
     supabase
       .from('orders')
-      .select('total_price')
+      .select('total_price, status')
       .eq('vendor_id', vendorId)
       .gte('created_at', monthStart),
     supabase
@@ -140,9 +141,9 @@ export async function getVendorStats(vendorId: string): Promise<VendorStats> {
   ]);
 
   const totalRevenue =
-    orders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
+    orders?.filter(o => o.status === 'delivered')?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
   const monthRevenue =
-    monthOrders?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
+    monthOrders?.filter((o: any) => o.status === 'delivered')?.reduce((sum, o) => sum + Number(o.total_price), 0) ?? 0;
   const pendingOrders =
     orders?.filter((o) => o.status === 'pending').length ?? 0;
 
@@ -272,11 +273,11 @@ export async function updateOrderStatus(
   if (error) throw error;
 
   // Trigger customer email notification (non-blocking)
-  if (['shipped', 'delivered', 'cancelled'].includes(status)) {
+  if (['confirmed', 'delivered', 'cancelled'].includes(status)) {
     void Promise.resolve(
       supabase
         .from('orders')
-        .select('user_id, total_price, profiles!user_id(name, email)')
+        .select('user_id, total_price, products, profiles!user_id(name, email)')
         .eq('id', orderId)
         .single()
     ).then(({ data }: any) => {
@@ -289,7 +290,7 @@ export async function updateOrderStatus(
           body: {
             type: 'order_status_update',
             to: email,
-            payload: { orderId, status, name, total: data.total_price },
+            payload: { orderId, status, name, total: data.total_price, items: data.products },
           },
         })
         .catch(console.error);
@@ -443,22 +444,23 @@ export async function approveVendorApplication(
   });
   if (notifError) console.error('[approveVendorApplication] notification error:', notifError);
 
-  // 5. Trigger Edge Function to send email and reset password
+  // 5. Send vendor approval email with login info
   if (application.user_email) {
-    const { error: funcError } = await supabase.functions.invoke(
-      'vendor-approval',
-      {
-        body: {
-          action: 'approve_vendor',
-          vendorId: application.user_id,
-          storeName: application.store_name,
-          vendorEmail: application.user_email,
-        },
-      },
-    );
-    if (funcError) {
-      throw new Error(`Vendor promoted, but email failed: ${funcError.message}`);
-    }
+    // Trigger a password reset email so the vendor can set/confirm their password
+    // (non-blocking — approval should not fail if this does)
+    supabase.auth
+      .resetPasswordForEmail(application.user_email, {
+        redirectTo: `${process.env.EXPO_PUBLIC_APP_URL ?? 'https://moodmarket-new.vercel.app'}/reset-password`,
+      })
+      .catch((e: any) => console.error('[approveVendorApplication] resetPassword error:', e));
+
+    // Username is always the email address
+    const username = application.user_email;
+    const resetLink = `${process.env.EXPO_PUBLIC_APP_URL ?? 'https://moodmarket-new.vercel.app'}/reset-password`;
+    // Send approval email with credentials via emailService
+    emailService
+      .vendorApproved(application.user_email, application.store_name, username, resetLink)
+      .catch((e: any) => console.error('[approveVendorApplication] email error:', e));
   }
 }
 

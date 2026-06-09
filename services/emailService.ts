@@ -82,16 +82,19 @@ export const emailService = {
     send('order_placed', email, { name, orderId, total, itemCount, paymentMethod, address, phone }),
 
   /** Sent when admin marks order as shipped */
-  orderShipped: (email: string, name: string, orderId: string) =>
-    send('order_status_update', email, { name, orderId, status: 'shipped' }),
+// Updated orderShipped to include items and total in payload
+  orderShipped: (email: string, name: string, orderId: string, items: { name: string; price: number; quantity: number; image?: string }[], total: number) =>
+    send('order_status_update', email, { name, orderId, status: 'shipped', items, total }),
 
   /** Sent when admin marks order as delivered */
-  orderDelivered: (email: string, name: string, orderId: string) =>
-    send('order_status_update', email, { name, orderId, status: 'delivered' }),
+// Updated orderDelivered to include items and total in payload
+  orderDelivered: (email: string, name: string, orderId: string, items: { name: string; price: number; quantity: number; image?: string }[], total: number) =>
+    send('order_status_update', email, { name, orderId, status: 'delivered', items, total }),
 
   /** Sent when admin cancels an order */
-  orderCancelled: (email: string, name: string, orderId: string) =>
-    send('order_status_update', email, { name, orderId, status: 'cancelled' }),
+// Updated orderCancelled to include items and total in payload
+  orderCancelled: (email: string, name: string, orderId: string, items: { name: string; price: number; quantity: number; image?: string }[], total: number) =>
+    send('order_status_update', email, { name, orderId, status: 'cancelled', items, total }),
 
   /** Sent when admin suspends a customer account */
   accountSuspended: (email: string, name: string, reason?: string) =>
@@ -105,9 +108,9 @@ export const emailService = {
   accountDeleted: (email: string, name: string, reason?: string) =>
     send('account_deleted', email, { name, reason }),
 
-  /** Sent when a vendor application is approved */
-  vendorApproved: (email: string, name: string, storeName: string) =>
-    send('vendor_approved', email, { name, storeName }),
+  /** Sent when a vendor application is approved and includes login info */
+  vendorApproved: (email: string, name: string, username: string, resetLink?: string) =>
+    send('vendor_approved', email, { name, username, resetLink }),
 
   /** Sent when a vendor application is rejected */
   vendorRejected: (email: string, name: string, reason?: string) =>

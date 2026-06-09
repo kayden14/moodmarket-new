@@ -121,6 +121,25 @@ const divider = () =>
     <tr><td style="border-top:1px solid #e2e8f0;"></td></tr>
   </table>`;
 
+const productGrid = (items: any[]) => {
+  if (!items || !items.length) return '';
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+    ${items.map(item => `
+      <tr>
+        <td width="70" style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <img src="${item.image || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&q=80&w=200'}" alt="${item.name || 'Product'}" width="60" height="60" style="border-radius: 12px; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.06);" />
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;">
+          <p style="margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #1e293b;">${item.name || 'MoodMarket Item'}</p>
+          <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 600;">Qty: ${item.quantity || 1} &bull; GH₵ ${Number(item.price || 0).toFixed(2)}</p>
+        </td>
+      </tr>
+    `).join('')}
+  </table>`;
+};
+
+
 // ─── Email Builder ────────────────────────────────────────────────────────────
 
 function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string; html: string } {
@@ -142,6 +161,17 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
             '✨ <strong>Vibe Collections</strong> — Hand-picked sets for every emotion.',
             '🚀 <strong>Express Delivery</strong> — Joy, delivered to your door.',
           ], 'WHAT\'S WAITING FOR YOU')}
+          
+          <div style="margin-top: 32px; margin-bottom: 16px; text-align: center;">
+            <p style="margin: 0; font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">Curated for your first vibe</p>
+          </div>
+          
+          ${productGrid([
+            { name: 'Calming Lavender Candle', price: 120, quantity: 1, image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=200' },
+            { name: 'Energy Boost Essential Oil', price: 85, quantity: 1, image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=200' },
+            { name: 'Focus Planner 2024', price: 150, quantity: 1, image: 'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&q=80&w=200' }
+          ])}
+
           ${btn('Start Your First Mood Scan', 'https://moodmarket-new.vercel.app/')}
           ${p('Have questions? We\'re here at <a href="mailto:support@moodmarket.com" style="color:#FF7A8A;font-weight:700;">support@moodmarket.com</a>.', 'margin-bottom:0;font-size:13px;color:#94a3b8;')}
         `),
@@ -178,10 +208,16 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
         html: wrap(`
           ${h2(`Order Confirmed! 🎊`)}
           ${p(`Hi ${name}, we've received your order and our team is already preparing it with care. You'll get a notification as soon as it ships.`)}
+          
+          <div style="margin-top: 24px; margin-bottom: 12px;">
+            <p style="margin: 0; font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">What you ordered</p>
+          </div>
+          
+          ${p_.items ? productGrid(p_.items) : ''}
+
           ${infoBox([
             `📦 <strong>Order ID:</strong> <span style="font-family:monospace;font-weight:700;">#${oid}</span>`,
             `💳 <strong>Total Paid:</strong> GH₵ ${Number(p_.total ?? 0).toFixed(2)}`,
-            `🛍️ <strong>Items:</strong> ${p_.itemCount ?? 1} item(s)`,
             `💰 <strong>Payment:</strong> ${p_.paymentMethod ?? 'Online'}`,
             `📍 <strong>Delivering to:</strong> ${p_.address ?? 'your saved address'}`,
             p_.phone ? `📞 <strong>Phone:</strong> ${p_.phone}` : '',
@@ -203,6 +239,13 @@ function buildEmail(type: NotifType, p_: Record<string, any>): { subject: string
             `🔄 <strong>New Status:</strong> <span style="color:${accent};font-weight:800;">${String(p_.status ?? 'Updated').toUpperCase()}</span>`,
             p_.message ? `💬 <strong>Note:</strong> ${p_.message}` : '',
           ].filter(Boolean), 'STATUS UPDATE', '#fde68a', '#fffbeb')}
+
+          <div style="margin-top: 24px; margin-bottom: 12px;">
+            <p style="margin: 0; font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">Order Contents</p>
+          </div>
+          
+          ${p_.items ? productGrid(p_.items) : ''}
+
           ${btn('View Order Details', 'https://moodmarket-new.vercel.app/profile')}
         `),
       };

@@ -61,9 +61,9 @@ export default function AdminOrdersScreen() {
         // Trigger Email Notification
         if (selected.profiles?.email) {
           const userName = selected.profiles.name || 'Customer';
-          if (newStatus === 'shipped') emailService.orderShipped(selected.profiles.email, userName, selected.id);
-          if (newStatus === 'delivered') emailService.orderDelivered(selected.profiles.email, userName, selected.id);
-          if (newStatus === 'cancelled') emailService.orderCancelled(selected.profiles.email, userName, selected.id);
+          if (newStatus === 'shipped') emailService.orderShipped(selected.profiles.email, userName, selected.id, selected.products, selected.total_price);
+          if (newStatus === 'delivered') emailService.orderDelivered(selected.profiles.email, userName, selected.id, selected.products, selected.total_price);
+          if (newStatus === 'cancelled') emailService.orderCancelled(selected.profiles.email, userName, selected.id, selected.products, selected.total_price);
         }
       }
     } catch (e: any) {

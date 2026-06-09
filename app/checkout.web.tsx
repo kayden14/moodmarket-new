@@ -795,18 +795,23 @@ export default function CheckoutWeb() {
       if (msg.event === 'success') {
         setStep('processing');
 
+        const vendorId = (cartItems[0] as any)?.products?.vendor_id ?? null;
+
         const { error } = await supabase.from('orders').insert({
           user_id:           user!.id,
+          vendor_id:         vendorId,
           products:          cartItems.map(i => ({
             productId: i.product_id,
-            name:      i.products.name,
-            price:     i.products.price,
+            name:      (i as any).products.name,
+            price:     (i as any).products.price,
             quantity:  i.quantity,
+            image:     (i as any).products.image ?? null,
           })),
           total_price:       total,
-          status:            'paid',
+          status:            'pending',
           payment_reference: msg.reference,
           payment_method:    payMethod,
+          delivery_name:     name,
           delivery_address:  `${address}, ${city}`,
           delivery_phone:    phone,
         });
@@ -819,6 +824,27 @@ export default function CheckoutWeb() {
         }
 
         await clearCart();
+
+        // Send order confirmation email (non-blocking)
+        if (user?.email) {
+          supabase.functions
+            .invoke('send-email-notification', {
+              body: {
+                type: 'order_placed',
+                to: user.email,
+                payload: {
+                  name,
+                  orderId: msg.reference,
+                  total,
+                  itemCount: cartItems.length,
+                  paymentMethod: payMethod === 'card' ? 'Bank Card' : 'Mobile Money',
+                  address: `${address}, ${city}`,
+                  phone,
+                },
+              },
+            })
+            .catch(console.error);
+        }
 
         try {
           await NotificationService.send(
