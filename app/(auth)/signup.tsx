@@ -68,11 +68,15 @@ function SignupScreenWeb() {
   const [showPw, setShowPw] = useState(false);
   const [focusedField, setFocused] = useState<string | null>(null);
 
+  const isValidEmail = (val: string) =>
+    /^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$/i.test(val.trim());
+
   const handleSignup = async () => {
     if (!name || !email || !password) { setError('Please fill in all fields'); return; }
+    if (!isValidEmail(email)) { setError('Please enter a valid email address (e.g. you@example.com)'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     setLoading(true); setError('');
-    try { await signUp(email, password, name); router.replace('/(tabs)'); }
+    try { await signUp(email.trim(), password, name); router.replace('/(tabs)'); }
     catch (err: any) { setError(err.message || 'Failed to create account'); }
     finally { setLoading(false); }
   };
@@ -194,11 +198,15 @@ function SignupScreenMobile() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
+  const isValidEmail = (val: string) =>
+    /^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$/i.test(val.trim());
+
   const handleSignup = async () => {
     if (!name || !email || !password) { setError('Please fill in all fields'); return; }
+    if (!isValidEmail(email)) { setError('Please enter a valid email address (e.g. you@example.com)'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     setLoading(true); setError('');
-    try { await signUp(email, password, name); router.replace('/(tabs)'); }
+    try { await signUp(email.trim(), password, name); router.replace('/(tabs)'); }
     catch (err: any) { setError(err.message || 'Failed to create account'); }
     finally { setLoading(false); }
   };
