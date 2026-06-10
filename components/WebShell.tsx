@@ -510,7 +510,9 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
 
             <button className="mm-icon-btn mm-desktop-only" onClick={rescan} disabled={detecting}>
               {detecting ? <div className="mm-spinner" /> : (permissionDenied ? <Ban size={14} /> : <RefreshCw size={14} />)}
-              <span className="mm-btn-label">{detecting ? 'Detecting…' : 'Re-scan'}</span>
+              <span className="mm-btn-label">
+                {detecting ? 'Detecting…' : permissionDenied ? 'Camera blocked' : 'Scan Mood'}
+              </span>
             </button>
 
             <button className="mm-icon-btn mm-desktop-only" onClick={toggleDark}>
@@ -611,13 +613,15 @@ export default function WebShell({ children, activeNav, title, subtitle, showSid
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: tp, margin: 0 }}>{detecting ? 'Analyzing…' : selectedMood.label}</p>
-                      <p style={{ fontSize: 10, color: inact, margin: '2px 0 0' }}>AI Powered Scan</p>
+                      <p style={{ fontSize: 10, color: inact, margin: '2px 0 0' }}>
+                        {detecting ? 'Reading your vibe…' : permissionDenied ? 'Camera blocked' : 'Click “Scan Mood” to detect'}
+                      </p>
                     </div>
                     {!detecting && (
                       <button 
                         onClick={rescan}
                         style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, color: ts }}
-                        title="Re-scan mood"
+                        title="Scan mood"
                       >
                         <RefreshCw size={14} />
                       </button>

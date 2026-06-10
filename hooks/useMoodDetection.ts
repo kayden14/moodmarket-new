@@ -248,11 +248,12 @@ export function useMoodDetection({
     const requestPermission = async () => {
       try {
         if (Platform.OS === 'web') {
-          // On web, permission is handled by the browser inside getUserMedia.
-          // We set hasPermission true and fire capture directly — no CameraView needed.
+          // On web, getUserMedia requires a user gesture — auto-triggering on mount
+          // causes the browser to silently block the request, returning null every time.
+          // We simply mark permission as granted and let the user click Re-scan to start.
           if (cancelled) return;
           setHasPermission(true);
-          capture();
+          // Do NOT call capture() here — wait for user gesture (rescan button click).
           return;
         }
 
