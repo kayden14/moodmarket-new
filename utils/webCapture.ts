@@ -41,11 +41,11 @@ export async function captureFromWebCamera(): Promise<string | null> {
       position: 'fixed',
       top: '-9999px',
       left: '-9999px',
-      width: '1px',
-      height: '1px',
-      opacity: '0',
+      width: '640px',
+      height: '480px',
+      opacity: '1',
       pointerEvents: 'none',
-      zIndex: '-1',
+      zIndex: '-1000',
     });
     document.body.appendChild(video);
 

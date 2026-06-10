@@ -843,7 +843,7 @@ function WebCameraScreen() {
     <div style={{ minHeight: '100vh', background: bg, fontFamily: '"Plus Jakarta Sans", sans-serif', color: tp, display: 'flex', flexDirection: 'column' }}>
       <video
         ref={videoRef} autoPlay muted playsInline aria-hidden="true"
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }}
+        style={{ position: 'fixed', width: '640px', height: '480px', opacity: 1, pointerEvents: 'none', top: '-9999px', left: '-9999px', zIndex: -1000 }}
       />
 
       {/* TOP BAR */}
