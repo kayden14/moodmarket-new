@@ -587,18 +587,22 @@ export default function CheckoutScreen() {
 
         try {
           /* 1. Save order */
+          const vendorId = cartItems[0]?.products?.vendor_id ?? null;
           const { error } = await supabase.from('orders').insert({
             user_id:           user!.id,
+            vendor_id:         vendorId,
             products:          cartItems.map(i => ({
               productId: i.product_id,
               name:      i.products.name,
               price:     i.products.price,
               quantity:  i.quantity,
+              image:     i.products.image ?? null,
             })),
             total_price:       total,
-            status:            'paid',
+            status:            'pending',
             payment_reference: msg.reference,
             payment_method:    payMethod,
+            delivery_name:     name,
             delivery_address:  `${address}, ${city}`,
             delivery_phone:    phone,
           });

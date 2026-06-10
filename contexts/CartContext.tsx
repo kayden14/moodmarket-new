@@ -24,6 +24,7 @@ interface CartItem {
     name:  string;
     price: number;
     image: string;
+    vendor_id?: string;
   };
 }
 
@@ -60,7 +61,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('cart_items')
-        .select(`id, product_id, quantity, products (id, name, price, image)`)
+        .select(`id, product_id, quantity, products (id, name, price, image, vendor_id)`)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
