@@ -55,6 +55,7 @@ const WEB_CSS = `
   .su-terms a:hover { text-decoration: underline; }
   .su-trust { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #F1F5F9; }
   .su-trust-item { font-size: 11px; font-weight: 600; color: #9CA3AF; }
+  .su-field-error { font-size: 12px; color: #DC2626; font-weight: 600; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
 `;
 
 function SignupScreenWeb() {
@@ -65,17 +66,31 @@ function SignupScreenWeb() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [focusedField, setFocused] = useState<string | null>(null);
 
   const isValidEmail = (val: string) =>
     /^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$/i.test(val.trim());
 
+  const handleEmailBlur = () => {
+    setFocused(null);
+    if (email && !isValidEmail(email)) {
+      setEmailError('Please enter a valid email address (e.g. you@example.com)');
+    } else {
+      setEmailError('');
+    }
+  };
+
   const handleSignup = async () => {
     if (!name || !email || !password) { setError('Please fill in all fields'); return; }
-    if (!isValidEmail(email)) { setError('Please enter a valid email address (e.g. you@example.com)'); return; }
+    if (!isValidEmail(email)) {
+      setEmailError('Please enter a valid email address (e.g. you@example.com)');
+      setError('Please fix the errors above before continuing.');
+      return;
+    }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setEmailError('');
     try { await signUp(email.trim(), password, name); router.replace('/(tabs)'); }
     catch (err: any) { setError(err.message || 'Failed to create account'); }
     finally { setLoading(false); }
@@ -134,13 +149,20 @@ function SignupScreenWeb() {
 
       <div className="auth-field">
         <div className="auth-field-header"><label className="auth-field-label">Email address</label></div>
-        <div className={`auth-input-wrap${focusedField === 'email' ? ' focused' : ''}`}>
+        <div className={`auth-input-wrap${focusedField === 'email' ? ' focused' : ''}${emailError ? ' error' : ''}`}>
           <span className="auth-input-icon">✉️</span>
-          <input type="email" placeholder="you@example.com" value={email}
-            onChange={e => setEmail(e.target.value)}
-            onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
-            onKeyDown={e => e.key === 'Enter' && handleSignup()} autoComplete="email" />
+          <input
+            type="text"
+            placeholder="you@example.com"
+            value={email}
+            onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+            onFocus={() => setFocused('email')}
+            onBlur={handleEmailBlur}
+            onKeyDown={e => e.key === 'Enter' && handleSignup()}
+            autoComplete="email"
+          />
         </div>
+        {emailError && <div className="su-field-error">⚠️ {emailError}</div>}
       </div>
 
       <div className="auth-field">
