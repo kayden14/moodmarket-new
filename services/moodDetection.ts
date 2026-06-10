@@ -107,7 +107,7 @@ async function callGeminiModel(
 
   const imageArray = Array.isArray(images) ? images : [images];
 
-  console.log(`[MoodDetection] [${model}] Image count: ${imageArray.length}, sizes: ${imageArray.map(i => i?.length ?? 0).join(', ')} chars`);
+  console.log(`[MoodDetection] [${model}] Image count: ${imageArray.length}, details: ${imageArray.map(i => `${i?.length ?? 0} chars (starts with: ${i?.slice(0, 30)})`).join(', ')}`);
 
   const promptText = `You are a professional facial expression and emotional mood analyzer.
 Analyze the provided ${imageArray.length} frame(s) of a person's face.
