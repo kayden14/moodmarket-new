@@ -9,15 +9,14 @@ A Mood-aware or mood-based shopping experience built with **Expo (React Native)*
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
-
 - [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Project Structure](#project-structure)
+- [Getting Started & Configuration](#getting-started--configuration)
 - [Running the App](#running-the-app)
-- [Building the APK (Android)](#building-the-apk-android)
+- [Project Structure](#project-structure)
+- [Premium Innovation Features](#premium-innovation-features-fyp-highlights)
+- [Building the APK (Alternative to EAS)](#building-the-apk-alternative-to-eas)
 - [Deployment](#deployment)
-- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -42,16 +41,15 @@ A Mood-aware or mood-based shopping experience built with **Expo (React Native)*
 Make sure you have the following installed before you begin:
 
 - **Node.js** v18 or higher — [nodejs.org](https://nodejs.org)
-- **npm** v9+ or **yarn**
-- **Expo CLI** — `npm install -g expo-cli`
-- **EAS CLI** — `npm install -g eas-cli`
+- **Package Manager**: **npm** v9+, **yarn**, or **bun** (a `bun.lock` is included if you prefer Bun)
+- **EAS CLI** (Required only for builds) — `npm install -g eas-cli`
 - An **Expo account** — [expo.dev](https://expo.dev) (free)
-- A **Supabase account** — [supabase.com](https://supabase.com) (free tier available)
-- For physical device testing: **Expo Go** app on Android or iOS
+- A **Supabase project** — [supabase.com](https://supabase.com) (free tier available)
+- For physical device testing: **Expo Go** app installed on your Android or iOS device
 
 ---
 
-## Getting Started
+## Getting Started & Configuration
 
 ### 1. Clone the repository
 
@@ -62,37 +60,25 @@ cd moodmarket
 
 ### 2. Install dependencies
 
+Choose your preferred package manager to install the dependencies:
+
 ```bash
+# Using npm
 npm install
+
+# Using bun
+bun install
 ```
 
 ### 3. Set up environment variables
 
-Copy the example env file and fill in your values:
+Copy the example environment template file to create your local config:
 
 ```bash
 cp .env.example .env
 ```
 
-See the [Environment Variables](#environment-variables) section below for details on each variable.
-
-### 4. Log in to Expo
-
-```bash
-eas login
-```
-
-### 5. Start the development server
-
-```bash
-npm run dev
-```
-
----
-
-## Environment Variables
-
-Create a `.env` file in the root of the project with the following variables. **Never commit this file to version control.**
+Open `.env` and fill in the required keys:
 
 ```env
 # ─── Supabase ───────────────────────────────────────────────
@@ -100,12 +86,65 @@ Create a `.env` file in the root of the project with the following variables. **
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
 
-# ─── App Config (optional overrides) ────────────────────────
+# ─── AI Engine (Gemini) ─────────────────────────────────────
+# Generate a key at https://aistudio.google.com/
+EXPO_PUBLIC_GEMINI_API_KEY=your-gemini-api-key
+
+# ─── App Config ─────────────────────────────────────────────
 # Used for deep linking and OAuth redirects
 EXPO_PUBLIC_APP_SCHEME=moodmarket
 ```
 
-> **Note:** All variables exposed to the client must be prefixed with `EXPO_PUBLIC_`. Variables without this prefix are server-only and will not be bundled into the app.
+> [!IMPORTANT]
+> All variables exposed to the React Native/Expo client must be prefixed with `EXPO_PUBLIC_`. Variables without this prefix are server-only and will not be bundled.
+
+---
+
+## Running the App
+
+### 1. Start the Dev Server / Metro Bundler
+
+Run the following command in the project root to spin up the bundler:
+
+```bash
+# Using npm
+npm run dev
+
+# Using bun
+bun dev
+```
+
+This starts the Expo CLI and displays a QR code in the terminal.
+
+### 2. Run on Your Target Platform
+
+Once the Metro bundler is running, you can launch the app on different platforms:
+
+#### A. Web Browser 🌐
+- In the running terminal, press **`w`** to open the web version.
+- Alternatively, open your browser and navigate to `http://localhost:8081`.
+- *Note: Features like Voice Search (Web Speech API) are best experienced on Chrome or Safari.*
+
+#### B. Physical Device (Expo Go) 📱
+- Install the **Expo Go** app on your phone.
+- Ensure your computer and your phone are connected to the **same local Wi-Fi network**.
+- **iOS**: Scan the QR code using your system camera app, then tap the prompt to open Expo Go.
+- **Android**: Open the Expo Go app and use the "Scan QR Code" option.
+- **Troubleshooting Connection Issues (Tunneling)**: If you are on a restricted public network (e.g., school/office Wi-Fi) and the app won't load, stop the server and restart with tunnel mode enabled:
+  ```bash
+  npx expo start --tunnel
+  ```
+  *(Expo will automatically prompt you to install `@expo/ngrok` if it is not already installed).*
+
+#### C. Android Emulator 🤖
+- Open Android Studio and launch a virtual device (AVD).
+- Once the emulator is running, press **`a`** in your Metro bundler terminal.
+- The Expo Go app will automatically install and open the project inside the emulator.
+
+#### D. iOS Simulator 🍏
+- Make sure Xcode is installed on your macOS machine.
+- Press **`i`** in the Metro bundler terminal.
+- This will launch the iOS Simulator and load the app.
 
 ---
 
